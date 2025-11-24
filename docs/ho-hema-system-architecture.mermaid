@@ -1,0 +1,106 @@
+```mermaid
+flowchart TB
+    subgraph "WhatsApp Business Platform"
+        WA[WhatsApp Bot Interface]
+        WA_MENU[Interactive Menu System]
+        WA_INPUT[Input Collection Forms]
+        WA_OTP[OTP Verification]
+    end
+    
+    subgraph "Ho Hema Core System"
+        HS[Ho Hema Software Core]
+        CALC[Affordability Calculator]
+        PARAM[Parameter Management]
+        SCHED[Schedule Generator]
+        DOC[Document Generator]
+        NOTIF[Notification System]
+    end
+    
+    subgraph "Integration Layer"
+        API[API Gateway]
+        AUTH[Authentication Service]
+        VALID[Validation Engine]
+        ENCRYPT[Encryption Service]
+    end
+    
+    subgraph "External Systems"
+        PAYROLL[(Payroll System)]
+        TA[(Time & Attendance)]
+        BANK[(Banking System)]
+        NCR[(NCR Compliance)]
+    end
+    
+    subgraph "Data Storage"
+        EMPDB[(Employee Database)]
+        LOANDB[(Loan Database)]
+        AUDITDB[(Audit Trail)]
+        PARAMDB[(Parameters Database)]
+    end
+    
+    %% User Interaction Flow
+    USER[Employee] --> WA
+    WA --> WA_MENU
+    WA_MENU --> WA_INPUT
+    WA_INPUT --> API
+    
+    %% Core Processing
+    API --> AUTH
+    AUTH --> VALID
+    VALID --> HS
+    HS --> CALC
+    HS --> PARAM
+    
+    %% Data Retrieval
+    HS --> PAYROLL
+    HS --> TA
+    PAYROLL --> EMPDB
+    TA --> EMPDB
+    
+    %% Calculation and Validation
+    CALC --> PARAMDB
+    CALC --> EMPDB
+    CALC --> LOANDB
+    
+    %% Document Generation
+    HS --> DOC
+    DOC --> WA_INPUT
+    
+    %% OTP Process
+    WA_INPUT --> WA_OTP
+    WA_OTP --> AUTH
+    AUTH --> NOTIF
+    
+    %% Payment Processing
+    HS --> SCHED
+    SCHED --> BANK
+    SCHED --> PAYROLL
+    
+    %% Compliance and Audit
+    HS --> NCR
+    HS --> AUDITDB
+    VALID --> AUDITDB
+    
+    %% Feedback Loop
+    BANK --> NOTIF
+    PAYROLL --> NOTIF
+    NOTIF --> WA
+    
+    %% System Monitoring
+    AUDITDB --> ADMIN[Administrator Dashboard]
+    PARAM --> ADMIN
+    
+    %% Styling
+    classDef userInterface fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef coreSystem fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef integration fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef external fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef database fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef admin fill:#fff8e1,stroke:#fbc02d,stroke-width:2px
+    
+    class USER,WA,WA_MENU,WA_INPUT,WA_OTP userInterface
+    class HS,CALC,PARAM,SCHED,DOC,NOTIF coreSystem
+    class API,AUTH,VALID,ENCRYPT integration
+    class PAYROLL,TA,BANK,NCR external
+    class EMPDB,LOANDB,AUDITDB,PARAMDB database
+    class ADMIN admin
+```

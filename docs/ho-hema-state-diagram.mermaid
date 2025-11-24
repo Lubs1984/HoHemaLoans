@@ -1,0 +1,147 @@
+```mermaid
+stateDiagram-v2
+    [*] --> WhatsAppIntroduction: Employee receives intro message
+    
+    WhatsAppIntroduction --> InformationRequest: "I want to know more"
+    WhatsAppIntroduction --> ApplicationStart: "I would like to apply"
+    
+    InformationRequest --> CompanyInfo: Who is Ho Hema?
+    InformationRequest --> ProductInfo: What do we offer?
+    InformationRequest --> RatesInfo: Our rates
+    InformationRequest --> ProcessInfo: How does it work?
+    
+    CompanyInfo --> ApplicationStart: Proceed to apply
+    ProductInfo --> ApplicationStart: Proceed to apply
+    RatesInfo --> ApplicationStart: Proceed to apply
+    ProcessInfo --> ApplicationStart: Proceed to apply
+    
+    ApplicationStart --> ProductSelection: Choose product type
+    
+    ProductSelection --> ShortTermLoan: Select short term loan
+    ProductSelection --> AdvancePayment: Select advance payment
+    
+    state ShortTermLoan {
+        [*] --> IDEntry: Enter ID number
+        IDEntry --> IDUpload: Upload ID photo
+        IDUpload --> IDValidation: System validates ID
+        
+        IDValidation --> EmployeeValidation: ID valid
+        IDValidation --> IDError: ID invalid
+        
+        EmployeeValidation --> ExpenseEntry: Employee validated
+        EmployeeValidation --> PhoneValidation: Employee not found
+        EmployeeValidation --> ValidationError: Validation failed
+        
+        PhoneValidation --> ExpenseEntry: Phone validated
+        PhoneValidation --> ValidationError: Phone not validated
+        
+        ExpenseEntry --> AffordabilityCalc: Enter expenses
+        AffordabilityCalc --> QuoteGeneration: Calculate affordability
+        QuoteGeneration --> AmountSelection: Present quote options
+        
+        AmountSelection --> BankDetails: Valid amount selected
+        AmountSelection --> AmountError: Amount too high
+        AmountSelection --> ApplicationExit: Not interested
+        
+        BankDetails --> BankValidation: Enter bank details
+        BankValidation --> ContractGeneration: Bank details valid
+        BankValidation --> BankError: Bank details invalid
+        
+        ContractGeneration --> ContractReview: Send contract
+        ContractReview --> OTPGeneration: Accept terms
+        ContractReview --> ApplicationExit: Decline terms
+        
+        OTPGeneration --> OTPValidation: Enter OTP
+        OTPValidation --> ApprovalProcessing: OTP valid
+        OTPValidation --> OTPError: OTP invalid
+        
+        ApprovalProcessing --> PaymentProcessing: Create deduction schedule
+    }
+    
+    state AdvancePayment {
+        [*] --> AdvanceIDEntry: Enter ID number
+        AdvanceIDEntry --> AdvanceIDUpload: Upload ID photo
+        AdvanceIDUpload --> AdvanceIDValidation: System validates ID
+        
+        AdvanceIDValidation --> ShiftValidation: ID valid
+        AdvanceIDValidation --> AdvanceIDError: ID invalid
+        
+        ShiftValidation --> ShiftCalculation: Validate employment
+        ShiftCalculation --> AdvanceQuote: Calculate shifts worked
+        
+        AdvanceQuote --> AdvanceAmount: Sufficient shifts
+        AdvanceQuote --> InsufficientShifts: Not enough shifts
+        
+        AdvanceAmount --> AdvanceBankDetails: Accept advance
+        AdvanceAmount --> ApplicationExit: Decline advance
+        
+        AdvanceBankDetails --> AdvanceBankValidation: Enter bank details
+        AdvanceBankValidation --> AdvanceAgreement: Bank details valid
+        AdvanceBankValidation --> AdvanceBankError: Bank details invalid
+        
+        AdvanceAgreement --> AdvanceOTP: Accept agreement
+        AdvanceAgreement --> ApplicationExit: Decline agreement
+        
+        AdvanceOTP --> AdvanceOTPValidation: Enter OTP
+        AdvanceOTPValidation --> AdvanceProcessing: OTP valid
+        AdvanceOTPValidation --> AdvanceOTPError: OTP invalid
+        
+        AdvanceProcessing --> PaymentProcessing: Create advance schedule
+    }
+    
+    state PaymentProcessing {
+        [*] --> ScheduleGeneration: Generate payment schedule
+        ScheduleGeneration --> BankUpload: Upload to bank system
+        BankUpload --> PaymentDecision: Check urgency
+        
+        PaymentDecision --> ImmediatePayment: Immediate required
+        PaymentDecision --> BatchPayment: Standard processing
+        
+        ImmediatePayment --> AdminApproval: Escalate to admin
+        AdminApproval --> FundsReleased: Admin approves
+        AdminApproval --> PaymentRejected: Admin rejects
+        
+        BatchPayment --> FundsReleased: Add to batch
+        
+        FundsReleased --> RepaymentScheduling: Funds disbursed
+    }
+    
+    state RepaymentScheduling {
+        [*] --> DeductionSchedule: Create deduction schedule
+        DeductionSchedule --> PayrollIntegration: Send to payroll
+        
+        PayrollIntegration --> AutomatedDeduction: Automated system
+        PayrollIntegration --> ManualDeduction: Manual processing
+        
+        AutomatedDeduction --> LoanComplete: Deductions processed
+        ManualDeduction --> LoanComplete: Manual deductions processed
+    }
+    
+    %% Error States
+    IDError --> ApplicationStart: Retry or exit
+    ValidationError --> ApplicationStart: Retry or contact admin
+    AmountError --> AmountSelection: Select different amount
+    BankError --> BankDetails: Correct bank details
+    OTPError --> OTPGeneration: Resend OTP
+    PaymentRejected --> AdminApproval: Retry approval
+    
+    AdvanceIDError --> ApplicationStart: Retry or exit
+    InsufficientShifts --> ApplicationExit: Wait for more shifts
+    AdvanceBankError --> AdvanceBankDetails: Correct bank details
+    AdvanceOTPError --> AdvanceOTP: Resend OTP
+    
+    %% Final States
+    ApplicationExit --> [*]
+    LoanComplete --> [*]
+    
+    %% State Colors
+    classDef errorState fill:#ffcdd2
+    classDef processState fill:#c8e6c9
+    classDef decisionState fill:#fff3e0
+    classDef finalState fill:#e1f5fe
+    
+    class IDError,ValidationError,AmountError,BankError,OTPError,PaymentRejected,AdvanceIDError,InsufficientShifts,AdvanceBankError,AdvanceOTPError errorState
+    class AffordabilityCalc,QuoteGeneration,ContractGeneration,ApprovalProcessing,ShiftCalculation,AdvanceProcessing,ScheduleGeneration,BankUpload,DeductionSchedule processState
+    class ProductSelection,AmountSelection,ContractReview,PaymentDecision,PayrollIntegration decisionState
+    class ApplicationExit,LoanComplete finalState
+```

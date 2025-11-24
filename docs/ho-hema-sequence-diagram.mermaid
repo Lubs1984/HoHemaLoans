@@ -1,0 +1,130 @@
+```mermaid
+sequenceDiagram
+    participant E as Employee
+    participant WA as WhatsApp Bot
+    participant HS as Ho Hema System
+    participant PR as Payroll System
+    participant TA as Time & Attendance
+    participant BK as Banking System
+    participant ADM as Administrator
+
+    Note over E,ADM: Short Term Loan Application Process
+
+    E->>WA: Initial WhatsApp Message
+    WA->>E: Welcome Menu Options
+    
+    E->>WA: Select "I WOULD LIKE TO APPLY"
+    WA->>E: Product Selection Menu
+    
+    E->>WA: Select "SHORT TERM LOAN"
+    WA->>E: Request ID Number
+    
+    E->>WA: Enter ID Number
+    WA->>E: Request ID Photo Upload
+    
+    E->>WA: Upload ID Photo
+    WA->>HS: Validate ID and Employee
+    
+    HS->>PR: Query Employee Details by ID
+    PR-->>HS: Employee Data (ID, Phone, Salary, Bank Details)
+    
+    HS->>TA: Query Shifts Worked
+    TA-->>HS: Shifts Data and Hours
+    
+    HS->>HS: Calculate Wages Due and Affordability
+    
+    alt Employee Validated
+        HS->>WA: Employee Validated Successfully
+        WA->>E: Request Employee Number Confirmation
+        
+        E->>WA: Confirm Employee Number
+        WA->>E: Request Monthly Expenses
+        
+        E->>WA: Enter Expense Details
+        WA->>HS: Process Expense Data
+        
+        HS->>HS: Run Affordability Assessment (NCA Compliance)
+        HS->>HS: Calculate Maximum Loan Amount
+        
+        HS->>WA: Send Loan Amount Options
+        WA->>E: Display Available Loan Amounts
+        
+        E->>WA: Select Loan Amount
+        
+        alt Amount Within Limits
+            HS->>HS: Generate Loan Quote with Fees
+            HS->>WA: Send Detailed Quote
+            WA->>E: Display Quote Breakdown
+            
+            E->>WA: Accept Quote
+            WA->>E: Request Bank Account Details
+            
+            E->>WA: Enter Bank Details
+            HS->>HS: Validate Bank Details Against Payroll
+            
+            alt Bank Details Match
+                HS->>HS: Generate Loan Agreement & AOD
+                HS->>WA: Send Contract Documents
+                WA->>E: Display Contract Terms
+                
+                E->>WA: Agree to Terms & Request OTP
+                HS->>HS: Generate OTP
+                HS->>WA: Send OTP to Employee
+                WA->>E: Request OTP Input
+                
+                E->>WA: Enter OTP
+                HS->>HS: Validate OTP
+                
+                alt OTP Valid
+                    HS->>HS: Create Deduction Schedule
+                    HS->>BK: Generate Payment Schedule
+                    BK-->>HS: Payment Reference Number
+                    
+                    HS->>ADM: Notify Payment for Approval
+                    
+                    alt Immediate Payment Required
+                        ADM->>BK: Approve Immediate Release
+                        BK->>E: Transfer Funds
+                        BK-->>HS: Payment Confirmation
+                    else Standard Processing
+                        HS->>BK: Add to Batch Payment
+                        BK->>E: Transfer Funds (Next Batch)
+                        BK-->>HS: Payment Confirmation
+                    end
+                    
+                    HS->>PR: Send Deduction Schedule
+                    PR-->>HS: Deduction Schedule Confirmed
+                    
+                    HS->>WA: Loan Approved & Disbursed
+                    WA->>E: Success Confirmation with Details
+                    
+                else OTP Invalid
+                    HS->>WA: Invalid OTP Error
+                    WA->>E: Request OTP Re-entry or Exit
+                end
+                
+            else Bank Details Don't Match
+                HS->>WA: Bank Details Validation Error
+                WA->>E: Request Correct Bank Details
+            end
+            
+        else Amount Exceeds Limits
+            HS->>WA: Amount Too High Error
+            WA->>E: Display Maximum Available Amount
+        end
+        
+    else Employee Not Validated
+        HS->>WA: Employee Validation Failed
+        WA->>E: Validation Error Message
+        WA->>ADM: Escalate Validation Issue
+    end
+
+    Note over E,ADM: Repayment Processing (Monthly)
+    
+    HS->>HS: Generate Monthly Deduction Report
+    HS->>PR: Send Deduction Schedule
+    PR->>PR: Process Payroll Deductions
+    PR-->>HS: Deduction Confirmation
+    HS->>WA: Send Repayment Confirmation
+    WA->>E: Deduction Applied Notification
+```

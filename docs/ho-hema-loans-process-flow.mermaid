@@ -1,0 +1,149 @@
+```mermaid
+flowchart TD
+    A[Employee Receives WhatsApp Introduction] --> B{Initial Interest?}
+    
+    B -->|I AM INTERESTED TO KNOW MORE| C[Information Menu]
+    B -->|I WOULD LIKE TO APPLY| D[Application Selection]
+    
+    C --> C1[WHO IS HO HEMA LOANS]
+    C --> C2[WHAT DO WE OFFER]
+    C --> C3[OUR RATES]
+    C --> C4[HOW DOES IT WORK]
+    C1 --> D
+    C2 --> D
+    C3 --> D
+    C4 --> D
+    
+    D --> E{Product Selection}
+    E -->|SHORT TERM LOAN| F[Short Term Loan Process]
+    E -->|ADVANCE PAYMENT| G[Advance Payment Process]
+    
+    %% Short Term Loan Flow
+    F --> F1[Enter ID Number]
+    F1 --> F2[Upload ID Picture]
+    F2 --> F3{ID Validation}
+    
+    F3 -->|Invalid| F4[Error: Invalid ID]
+    F3 -->|Valid| F5[System Pulls Employee Data]
+    
+    F5 --> F6[Validate Employee Number]
+    F6 --> F7{Employee Validation}
+    
+    F7 -->|Invalid| F8[Phone Number Validation]
+    F7 -->|Valid| F9[Enter Expenses]
+    F8 --> F9
+    
+    F9 --> F10[System Calculates Affordability]
+    F10 --> F11[Generate Quote with Breakdown]
+    F11 --> F12{Amount Selection}
+    
+    F12 -->|Enter Amount > Max| F13[Error: Amount Too High]
+    F12 -->|Valid Amount| F14[Confirm Quote]
+    F12 -->|No Longer Interested| F15[Exit Process]
+    
+    F14 --> F16[Enter Bank Details]
+    F16 --> F17{Bank Account Validation}
+    
+    F17 -->|Invalid| F18[Error: Bank Details Mismatch]
+    F17 -->|Valid| F19[Send Contract]
+    
+    F19 --> F20{Contract Acceptance}
+    F20 -->|Agree - Send OTP| F21[Generate OTP]
+    F20 -->|Disagree/No Longer Interested| F22[Exit Process]
+    
+    F21 --> F23[Enter OTP]
+    F23 --> F24{OTP Validation}
+    
+    F24 -->|Invalid| F25[Error: Invalid OTP]
+    F24 -->|Valid| F26[Create Deduction Schedule]
+    
+    %% Advance Payment Flow
+    G --> G1[Enter ID Number]
+    G1 --> G2[Upload ID Picture]
+    G2 --> G3{ID Validation}
+    
+    G3 -->|Invalid| G4[Error: Invalid ID]
+    G3 -->|Valid| G5[System Pulls Employee Data]
+    
+    G5 --> G6[Calculate Shifts Accumulated]
+    G6 --> G7[Validate Shift Value]
+    G7 --> G8{Sufficient Shifts?}
+    
+    G8 -->|No| G9[Error: Insufficient Shifts Worked]
+    G8 -->|Yes| G10[Generate Advance Quote]
+    
+    G10 --> G11{Accept Advance Quote?}
+    G11 -->|No| G12[Exit Process]
+    G11 -->|Yes| G13[Enter Bank Details]
+    
+    G13 --> G14{Bank Account Validation}
+    G14 -->|Invalid| G15[Error: Bank Details Mismatch]
+    G14 -->|Valid| G16[Send Advance Agreement]
+    
+    G16 --> G17{Agreement Acceptance}
+    G17 -->|Agree - Send OTP| G18[Generate OTP]
+    G17 -->|Disagree| G19[Exit Process]
+    
+    G18 --> G20[Enter OTP]
+    G20 --> G21{OTP Validation}
+    
+    G21 -->|Invalid| G22[Error: Invalid OTP]
+    G21 -->|Valid| G23[Create Advance Deduction Schedule]
+    
+    %% Payment Processing
+    F26 --> H[Payment Processing]
+    G23 --> H
+    
+    H --> H1[Generate Payment Schedule]
+    H1 --> H2[Upload to Bank System]
+    H2 --> H3{Immediate Payment Required?}
+    
+    H3 -->|Yes| H4[Escalate for Immediate Release]
+    H3 -->|No| H5[Add to Batch Payment]
+    
+    H4 --> H6[Administrator Review]
+    H5 --> H7[Scheduled Batch Release]
+    
+    H6 --> H8[Immediate Payment Released]
+    H7 --> H9[Batch Payment Released]
+    
+    %% Repayment Processing
+    H8 --> I[Repayment Processing]
+    H9 --> I
+    
+    I --> I1[Create Payroll Deduction Schedule]
+    I1 --> I2[Send Schedule to Payroll System]
+    I2 --> I3{Integration Type}
+    
+    I3 -->|Automated| I4[Automatic Payroll Integration]
+    I3 -->|Manual| I5[Manual Schedule Report]
+    
+    I4 --> I6[Deduction Applied]
+    I5 --> I7[Manual Processing Required]
+    
+    I6 --> J[Loan Complete]
+    I7 --> J
+    
+    %% Error Handling Flows
+    F4 --> K[Contact Administrator]
+    F13 --> L[Recalculate or Exit]
+    F18 --> M[Correct Bank Details]
+    F25 --> N[Resend OTP or Exit]
+    G4 --> K
+    G9 --> O[Wait for More Shifts]
+    G15 --> M
+    G22 --> N
+    
+    %% Styling
+    classDef startEnd fill:#e1f5fe
+    classDef process fill:#f3e5f5
+    classDef decision fill:#fff3e0
+    classDef error fill:#ffebee
+    classDef system fill:#e8f5e8
+    
+    class A,J startEnd
+    class F1,F2,F5,F9,F16,F19,F21,F26,G1,G2,G5,G6,G10,G13,G16,G18,G23,H1,H2,H4,H5,H8,H9,I1,I2,I4,I5,I6,I7 process
+    class B,E,F3,F7,F12,F17,F20,F24,G3,G8,G11,G14,G17,G21,H3,I3 decision
+    class F4,F13,F18,F25,G4,G9,G15,G22,K,L,M,N,O error
+    class F10,F11,G7,H6,H7 system
+```
