@@ -13,22 +13,65 @@ string ConvertPostgresUriToConnectionString(string uri)
 {
     try
     {
-        var postgresUri = new Uri(uri);
-        var userInfo = postgresUri.UserInfo.Split(':');
-        var username = System.Net.WebUtility.UrlDecode(userInfo[0]);
-        var password = userInfo.Length > 1 ? System.Net.WebUtility.UrlDecode(userInfo[1]) : "";
-        var host = postgresUri.Host;
-        var port = postgresUri.Port > 0 ? postgresUri.Port : 5432;
-        var database = postgresUri.AbsolutePath.TrimStart('/').Split('?')[0];
+        Console.WriteLine($"[DEBUG] Parsing DATABASE_URL: {uri.Substring(0, Math.Min(50, uri.Length))}...");
+        
+        if (!uri.StartsWith("postgresql://"))
+        {
+            throw new ArgumentException("DATABASE_URL must start with 'postgresql://'");
+        }
 
-        var connString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SslMode=Require;Trust Server Certificate=true;";
-        Console.WriteLine($"[DEBUG] Successfully parsed DATABASE_URL: Host={host}, Port={port}, Database={database}");
+        // Remove postgresql:// prefix
+        var withoutProtocol = uri.Replace("postgresql://", "");
+        
+        // Split by @ to separate credentials from host
+        var parts = withoutProtocol.Split('@');
+        if (parts.Length != 2)
+        {
+            throw new ArgumentException("Invalid DATABASE_URL format - missing @ separator");
+        }
+
+        var credentials = parts[0];
+        var hostAndDb = parts[1];
+
+        // Parse credentials
+        var credParts = credentials.Split(':');
+        if (credParts.Length < 2)
+        {
+            throw new ArgumentException("Invalid credentials format - missing password");
+        }
+
+        var username = System.Net.WebUtility.UrlDecode(credParts[0]);
+        var password = System.Net.WebUtility.UrlDecode(string.Join(":", credParts.Skip(1)));
+
+        // Parse host and database
+        var hostDbParts = hostAndDb.Split('/');
+        if (hostDbParts.Length < 2)
+        {
+            throw new ArgumentException("Invalid DATABASE_URL format - missing database");
+        }
+
+        var hostPort = hostDbParts[0];
+        var database = hostDbParts[1].Split('?')[0]; // Remove query params
+
+        var hostPortParts = hostPort.Split(':');
+        var host = hostPortParts[0];
+        var port = hostPortParts.Length > 1 ? hostPortParts[1] : "5432";
+
+        // Build connection string with proper escaping
+        var connString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SslMode=Require;";
+        
+        Console.WriteLine($"[DEBUG] ✓ Successfully parsed DATABASE_URL");
+        Console.WriteLine($"[DEBUG]   Host: {host}");
+        Console.WriteLine($"[DEBUG]   Port: {port}");
+        Console.WriteLine($"[DEBUG]   Database: {database}");
+        Console.WriteLine($"[DEBUG]   Username: {username}");
+        
         return connString;
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[ERROR] Failed to parse DATABASE_URL '{uri}': {ex.Message}");
-        throw new ArgumentException($"Failed to parse DATABASE_URL: {uri}", ex);
+        Console.WriteLine($"[ERROR] Failed to parse DATABASE_URL: {ex.Message}");
+        throw;
     }
 }
 

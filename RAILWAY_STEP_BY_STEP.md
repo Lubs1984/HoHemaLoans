@@ -43,6 +43,7 @@
 DATABASE_URL
 postgresql://postgres:RandomPassword123@container-hostname:5432/railway
 ```
+postgresql://postgres:oMqnhfiIfJkDWZWCsxIYDCiRsjSQAIKG@postgres.railway.internal:5432/railway
 
 ### SAVE THIS SOMEWHERE - You need it later! 📝
 
@@ -183,31 +184,25 @@ Value: Production
 
 **Variable 3:**
 ```
-Key:   ConnectionStrings__DefaultConnection
-Value: $DATABASE_URL
-```
-
-**Variable 4:**
-```
 Key:   JwtSettings__SecretKey
 Value: YourVeryLongAndComplexSecretKeyThatIsAtLeast32CharactersLong2024!
 ```
 
-**Variable 5:**
+**Variable 4:**
 ```
 Key:   JwtSettings__Issuer
 Value: HoHemaLoans
 ```
 
-**Variable 6:**
+**Variable 5:**
 ```
 Key:   JwtSettings__Audience
 Value: HoHemaLoans
 ```
 
-**Variable 7:**
+**Variable 6:**
 ```
-Key:   ALLOWED_ORIGINS
+Key:   FRONTEND_URL
 Value: https://hohema-frontend-xyz.railway.app
 ```
 (Replace `hohema-frontend-xyz` with your ACTUAL frontend URL from Step 8)
@@ -216,7 +211,7 @@ Value: https://hohema-frontend-xyz.railway.app
 
 ---
 
-## ✅ STEP 10: Set Environment Variables for Frontend
+## ✅ STEP 10: Set Environment Variable for Frontend
 
 ### ACTION:
 1. **Click: "frontend"** service
