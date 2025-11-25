@@ -9,22 +9,80 @@ const Login: React.FC = () => {
   const { login, setLoading, setError, error, isLoading } = useAuthStore();
   
   const [formData, setFormData] = useState({
-    phoneNumber: '',
+    email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+    
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const errors: { [key: string]: string } = {};
+    
+    if (name === 'email' && value) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        errors.email = 'Please enter a valid email address';
+      }
+    }
+    
+    if (name === 'password' && value) {
+      if (value.length < 6) {
+        errors.password = 'Password must be at least 6 characters';
+      }
+    }
+    
+    if (errors[name]) {
+      setValidationErrors(prev => ({ ...prev, ...errors }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
     
     try {
-      const response = await apiService.login(formData);
+      const response = await apiService.login({
+        email: formData.email,
+        password: formData.password,
+      });
       
       if (response.success && response.data) {
         login(response.data.user, response.data.token, response.data.refreshToken);
@@ -34,107 +92,123 @@ const Login: React.FC = () => {
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center bg-primary-100 rounded-full">
-            <span className="text-xl font-bold text-primary-600">HH</span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="mx-auto h-12 w-12 flex items-center justify-center bg-blue-600 rounded-full">
+              <span className="text-xl font-bold text-white">HH</span>
+            </div>
+            <h2 className="mt-4 text-3xl font-bold text-gray-900">
+              Employee Login
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Access your loan application account
+            </p>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+            <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-4">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
-          <div className="space-y-4">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-                Phone Number
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
               </label>
               <input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                required
-                className="input mt-1"
-                placeholder="+27 123 456 789"
-                value={formData.phoneNumber}
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                disabled={isLoading}
+                className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
+                  validationErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="your.email@example.com"
+                value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
               />
+              {validationErrors.email && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
-              <div className="mt-1 relative">
+              <div className="relative">
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  required
-                  className="input pr-10"
+                  autoComplete="current-password"
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-10 ${
+                    validationErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  disabled={isLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 disabled:opacity-50"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    <EyeSlashIcon className="h-5 w-5" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                    <EyeIcon className="h-5 w-5" />
                   )}
                 </button>
               </div>
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              )}
             </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                Forgot your password?
-              </a>
+            <div className="flex items-center justify-between text-sm">
+              <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                Forgot password?
+              </Link>
             </div>
-          </div>
 
-          <div>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-teal-600 text-white py-2 px-4 rounded-md font-medium hover:from-blue-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
-          </div>
-        </form>
+          </form>
 
-        <div className="text-center">
-          <p className="text-xs text-gray-600">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                Register here
+              </Link>
+            </p>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-xs text-gray-500 text-center">
+              By signing in, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </div>
         </div>
       </div>
     </div>

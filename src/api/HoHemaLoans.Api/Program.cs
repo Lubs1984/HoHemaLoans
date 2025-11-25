@@ -6,16 +6,29 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
+using HoHemaLoans.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Get connection string - Railway uses DATABASE_URL env var
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Try to get from Railway's DATABASE_URL environment variable
+    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+}
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Fallback for local development
+    connectionString = "Host=localhost;Database=hohema_loans;Username=hohema_user;Password=hohema_password_2024!;Port=5432";
+}
+
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-        "Host=localhost;Database=hohema_loans;Username=hohema_user;Password=hohema_password_2024!;Port=5432"));
+    options.UseNpgsql(connectionString));
 
 // Add Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -66,6 +79,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add WhatsApp Service
+builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsApp"));
+builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -114,18 +131,29 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Run database migrations
+// Run database migrations and seed test users
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        context.Database.Migrate();
+        logger.LogInformation("Setting up database...");
+        
+        // For development: Recreate database using EF Core's built-in schema generation
+        // This is equivalent to applying all migrations
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+        
+        logger.LogInformation("Database schema created successfully");
+        
+        // Initialize database with test users after successful setup
+        await DbInitializer.InitializeAsync(app);
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
+        logger.LogError(ex, "An error occurred while setting up database.");
+        throw;
     }
 }
 

@@ -24,23 +24,25 @@ export interface PaginationInfo {
 
 // Authentication types
 export interface LoginRequest {
-  phoneNumber: string;
+  email: string;
   password: string;
 }
 
 export interface LoginResponse {
   token: string;
-  refreshToken: string;
-  expiresAt: Date;
   user: User;
 }
 
 export interface RegisterRequest {
-  phoneNumber: string;
+  email: string;
   password: string;
-  confirmPassword: string;
-  employeeNumber: string;
-  employerId: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  idNumber: string;
+  dateOfBirth: Date;
+  address: string;
+  monthlyIncome: number;
 }
 
 export interface OtpRequest {

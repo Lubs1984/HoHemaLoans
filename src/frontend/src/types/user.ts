@@ -1,15 +1,20 @@
 // Core user types
 export interface User {
   id: string;
-  phoneNumber: string;
   email?: string;
   firstName?: string;
   lastName?: string;
-  role: UserRole;
-  isActive: boolean;
+  phoneNumber?: string;
+  idNumber?: string;
+  dateOfBirth?: Date;
+  address?: string;
+  monthlyIncome?: number;
+  isVerified?: boolean;
+  role?: UserRole;
+  isActive?: boolean;
   lastLoginAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Employee extends User {
