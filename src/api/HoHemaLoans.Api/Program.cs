@@ -13,11 +13,16 @@ string ConvertPostgresUriToConnectionString(string uri)
 {
     try
     {
-        Console.WriteLine($"[DEBUG] Parsing DATABASE_URL: {uri.Substring(0, Math.Min(50, uri.Length))}...");
+        Console.WriteLine($"[DEBUG] Raw DATABASE_URL length: {uri?.Length ?? 0}");
         
+        if (string.IsNullOrEmpty(uri))
+        {
+            throw new ArgumentException("DATABASE_URL is empty or null");
+        }
+
         if (!uri.StartsWith("postgresql://"))
         {
-            throw new ArgumentException("DATABASE_URL must start with 'postgresql://'");
+            throw new ArgumentException($"DATABASE_URL must start with 'postgresql://' but starts with: {uri.Substring(0, Math.Min(20, uri.Length))}");
         }
 
         // Remove postgresql:// prefix
@@ -27,7 +32,7 @@ string ConvertPostgresUriToConnectionString(string uri)
         var parts = withoutProtocol.Split('@');
         if (parts.Length != 2)
         {
-            throw new ArgumentException("Invalid DATABASE_URL format - missing @ separator");
+            throw new ArgumentException($"Invalid format - expected 1 @ separator, found {parts.Length - 1}");
         }
 
         var credentials = parts[0];
@@ -55,46 +60,39 @@ string ConvertPostgresUriToConnectionString(string uri)
 
         var colonIndexHost = hostPort.LastIndexOf(':');
         string host;
-        string port;
+        int port;
         
         if (colonIndexHost > 0)
         {
             host = hostPort.Substring(0, colonIndexHost);
-            port = hostPort.Substring(colonIndexHost + 1);
+            if (!int.TryParse(hostPort.Substring(colonIndexHost + 1), out port))
+            {
+                port = 5432;
+            }
         }
         else
         {
             host = hostPort;
-            port = "5432";
+            port = 5432;
         }
 
-        // Build connection string with proper escaping for special chars
-        // Use Npgsql connection string builder for safety
-        var connStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder
-        {
-            Host = host,
-            Port = int.Parse(port),
-            Username = username,
-            Password = password,
-            Database = database,
-            SslMode = Npgsql.SslMode.Require,
-            TrustServerCertificate = true
-        };
-
-        var connString = connStringBuilder.ConnectionString;
-        
-        Console.WriteLine($"[DEBUG] ✓ Successfully parsed DATABASE_URL");
+        Console.WriteLine($"[DEBUG] Parsed values:");
         Console.WriteLine($"[DEBUG]   Host: {host}");
         Console.WriteLine($"[DEBUG]   Port: {port}");
-        Console.WriteLine($"[DEBUG]   Database: {database}");
         Console.WriteLine($"[DEBUG]   Username: {username}");
+        Console.WriteLine($"[DEBUG]   Database: {database}");
+        Console.WriteLine($"[DEBUG]   Password length: {password.Length}");
+
+        // Build connection string manually (safer than builder)
+        var connString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SslMode=Require;TrustServerCertificate=true;";
         
+        Console.WriteLine($"[DEBUG] ✓ Successfully created connection string");
         return connString;
     }
     catch (Exception ex)
     {
         Console.WriteLine($"[ERROR] Failed to parse DATABASE_URL: {ex.Message}");
-        Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+        Console.WriteLine($"[ERROR] Stack: {ex.StackTrace}");
         throw;
     }
 }
