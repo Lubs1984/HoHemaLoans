@@ -8,6 +8,26 @@ using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
 using HoHemaLoans.Api.Services;
 
+// Helper function to convert PostgreSQL URI to connection string
+string ConvertPostgresUriToConnectionString(string uri)
+{
+    try
+    {
+        var postgresUri = new Uri(uri);
+        var username = postgresUri.UserInfo.Split(':')[0];
+        var password = postgresUri.UserInfo.Contains(':') ? postgresUri.UserInfo.Split(':')[1] : "";
+        var host = postgresUri.Host;
+        var port = postgresUri.Port > 0 ? postgresUri.Port : 5432;
+        var database = postgresUri.AbsolutePath.TrimStart('/');
+
+        return $"Host={host};Port={port};Username={username};Password={password};Database={database};SSL Mode=Require;";
+    }
+    catch (Exception ex)
+    {
+        throw new ArgumentException($"Failed to parse DATABASE_URL: {uri}", ex);
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -18,7 +38,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 if (string.IsNullOrEmpty(connectionString))
 {
     // Try to get from Railway's DATABASE_URL environment variable
-    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // Convert PostgreSQL URI to connection string
+        // Format: postgresql://user:password@host:port/database
+        connectionString = ConvertPostgresUriToConnectionString(databaseUrl);
+    }
 }
 if (string.IsNullOrEmpty(connectionString))
 {
