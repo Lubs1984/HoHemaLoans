@@ -1,0 +1,26 @@
+# This is the API Dockerfile
+# Railway will use this when deploying the API service from src/api/HoHemaLoans.Api/
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+COPY ["src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj", "src/api/HoHemaLoans.Api/"]
+RUN dotnet restore "src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj"
+
+COPY . .
+WORKDIR "/src/src/api/HoHemaLoans.Api"
+RUN dotnet publish -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Run as non-root
+RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "HoHemaLoans.Api.dll"]

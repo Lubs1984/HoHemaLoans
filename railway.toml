@@ -1,0 +1,27 @@
+# Railway Configuration
+# This file helps Railway understand how to deploy your services
+
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+numReplicas = 1
+restartPolicyMaxRetries = 10
+
+# Services configuration
+[[services]]
+name = "api"
+root = "src/api/HoHemaLoans.Api"
+dockerfile = "Dockerfile"
+port = 8080
+
+[[services]]
+name = "frontend"
+root = "src/frontend"
+dockerfile = "Dockerfile"
+port = 3000
+
+[[services]]
+name = "postgres"
+# Railway manages PostgreSQL automatically
+type = "postgresql"
