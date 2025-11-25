@@ -14,16 +14,20 @@ string ConvertPostgresUriToConnectionString(string uri)
     try
     {
         var postgresUri = new Uri(uri);
-        var username = postgresUri.UserInfo.Split(':')[0];
-        var password = postgresUri.UserInfo.Contains(':') ? postgresUri.UserInfo.Split(':')[1] : "";
+        var userInfo = postgresUri.UserInfo.Split(':');
+        var username = System.Net.WebUtility.UrlDecode(userInfo[0]);
+        var password = userInfo.Length > 1 ? System.Net.WebUtility.UrlDecode(userInfo[1]) : "";
         var host = postgresUri.Host;
         var port = postgresUri.Port > 0 ? postgresUri.Port : 5432;
-        var database = postgresUri.AbsolutePath.TrimStart('/');
+        var database = postgresUri.AbsolutePath.TrimStart('/').Split('?')[0];
 
-        return $"Host={host};Port={port};Username={username};Password={password};Database={database};SSL Mode=Require;";
+        var connString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SslMode=Require;Trust Server Certificate=true;";
+        Console.WriteLine($"[DEBUG] Successfully parsed DATABASE_URL: Host={host}, Port={port}, Database={database}");
+        return connString;
     }
     catch (Exception ex)
     {
+        Console.WriteLine($"[ERROR] Failed to parse DATABASE_URL '{uri}': {ex.Message}");
         throw new ArgumentException($"Failed to parse DATABASE_URL: {uri}", ex);
     }
 }
@@ -41,16 +45,24 @@ if (string.IsNullOrEmpty(connectionString))
     var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
     if (!string.IsNullOrEmpty(databaseUrl))
     {
+        Console.WriteLine("[DEBUG] Found DATABASE_URL environment variable, converting to connection string...");
         // Convert PostgreSQL URI to connection string
         // Format: postgresql://user:password@host:port/database
         connectionString = ConvertPostgresUriToConnectionString(databaseUrl);
+    }
+    else
+    {
+        Console.WriteLine("[DEBUG] No DATABASE_URL found, will use fallback");
     }
 }
 if (string.IsNullOrEmpty(connectionString))
 {
     // Fallback for local development
+    Console.WriteLine("[DEBUG] Using local development connection string");
     connectionString = "Host=localhost;Database=hohema_loans;Username=hohema_user;Password=hohema_password_2024!;Port=5432";
 }
+
+Console.WriteLine($"[DEBUG] Final connection string: Host=***, Database=***, Username=***");
 
 // Add Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
