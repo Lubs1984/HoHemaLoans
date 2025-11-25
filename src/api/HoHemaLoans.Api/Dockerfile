@@ -3,11 +3,11 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj", "src/api/HoHemaLoans.Api/"]
-RUN dotnet restore "src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj"
+COPY ["HoHemaLoans.Api.csproj", "."]
+RUN dotnet restore "HoHemaLoans.Api.csproj"
 
 COPY . .
-WORKDIR "/src/src/api/HoHemaLoans.Api"
+WORKDIR "/src"
 RUN dotnet publish -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
