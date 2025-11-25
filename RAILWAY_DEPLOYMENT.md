@@ -61,12 +61,17 @@ In Railway Dashboard:
 1. Click "+ New Service"
 2. Select "GitHub Repo"
 3. Select your HoHemaLoans repo
-4. Configure:
-   - Root Directory: src/api/HoHemaLoans.Api
-   - Dockerfile Path: ../../Dockerfile.api
+4. DO NOT set Root Directory - leave it blank!
+5. Configure in the next screen:
+   - Build Context: src/api/HoHemaLoans.Api
+   - Dockerfile: Dockerfile (just the filename)
    - Port: 8080
-5. Click Deploy
+6. Click Deploy
 ```
+
+**Alternative - Set these correctly:**
+- **Root Directory:** src/api/HoHemaLoans.Api
+- **Dockerfile Name:** Dockerfile (Railway will find it in the root directory)
 
 ### 5. Deploy Frontend Service
 
@@ -75,12 +80,17 @@ In Railway Dashboard:
 1. Click "+ New Service"
 2. Select "GitHub Repo"
 3. Select your HoHemaLoans repo
-4. Configure:
-   - Root Directory: src/frontend
-   - Dockerfile Path: ../../Dockerfile.frontend
+4. DO NOT set Root Directory - leave it blank!
+5. Configure in the next screen:
+   - Build Context: src/frontend
+   - Dockerfile: Dockerfile (just the filename)
    - Port: 3000
-5. Click Deploy
+6. Click Deploy
 ```
+
+**Alternative - Set these correctly:**
+- **Root Directory:** src/frontend
+- **Dockerfile Name:** Dockerfile (Railway will find it in the root directory)
 
 ### 6. Configure Frontend API URL
 
