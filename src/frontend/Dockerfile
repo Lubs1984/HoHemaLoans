@@ -15,17 +15,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 
-RUN addgroup -g 1001 -S appuser && \
-    adduser -S appuser -u 1001 && \
-    chown -R appuser:appuser /usr/share/nginx/html && \
-    chown -R appuser:appuser /var/cache/nginx && \
-    chown -R appuser:appuser /var/log/nginx && \
-    chown -R appuser:appuser /etc/nginx/conf.d && \
-    touch /var/run/nginx.pid && \
-    chown -R appuser:appuser /var/run/nginx.pid && \
-    chmod +x /docker-entrypoint.sh
-
-USER appuser
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 3000
 ENTRYPOINT ["/docker-entrypoint.sh"]
