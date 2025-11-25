@@ -11,6 +11,10 @@
    - Click "New Project"
    - Select "Deploy from GitHub repo"
    - Choose `Lubs1984/HoHemaLoans`
+   - **🌍 SELECT REGION:**
+     - **For South Africa:** Choose **Johannesburg** ✅ BEST
+     - **For Northern Europe:** Choose **Frankfurt**
+     - **See RAILWAY_REGIONS.md for details**
    - Name: `HoHemaLoans`
 
 ### 3. **Add Services** (In this order)

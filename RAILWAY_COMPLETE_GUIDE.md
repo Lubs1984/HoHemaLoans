@@ -36,7 +36,19 @@ You should see the Railway dashboard with "New Project" button
 - Search for "HoHemaLoans"
 - Click to select `Lubs1984/HoHemaLoans`
 
-### 2.3 Name Your Project
+### 2.3 Choose Your Region 🌍 **IMPORTANT**
+Railway will ask which region to use:
+
+**RECOMMENDED OPTIONS:**
+- **Johannesburg (sa-east-1)** ← **BEST FOR SOUTH AFRICA** (50-80ms)
+- **Frankfurt (eu-central-1)** ← Good for Northern Europe (120-150ms)
+- **London (eu-west-2)** ← UK/EU alternative
+
+**DO NOT choose US regions** - too slow for South Africa!
+
+See `RAILWAY_REGIONS.md` for complete region guide
+
+### 2.4 Name Your Project
 - Name: `HoHemaLoans` (or your preference)
 - Click Create
 
