@@ -1,6 +1,7 @@
 import type { LoginRequest, LoginResponse, RegisterRequest } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// Use runtime config if available, otherwise fall back to env var or default
+const API_BASE_URL = (window as any).__API_URL__ || import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 class ApiService {
   private baseUrl = API_BASE_URL;
