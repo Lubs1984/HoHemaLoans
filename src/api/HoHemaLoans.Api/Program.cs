@@ -235,28 +235,41 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Run database migrations and seed test users (only on first run or development)
-using (var scope = app.Services.CreateScope())
+// Run database migrations and seed test users
+// Only run in background to not block startup
+_ = Task.Run(async () =>
 {
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        logger.LogInformation("Setting up database...");
-        
-        // Apply migrations (safe for production - only creates schema if needed)
-        context.Database.Migrate();
-        
-        logger.LogInformation("Database schema updated successfully");
-        
-        // Initialize database with test users if needed
-        await DbInitializer.InitializeAsync(app);
+        await Task.Delay(2000); // Wait 2 seconds for app to start
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            try
+            {
+                logger.LogInformation("Starting database initialization...");
+                
+                // Apply migrations (safe for production - only creates schema if needed)
+                context.Database.Migrate();
+                
+                logger.LogInformation("Database schema updated successfully");
+                
+                // Initialize database with test users if needed
+                await DbInitializer.InitializeAsync(app);
+                
+                logger.LogInformation("Database initialization completed");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred while setting up database.");
+            }
+        }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while setting up database.");
-        throw;
+        Console.WriteLine($"[ERROR] Background database init failed: {ex}");
     }
-}
+});
 
 app.Run();
