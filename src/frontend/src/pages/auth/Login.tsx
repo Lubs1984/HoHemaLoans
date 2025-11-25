@@ -84,11 +84,11 @@ const Login: React.FC = () => {
         password: formData.password,
       });
       
-      if (response.success && response.data) {
-        login(response.data.user, response.data.token, response.data.refreshToken);
+      if (response && response.token && response.user) {
+        login(response.user, response.token);
         navigate('/');
       } else {
-        setError(response.message || 'Login failed');
+        setError('Login failed - invalid response from server');
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Login failed');
