@@ -13,6 +13,7 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 
 RUN addgroup -g 1001 -S appuser && \
     adduser -S appuser -u 1001 && \
@@ -21,9 +22,10 @@ RUN addgroup -g 1001 -S appuser && \
     chown -R appuser:appuser /var/log/nginx && \
     chown -R appuser:appuser /etc/nginx/conf.d && \
     touch /var/run/nginx.pid && \
-    chown -R appuser:appuser /var/run/nginx.pid
+    chown -R appuser:appuser /var/run/nginx.pid && \
+    chmod +x /docker-entrypoint.sh
 
 USER appuser
 
 EXPOSE 3000
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

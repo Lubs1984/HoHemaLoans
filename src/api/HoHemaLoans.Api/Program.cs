@@ -72,7 +72,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
+        var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "http://localhost:5173";
+        policy.WithOrigins(frontendUrl, "http://localhost:5173", "http://localhost:5174")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -131,7 +132,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Run database migrations and seed test users
+// Run database migrations and seed test users (only on first run or development)
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -140,14 +141,12 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogInformation("Setting up database...");
         
-        // For development: Recreate database using EF Core's built-in schema generation
-        // This is equivalent to applying all migrations
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        // Apply migrations (safe for production - only creates schema if needed)
+        context.Database.Migrate();
         
-        logger.LogInformation("Database schema created successfully");
+        logger.LogInformation("Database schema updated successfully");
         
-        // Initialize database with test users after successful setup
+        // Initialize database with test users if needed
         await DbInitializer.InitializeAsync(app);
     }
     catch (Exception ex)
