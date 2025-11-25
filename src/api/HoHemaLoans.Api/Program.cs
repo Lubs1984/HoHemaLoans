@@ -175,8 +175,35 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "http://localhost:5173";
-        policy.WithOrigins(frontendUrl, "http://localhost:5173", "http://localhost:5174")
+        var frontendUrl = builder.Configuration["FRONTEND_URL"];
+        Console.WriteLine($"[DEBUG] FRONTEND_URL from config: {frontendUrl}");
+        Console.WriteLine($"[DEBUG] FRONTEND_URL from env: {Environment.GetEnvironmentVariable("FRONTEND_URL")}");
+        
+        // Build list of allowed origins
+        var allowedOrigins = new List<string>
+        {
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:3000",
+            "https://hohemaweb-development.up.railway.app"
+        };
+        
+        // Add FRONTEND_URL if configured
+        if (!string.IsNullOrEmpty(frontendUrl))
+        {
+            allowedOrigins.Add(frontendUrl);
+        }
+        
+        // Add from environment variable if set
+        var envFrontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
+        if (!string.IsNullOrEmpty(envFrontendUrl))
+        {
+            allowedOrigins.Add(envFrontendUrl);
+        }
+        
+        Console.WriteLine($"[DEBUG] CORS allowed origins: {string.Join(", ", allowedOrigins)}");
+        
+        policy.WithOrigins(allowedOrigins.ToArray())
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
