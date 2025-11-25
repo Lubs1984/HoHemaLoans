@@ -33,32 +33,55 @@ string ConvertPostgresUriToConnectionString(string uri)
         var credentials = parts[0];
         var hostAndDb = parts[1];
 
-        // Parse credentials
-        var credParts = credentials.Split(':');
-        if (credParts.Length < 2)
+        // Parse credentials - split only on FIRST colon
+        var colonIndex = credentials.IndexOf(':');
+        if (colonIndex < 0)
         {
             throw new ArgumentException("Invalid credentials format - missing password");
         }
 
-        var username = System.Net.WebUtility.UrlDecode(credParts[0]);
-        var password = System.Net.WebUtility.UrlDecode(string.Join(":", credParts.Skip(1)));
+        var username = System.Net.WebUtility.UrlDecode(credentials.Substring(0, colonIndex));
+        var password = System.Net.WebUtility.UrlDecode(credentials.Substring(colonIndex + 1));
 
         // Parse host and database
-        var hostDbParts = hostAndDb.Split('/');
-        if (hostDbParts.Length < 2)
+        var slashIndex = hostAndDb.IndexOf('/');
+        if (slashIndex < 0)
         {
             throw new ArgumentException("Invalid DATABASE_URL format - missing database");
         }
 
-        var hostPort = hostDbParts[0];
-        var database = hostDbParts[1].Split('?')[0]; // Remove query params
+        var hostPort = hostAndDb.Substring(0, slashIndex);
+        var database = hostAndDb.Substring(slashIndex + 1).Split('?')[0]; // Remove query params
 
-        var hostPortParts = hostPort.Split(':');
-        var host = hostPortParts[0];
-        var port = hostPortParts.Length > 1 ? hostPortParts[1] : "5432";
+        var colonIndexHost = hostPort.LastIndexOf(':');
+        string host;
+        string port;
+        
+        if (colonIndexHost > 0)
+        {
+            host = hostPort.Substring(0, colonIndexHost);
+            port = hostPort.Substring(colonIndexHost + 1);
+        }
+        else
+        {
+            host = hostPort;
+            port = "5432";
+        }
 
-        // Build connection string with proper escaping
-        var connString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SslMode=Require;";
+        // Build connection string with proper escaping for special chars
+        // Use Npgsql connection string builder for safety
+        var connStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder
+        {
+            Host = host,
+            Port = int.Parse(port),
+            Username = username,
+            Password = password,
+            Database = database,
+            SslMode = Npgsql.SslMode.Require,
+            TrustServerCertificate = true
+        };
+
+        var connString = connStringBuilder.ConnectionString;
         
         Console.WriteLine($"[DEBUG] ✓ Successfully parsed DATABASE_URL");
         Console.WriteLine($"[DEBUG]   Host: {host}");
@@ -71,6 +94,7 @@ string ConvertPostgresUriToConnectionString(string uri)
     catch (Exception ex)
     {
         Console.WriteLine($"[ERROR] Failed to parse DATABASE_URL: {ex.Message}");
+        Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
         throw;
     }
 }
