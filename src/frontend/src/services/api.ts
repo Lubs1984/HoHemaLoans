@@ -1,7 +1,28 @@
 import type { LoginRequest, LoginResponse, RegisterRequest } from '../types';
 
-// Use runtime config if available, otherwise fall back to env var or default
-const API_BASE_URL = (window as any).__API_URL__ || import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Determine API URL based on environment
+function getApiUrl(): string {
+  // 1. Check for runtime config (set by docker-entrypoint.sh)
+  if ((window as any).__API_URL__) {
+    return (window as any).__API_URL__;
+  }
+  
+  // 2. Check for build-time env var
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // 3. Smart local development fallback
+  // If accessed via localhost, use localhost:5001
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:5001/api';
+  }
+  
+  // 4. Default fallback
+  return 'http://localhost:8080/api';
+}
+
+const API_BASE_URL = getApiUrl();
 
 class ApiService {
   private baseUrl = API_BASE_URL;
