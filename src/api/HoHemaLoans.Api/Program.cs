@@ -252,27 +252,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// CRITICAL: Run database migrations BEFORE the app starts accepting requests
-Console.WriteLine("[STARTUP] Initializing database schema...");
-try
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        
-        logger.LogInformation("[STARTUP] Applying database migrations...");
-        context.Database.Migrate();
-        logger.LogInformation("[STARTUP] Database migrations applied successfully");
-    }
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"[ERROR] Failed to apply database migrations: {ex}");
-    Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
-    throw; // Don't start the app if migrations fail
-}
-
 // Add global exception handling middleware
 app.Use(async (context, next) =>
 {
@@ -312,22 +291,33 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Run database seeding in background after app starts
+// Run database migrations and seeding in background after app starts
 _ = Task.Run(async () =>
 {
     try
     {
-        await Task.Delay(1000); // Wait 1 second for app to start
+        await Task.Delay(500); // Brief delay to ensure app is listening
         using (var scope = app.Services.CreateScope())
         {
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            
+            try
+            {
+                logger.LogInformation("[STARTUP] Applying database migrations...");
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate();
+                logger.LogInformation("[STARTUP] Database migrations applied successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "[ERROR] Failed to apply database migrations");
+                throw;
+            }
+            
             try
             {
                 logger.LogInformation("[STARTUP] Seeding test users...");
-                
-                // Initialize database with test users if needed
                 await DbInitializer.InitializeAsync(app);
-                
                 logger.LogInformation("[STARTUP] Database seeding completed");
             }
             catch (Exception ex)
@@ -338,7 +328,7 @@ _ = Task.Run(async () =>
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[ERROR] Background database seeding failed: {ex}");
+        Console.WriteLine($"[ERROR] Background database initialization failed: {ex}");
     }
 });
 
