@@ -6,9 +6,11 @@ import {
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
+import HohemaLogo from '../../assets/hohema-logo.png';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
@@ -16,10 +18,22 @@ const navigation = [
   { name: 'Profile', href: '/profile', icon: UserCircleIcon },
 ];
 
+const adminNavigation = [
+  { name: 'Admin Dashboard', href: '/admin', icon: Cog6ToothIcon },
+  { name: 'Loan Management', href: '/admin/loans', icon: DocumentTextIcon },
+  { name: 'WhatsApp Messages', href: '/admin/whatsapp', icon: HomeIcon },
+  { name: 'User Management', href: '/admin/users', icon: UserCircleIcon },
+];
+
 export const Layout: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [isAdminMode, setIsAdminMode] = React.useState(location.pathname.startsWith('/admin'));
+
+  React.useEffect(() => {
+    setIsAdminMode(location.pathname.startsWith('/admin'));
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -33,7 +47,7 @@ export const Layout: React.FC = () => {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
           <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl">
             <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-              <img className="h-8 w-auto" src="/logo.svg" alt="Ho Hema Loans" />
+              <img className="h-10 w-auto" src={HohemaLogo} alt="Ho Hema Loans" />
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -41,25 +55,81 @@ export const Layout: React.FC = () => {
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-            <nav className="mt-6">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center px-6 py-3 text-sm font-medium ${
-                      isActive
-                        ? 'bg-primary-50 border-r-2 border-primary-600 text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="mr-3 h-5 w-5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+            <nav className="mt-6 flex flex-col h-full">
+              <div className="flex-1">
+                {!isAdminMode ? (
+                  <>
+                    {navigation.map((item) => {
+                      const isActive = location.pathname === item.href;
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className={`flex items-center px-6 py-3 text-sm font-medium ${
+                            isActive
+                              ? 'bg-primary-50 border-r-2 border-primary-600 text-primary-700'
+                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                          }`}
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <item.icon className="mr-3 h-5 w-5" />
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <>
+                    <div className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                    {adminNavigation.map((item) => {
+                      const isActive = location.pathname === item.href;
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className={`flex items-center px-6 py-3 text-sm font-medium ${
+                            isActive
+                              ? 'bg-primary-50 border-r-2 border-primary-600 text-primary-700'
+                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                          }`}
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <item.icon className="mr-3 h-5 w-5" />
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                    <Link
+                      to="/"
+                      className="flex items-center px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 mt-4 border-t border-gray-200"
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
+                      Back to User Menu
+                    </Link>
+                  </>
+                )}
+              </div>
+              {user?.roles?.includes('Admin') && !isAdminMode && (
+                <Link
+                  to="/admin"
+                  className="flex items-center px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-t border-gray-200"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <Cog6ToothIcon className="mr-3 h-5 w-5" />
+                  Admin Dashboard
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setSidebarOpen(false);
+                }}
+                className="flex items-center px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-t border-gray-200 w-full"
+              >
+                <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
+                Sign out
+              </button>
             </nav>
           </div>
         </div>
@@ -69,33 +139,86 @@ export const Layout: React.FC = () => {
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-gray-200 px-6 py-4">
           <div className="flex h-16 shrink-0 items-center">
-            <img className="h-8 w-auto" src="/logo.svg" alt="Ho Hema Loans" />
-            <span className="ml-3 text-xl font-bold text-gray-900">Ho Hema</span>
+            <img className="h-20 w-auto" src={HohemaLogo} alt="Ho Hema Loans" />
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => {
-                    const isActive = location.pathname === item.href;
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          to={item.href}
-                          className={`group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 ${
-                            isActive
-                              ? 'bg-primary-50 text-primary-700'
-                              : 'text-gray-700 hover:text-primary-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <item.icon className="h-5 w-5 shrink-0" />
-                          {item.name}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </li>
+              {!isAdminMode ? (
+                <>
+                  <li>
+                    <ul role="list" className="-mx-2 space-y-1">
+                      {navigation.map((item) => {
+                        const isActive = location.pathname === item.href;
+                        return (
+                          <li key={item.name}>
+                            <Link
+                              to={item.href}
+                              className={`group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 ${
+                                isActive
+                                  ? 'bg-primary-50 text-primary-700'
+                                  : 'text-gray-700 hover:text-primary-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              <item.icon className="h-5 w-5 shrink-0" />
+                              {item.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <div className="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider">Admin</div>
+                    <ul role="list" className="-mx-2 space-y-1 mt-2">
+                      {adminNavigation.map((item) => {
+                        const isActive = location.pathname === item.href;
+                        return (
+                          <li key={item.name}>
+                            <Link
+                              to={item.href}
+                              className={`group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 ${
+                                isActive
+                                  ? 'bg-primary-50 text-primary-700'
+                                  : 'text-gray-700 hover:text-primary-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              <item.icon className="h-5 w-5 shrink-0" />
+                              {item.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                  <li>
+                    <Link
+                      to="/"
+                      className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:text-primary-700 hover:bg-gray-50"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-5 w-5 shrink-0" />
+                      Back to User Menu
+                    </Link>
+                  </li>
+                </>
+              )}
+              {user?.roles?.includes('Admin') && !isAdminMode && (
+                <li>
+                  <Link
+                    to="/admin"
+                    className={`group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 ${
+                      location.pathname === '/admin'
+                        ? 'bg-primary-50 text-primary-700'
+                        : 'text-gray-700 hover:text-primary-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Cog6ToothIcon className="h-5 w-5 shrink-0" />
+                    Admin Dashboard
+                  </Link>
+                </li>
+              )}
               <li className="mt-auto">
                 <button
                   onClick={handleLogout}

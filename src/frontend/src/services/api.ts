@@ -12,14 +12,24 @@ function getApiUrl(): string {
     return import.meta.env.VITE_API_URL;
   }
   
-  // 3. Smart local development fallback
+  // 3. Docker development: use service name
+  if (typeof window !== 'undefined' && window.location.hostname === 'hohema-frontend') {
+    return 'http://hohema-api:5000/api';
+  }
+  
+  // 4. Smart local development fallback
   // If accessed via localhost, use localhost:5001
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:5001/api';
   }
   
-  // 4. Default fallback
-  return 'http://localhost:8080/api';
+  // 5. Docker localhost detection - if port is 5174 (frontend port)
+  if (typeof window !== 'undefined' && window.location.port === '5174') {
+    return 'http://localhost:5001/api';
+  }
+  
+  // 6. Default fallback for production
+  return '/api';
 }
 
 const API_BASE_URL = getApiUrl();
@@ -27,7 +37,7 @@ const API_BASE_URL = getApiUrl();
 class ApiService {
   private baseUrl = API_BASE_URL;
 
-  private async request<T>(
+  async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
@@ -156,6 +166,37 @@ class ApiService {
   // Health check
   async healthCheck(): Promise<any> {
     return this.request<any>('/health');
+  }
+
+  // Generic HTTP methods for flexible API calls
+  async get<T>(endpoint: string): Promise<{ data: T }> {
+    const data = await this.request<T>(endpoint, {
+      method: 'GET',
+    });
+    return { data };
+  }
+
+  async post<T>(endpoint: string, body: any): Promise<{ data: T }> {
+    const data = await this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    return { data };
+  }
+
+  async put<T>(endpoint: string, body: any): Promise<{ data: T }> {
+    const data = await this.request<T>(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+    return { data };
+  }
+
+  async delete<T>(endpoint: string): Promise<{ data: T }> {
+    const data = await this.request<T>(endpoint, {
+      method: 'DELETE',
+    });
+    return { data };
   }
 }
 

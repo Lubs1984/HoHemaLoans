@@ -42,6 +42,33 @@ public class LoanApplication
     [StringLength(500)]
     public string? Notes { get; set; }
     
+    // Omnichannel fields
+    [StringLength(20)]
+    public LoanApplicationChannel ChannelOrigin { get; set; } = LoanApplicationChannel.Web;
+    
+    public DateTime? WhatsAppInitiatedDate { get; set; }
+    
+    public DateTime? WebInitiatedDate { get; set; }
+    
+    public int CurrentStep { get; set; } = 0;
+    
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, object>? StepData { get; set; }
+    
+    [StringLength(100)]
+    public string? WhatsAppSessionId { get; set; }
+    
+    public bool IsAffordabilityIncluded { get; set; } = false;
+    
+    [StringLength(20)]
+    public string? BankName { get; set; }
+    
+    [StringLength(50)]
+    public string? AccountNumber { get; set; }
+    
+    [StringLength(100)]
+    public string? AccountHolderName { get; set; }
+    
     // Navigation properties
     [ForeignKey("UserId")]
     public virtual ApplicationUser User { get; set; } = null!;
@@ -55,4 +82,21 @@ public enum LoanStatus
     Rejected,
     Disbursed,
     Closed
+}
+
+public enum LoanApplicationChannel
+{
+    Web,
+    WhatsApp
+}
+
+public enum ApplicationStep
+{
+    LoanAmount = 0,
+    TermMonths = 1,
+    Purpose = 2,
+    AffordabilityReview = 3,
+    PreviewTerms = 4,
+    BankDetails = 5,
+    DigitalSignature = 6
 }

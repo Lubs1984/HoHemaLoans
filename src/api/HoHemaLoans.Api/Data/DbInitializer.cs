@@ -18,17 +18,58 @@ namespace HoHemaLoans.Api.Data
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
                 // Create database if it doesn't exist
                 await context.Database.EnsureCreatedAsync();
+
+                // Create roles if they don't exist
+                await SeedRolesAsync(roleManager);
 
                 // Seed test users if they don't exist
                 await SeedTestUsersAsync(userManager);
             }
         }
 
+        private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
+        {
+            var roles = new[] { "Admin", "User" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    var result = await roleManager.CreateAsync(new IdentityRole(role));
+                    if (result.Succeeded)
+                    {
+                        Console.WriteLine($"✅ Created role: {role}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"❌ Failed to create role {role}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    }
+                }
+            }
+        }
+
         private static async Task SeedTestUsersAsync(UserManager<ApplicationUser> userManager)
         {
+            // Admin User
+            var adminUser = new ApplicationUser
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserName = "admin@hohema.com",
+                Email = "admin@hohema.com",
+                EmailConfirmed = true,
+                FirstName = "Admin",
+                LastName = "User",
+                PhoneNumber = "+27811111111",
+                IdNumber = "0000000000000",
+                DateOfBirth = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Address = "Admin Office, Cape Town",
+                MonthlyIncome = 0,
+                IsVerified = true
+            };
+
             // Test user 1: Employee
             var testUser1 = new ApplicationUser
             {
@@ -100,13 +141,14 @@ namespace HoHemaLoans.Api.Data
             // Create users with password
             var testUsers = new[]
             {
-                (testUser1, "TestPassword123!"),
-                (testUser2, "TestPassword123!"),
-                (testUser3, "TestPassword123!"),
-                (testUser4, "TestPassword123!")
+                (adminUser, "AdminPassword123!", "Admin"),
+                (testUser1, "TestPassword123!", "User"),
+                (testUser2, "TestPassword123!", "User"),
+                (testUser3, "TestPassword123!", "User"),
+                (testUser4, "TestPassword123!", "User")
             };
 
-            foreach (var (user, password) in testUsers)
+            foreach (var (user, password, role) in testUsers)
             {
                 // Check if user already exists
                 if (!string.IsNullOrEmpty(user.Email))
@@ -117,7 +159,16 @@ namespace HoHemaLoans.Api.Data
                         var result = await userManager.CreateAsync(user, password);
                         if (result.Succeeded)
                         {
-                            Console.WriteLine($"✅ Created test user: {user.Email}");
+                            // Assign role
+                            var roleResult = await userManager.AddToRoleAsync(user, role);
+                            if (roleResult.Succeeded)
+                            {
+                                Console.WriteLine($"✅ Created test user: {user.Email} (Role: {role})");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"⚠️  Created user {user.Email} but failed to assign role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                            }
                         }
                         else
                         {

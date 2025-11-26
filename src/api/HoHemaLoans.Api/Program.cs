@@ -210,6 +210,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add Affordability Service
+builder.Services.AddScoped<IAffordabilityService, AffordabilityService>();
+
 // Add WhatsApp Service
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsApp"));
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();

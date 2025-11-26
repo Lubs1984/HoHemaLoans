@@ -12,9 +12,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<LoanApplication> LoanApplications { get; set; }
+    public DbSet<WhatsAppSession> WhatsAppSessions { get; set; }
     public DbSet<WhatsAppContact> WhatsAppContacts { get; set; }
     public DbSet<WhatsAppConversation> WhatsAppConversations { get; set; }
     public DbSet<WhatsAppMessage> WhatsAppMessages { get; set; }
+    public DbSet<Income> Incomes { get; set; }
+    public DbSet<Expense> Expenses { get; set; }
+    public DbSet<AffordabilityAssessment> AffordabilityAssessments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -45,10 +49,49 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
+            entity.Property(e => e.ChannelOrigin)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            entity.Property(e => e.StepData)
+                .HasColumnType("jsonb");
+
             entity.HasOne(e => e.User)
                 .WithMany(u => u.LoanApplications)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ApplicationDate);
+            entity.HasIndex(e => e.WhatsAppSessionId);
+        });
+
+        // Configure WhatsAppSession
+        builder.Entity<WhatsAppSession>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(20)
+                .IsRequired();
+            
+            entity.Property(e => e.SessionStatus)
+                .HasMaxLength(20)
+                .IsRequired();
+            
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.WhatsAppSessions)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.DraftApplication)
+                .WithMany()
+                .HasForeignKey(e => e.DraftApplicationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasIndex(e => e.PhoneNumber);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.SessionStatus);
         });
 
         // Configure ApplicationUser
@@ -201,6 +244,127 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             entity.HasIndex(e => e.WhatsAppMessageId);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Configure Income
+        builder.Entity<Income>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.SourceType)
+                .HasMaxLength(50)
+                .IsRequired();
+                
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .IsRequired();
+                
+            entity.Property(e => e.MonthlyAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.Frequency)
+                .HasMaxLength(20)
+                .IsRequired();
+                
+            entity.Property(e => e.Notes)
+                .HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Incomes)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+        });
+
+        // Configure Expense
+        builder.Entity<Expense>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Category)
+                .HasMaxLength(50)
+                .IsRequired();
+                
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .IsRequired();
+                
+            entity.Property(e => e.MonthlyAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.Frequency)
+                .HasMaxLength(20)
+                .IsRequired();
+                
+            entity.Property(e => e.Notes)
+                .HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Expenses)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+        });
+
+        // Configure AffordabilityAssessment
+        builder.Entity<AffordabilityAssessment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.GrossMonthlyIncome)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.NetMonthlyIncome)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.TotalMonthlyExpenses)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.EssentialExpenses)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.NonEssentialExpenses)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.DebtToIncomeRatio)
+                .HasColumnType("decimal(5,4)")
+                .IsRequired();
+                
+            entity.Property(e => e.ExpenseToIncomeRatio)
+                .HasColumnType("decimal(5,4)")
+                .IsRequired();
+                
+            entity.Property(e => e.AvailableFunds)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+                
+            entity.Property(e => e.AffordabilityStatus)
+                .HasMaxLength(20)
+                .IsRequired();
+                
+            entity.Property(e => e.AssessmentNotes)
+                .HasColumnType("text");
+                
+            entity.Property(e => e.MaxRecommendedLoanAmount)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.AffordabilityAssessments)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.AssessmentDate);
         });
     }
 }

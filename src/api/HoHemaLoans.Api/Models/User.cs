@@ -32,7 +32,13 @@ public class ApplicationUser : IdentityUser
     // Navigation properties
     public virtual ICollection<LoanApplication> LoanApplications { get; set; } = new List<LoanApplication>();
     
+    // Income and Expense related navigation properties
+    public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();
+    public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+    public virtual ICollection<AffordabilityAssessment> AffordabilityAssessments { get; set; } = new List<AffordabilityAssessment>();
+    
     // WhatsApp related navigation properties
     public virtual WhatsAppContact? WhatsAppContact { get; set; }
     public virtual ICollection<WhatsAppMessage> HandledMessages { get; set; } = new List<WhatsAppMessage>();
+    public virtual ICollection<WhatsAppSession> WhatsAppSessions { get; set; } = new List<WhatsAppSession>();
 }

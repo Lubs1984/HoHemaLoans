@@ -4,12 +4,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/layout/Layout';
 import { useAuthStore } from './store/authStore';
 
-// Page components (we'll create these later)
+// Page components
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
 const Login = React.lazy(() => import('./pages/auth/Login'));
 const Register = React.lazy(() => import('./pages/auth/Register'));
 const LoanApplications = React.lazy(() => import('./pages/loans/LoanApplications'));
 const Profile = React.lazy(() => import('./pages/auth/Profile'));
+
+// Admin components
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminLoans = React.lazy(() => import('./pages/admin/AdminLoans'));
+const AdminWhatsApp = React.lazy(() => import('./pages/admin/AdminWhatsApp'));
+const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'));
 
 // Create a client
 const queryClient = new QueryClient({
@@ -27,6 +33,24 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Admin Route component
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, user } = useAuthStore();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Check if user has admin role
+  const hasAdminRole = user?.roles?.includes('Admin');
+  
+  if (!hasAdminRole) {
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
@@ -73,6 +97,21 @@ function App() {
                   </PublicRoute>
                 } 
               />
+              
+              {/* Admin routes */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <Layout />
+                  </AdminRoute>
+                }
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="loans" element={<AdminLoans />} />
+                <Route path="whatsapp" element={<AdminWhatsApp />} />
+                <Route path="users" element={<AdminUsers />} />
+              </Route>
               
               {/* Protected routes */}
               <Route 

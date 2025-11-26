@@ -1,8 +1,7 @@
 # Development Dockerfile for .NET API
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5000
 
 # Install tools for development
 RUN apt-get update && apt-get install -y \
@@ -14,23 +13,21 @@ RUN apt-get update && apt-get install -y \
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy project files
-COPY ["HoHema.Api/HoHema.Api.csproj", "HoHema.Api/"]
-COPY ["HoHema.Core/HoHema.Core.csproj", "HoHema.Core/"]
-COPY ["HoHema.Infrastructure/HoHema.Infrastructure.csproj", "HoHema.Infrastructure/"]
+# Copy project file
+COPY ["src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj", "HoHemaLoans.Api/"]
 
 # Restore dependencies
-RUN dotnet restore "HoHema.Api/HoHema.Api.csproj"
+RUN dotnet restore "HoHemaLoans.Api/HoHemaLoans.Api.csproj"
 
 # Copy source code
-COPY . .
+COPY ["src/api/HoHemaLoans.Api/", "HoHemaLoans.Api/"]
 
 # Build application
-WORKDIR "/src/HoHema.Api"
-RUN dotnet build "HoHema.Api.csproj" -c Debug -o /app/build
+WORKDIR "/src/HoHemaLoans.Api"
+RUN dotnet build "HoHemaLoans.Api.csproj" -c Debug -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "HoHema.Api.csproj" -c Debug -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "HoHemaLoans.Api.csproj" -c Debug -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
@@ -42,6 +39,6 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/api/health || exit 1
+    CMD curl -f http://localhost:5000/api/health || exit 1
 
-ENTRYPOINT ["dotnet", "HoHema.Api.dll"]
+ENTRYPOINT ["dotnet", "HoHemaLoans.Api.dll"]

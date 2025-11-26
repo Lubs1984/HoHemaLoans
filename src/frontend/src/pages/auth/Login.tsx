@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
+import HohemaLogo from '../../assets/hohema-logo.png';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -102,8 +103,8 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
-            <div className="mx-auto h-12 w-12 flex items-center justify-center bg-blue-600 rounded-full">
-              <span className="text-xl font-bold text-white">HH</span>
+            <div className="mx-auto h-16 w-16 flex items-center justify-center">
+              <img src={HohemaLogo} alt="Ho Hema Loans" className="h-16 w-auto" />
             </div>
             <h2 className="mt-4 text-3xl font-bold text-gray-900">
               Employee Login

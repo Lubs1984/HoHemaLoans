@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
+import HohemaLogo from '../../assets/hohema-logo.png';
 
 interface RegisterFormData {
   email: string;
@@ -152,6 +153,9 @@ const Register = () => {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="mx-auto h-16 w-16 flex items-center justify-center mb-4">
+            <img src={HohemaLogo} alt="Ho Hema Loans" className="h-16 w-auto" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
           <p className="text-gray-600">Join Ho Hema Loans to access quick loans</p>
         </div>

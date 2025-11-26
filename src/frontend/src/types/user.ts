@@ -11,6 +11,7 @@ export interface User {
   monthlyIncome?: number;
   isVerified?: boolean;
   role?: UserRole;
+  roles?: string[];
   isActive?: boolean;
   lastLoginAt?: Date;
   createdAt?: Date;

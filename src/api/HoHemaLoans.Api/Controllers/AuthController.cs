@@ -54,7 +54,11 @@ public class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
+            // Assign User role by default
+            await _userManager.AddToRoleAsync(user, "User");
+            
             var token = await GenerateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
             return Ok(new AuthResponseDto
             {
                 Token = token,
@@ -69,7 +73,8 @@ public class AuthController : ControllerBase
                     Address = user.Address,
                     MonthlyIncome = user.MonthlyIncome,
                     PhoneNumber = user.PhoneNumber,
-                    IsVerified = user.IsVerified
+                    IsVerified = user.IsVerified,
+                    Roles = roles
                 }
             });
         }
@@ -96,6 +101,7 @@ public class AuthController : ControllerBase
         if (result.Succeeded)
         {
             var token = await GenerateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
             return Ok(new AuthResponseDto
             {
                 Token = token,
@@ -110,7 +116,8 @@ public class AuthController : ControllerBase
                     Address = user.Address,
                     MonthlyIncome = user.MonthlyIncome,
                     PhoneNumber = user.PhoneNumber,
-                    IsVerified = user.IsVerified
+                    IsVerified = user.IsVerified,
+                    Roles = roles
                 }
             });
         }
@@ -181,6 +188,7 @@ public class UserDto
     public decimal MonthlyIncome { get; set; }
     public string? PhoneNumber { get; set; }
     public bool IsVerified { get; set; }
+    public IEnumerable<string>? Roles { get; set; }
 }
 
 public class AuthResponseDto
