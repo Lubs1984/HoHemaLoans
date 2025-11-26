@@ -39,18 +39,12 @@ const Affordability: React.FC = () => {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [assessment, setAssessment] = useState<AffordabilityAssessment | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showIncomeModal, setShowIncomeModal] = useState(false);
-  const [showExpenseModal, setShowExpenseModal] = useState(false);
-  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    setIsLoading(true);
     try {
       // TODO: Load from API
       // Mock data for now
@@ -75,15 +69,15 @@ const Affordability: React.FC = () => {
         },
       ]);
       calculateAssessment();
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Failed to load affordability data:', error);
     }
   };
 
   const calculateAssessment = () => {
-    const totalIncome = incomes.reduce((sum, inc) => sum + inc.monthlyAmount, 0);
-    const totalExpenses = expenses.reduce((sum, exp) => sum + exp.monthlyAmount, 0);
-    const essentialExp = expenses.filter(e => e.isEssential).reduce((sum, exp) => sum + exp.monthlyAmount, 0);
+    const totalIncome = incomes.reduce((sum: number, inc: Income) => sum + inc.monthlyAmount, 0);
+    const totalExpenses = expenses.reduce((sum: number, exp: Expense) => sum + exp.monthlyAmount, 0);
+    const essentialExp = expenses.filter((e: Expense) => e.isEssential).reduce((sum: number, exp: Expense) => sum + exp.monthlyAmount, 0);
     const nonEssentialExp = totalExpenses - essentialExp;
     const available = totalIncome - totalExpenses;
     const expenseRatio = totalIncome > 0 ? totalExpenses / totalIncome : 0;
@@ -146,8 +140,9 @@ const Affordability: React.FC = () => {
             </div>
             <button
               onClick={() => {
-                setEditingIncome(null);
-                setShowIncomeModal(true);
+                // setEditingIncome(null);
+                // setShowIncomeModal(true);
+                console.log('Add income clicked');
               }}
               className="btn btn-sm btn-primary inline-flex items-center"
             >
@@ -163,7 +158,7 @@ const Affordability: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {incomes.map((income) => (
+              {incomes.map((income: Income) => (
                 <div key={income.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -208,8 +203,9 @@ const Affordability: React.FC = () => {
             </div>
             <button
               onClick={() => {
-                setEditingExpense(null);
-                setShowExpenseModal(true);
+                // setEditingExpense(null);
+                // setShowExpenseModal(true);
+                console.log('Add expense clicked');
               }}
               className="btn btn-sm btn-primary inline-flex items-center"
             >
@@ -225,7 +221,7 @@ const Affordability: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {expenses.map((expense) => (
+              {expenses.map((expense: Expense) => (
                 <div key={expense.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
