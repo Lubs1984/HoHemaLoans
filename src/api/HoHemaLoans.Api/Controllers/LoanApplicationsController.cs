@@ -81,7 +81,12 @@ public class LoanApplicationsController : ControllerBase
             InterestRate = interestRate,
             MonthlyPayment = monthlyPayment,
             TotalAmount = totalAmount,
-            ApplicationDate = DateTime.UtcNow
+            ApplicationDate = DateTime.UtcNow,
+            ChannelOrigin = Enum.TryParse<LoanApplicationChannel>(dto.ChannelOrigin, out var channel) 
+                ? channel 
+                : LoanApplicationChannel.Web,
+            CurrentStep = dto.CurrentStep,
+            WebInitiatedDate = DateTime.UtcNow
         };
 
         _context.LoanApplications.Add(application);
