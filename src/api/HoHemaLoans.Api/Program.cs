@@ -252,6 +252,29 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Add global exception handling middleware
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERROR] Unhandled exception: {ex}");
+        Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+        
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        
+        await context.Response.WriteAsJsonAsync(new 
+        { 
+            error = ex.Message,
+            details = app.Environment.IsDevelopment() ? ex.StackTrace : null
+        });
+    }
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
