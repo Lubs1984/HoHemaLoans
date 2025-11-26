@@ -112,10 +112,3 @@ public class LoanApplicationsController : ControllerBase
         return Math.Round(payment, 2);
     }
 }
-
-public class CreateLoanApplicationDto
-{
-    public decimal Amount { get; set; }
-    public int TermMonths { get; set; }
-    public string Purpose { get; set; } = string.Empty;
-}

@@ -70,7 +70,7 @@ const Profile: React.FC = () => {
     try {
       setLoading(true);
       const response = await apiService.get('/profile/income');
-      setIncomes(response.data);
+      setIncomes(response.data as Income[]);
     } catch (error) {
       console.error('Failed to load incomes:', error);
     } finally {
@@ -82,7 +82,7 @@ const Profile: React.FC = () => {
     try {
       setLoading(true);
       const response = await apiService.get('/profile/expense');
-      setExpenses(response.data);
+      setExpenses(response.data as Expense[]);
     } catch (error) {
       console.error('Failed to load expenses:', error);
     } finally {
@@ -94,7 +94,7 @@ const Profile: React.FC = () => {
     try {
       setLoading(true);
       const response = await apiService.get('/profile/affordability');
-      setAffordability(response.data);
+      setAffordability(response.data as Affordability);
     } catch (error) {
       console.error('Failed to load affordability:', error);
     } finally {
@@ -553,7 +553,6 @@ const Profile: React.FC = () => {
 
               {/* Assessment Info */}
               <div className="text-xs text-gray-500 p-4 bg-gray-50 rounded">
-                <p>Assessment calculated on: {new Date(affordability.assessmentDate).toLocaleDateString()}</p>
                 <p>Valid until: {new Date(affordability.expiryDate).toLocaleDateString()}</p>
               </div>
             </div>

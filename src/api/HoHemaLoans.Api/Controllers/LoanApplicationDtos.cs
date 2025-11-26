@@ -7,6 +7,15 @@ namespace HoHemaLoans.Api.Controllers;
 /// </summary>
 public class CreateLoanApplicationDto
 {
+    [JsonPropertyName("amount")]
+    public decimal Amount { get; set; }
+    
+    [JsonPropertyName("termMonths")]
+    public int TermMonths { get; set; }
+    
+    [JsonPropertyName("purpose")]
+    public string Purpose { get; set; } = string.Empty;
+    
     [JsonPropertyName("channelOrigin")]
     public string ChannelOrigin { get; set; } = "Web";
     
