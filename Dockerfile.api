@@ -1,5 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
+
+# Install EF Core tools for migrations
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 COPY ["src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj", "src/api/HoHemaLoans.Api/"]
 RUN dotnet restore "src/api/HoHemaLoans.Api/HoHemaLoans.Api.csproj"
 
@@ -20,4 +25,5 @@ USER appuser
 
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_EnableDiagnostics=0
 ENTRYPOINT ["dotnet", "HoHemaLoans.Api.dll"]

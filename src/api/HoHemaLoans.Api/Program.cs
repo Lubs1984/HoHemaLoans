@@ -251,6 +251,27 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Run database migrations synchronously on startup
+Console.WriteLine("[STARTUP] Applying database migrations...");
+try
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        
+        logger.LogInformation("[STARTUP] Running database migrations...");
+        context.Database.Migrate();
+        logger.LogInformation("[STARTUP] Database migrations completed successfully");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[ERROR] Failed to apply database migrations: {ex.Message}");
+    Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+    // Continue anyway - Railway needs the app to be listening
+}
+
 // Add global exception handling middleware
 app.Use(async (context, next) =>
 {
@@ -288,30 +309,20 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Add health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
 app.MapControllers();
 
-// Run database migrations and seeding in background after app starts
+// Run database seeding in background after app starts
 _ = Task.Run(async () =>
 {
     try
     {
-        await Task.Delay(500); // Brief delay to ensure app is listening
+        await Task.Delay(2000); // Wait for app to be fully ready
         using (var scope = app.Services.CreateScope())
         {
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            
-            try
-            {
-                logger.LogInformation("[STARTUP] Applying database migrations...");
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                context.Database.Migrate();
-                logger.LogInformation("[STARTUP] Database migrations applied successfully");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "[ERROR] Failed to apply database migrations");
-                throw;
-            }
             
             try
             {
@@ -327,7 +338,7 @@ _ = Task.Run(async () =>
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[ERROR] Background database initialization failed: {ex}");
+        Console.WriteLine($"[ERROR] Background database seeding failed: {ex}");
     }
 });
 

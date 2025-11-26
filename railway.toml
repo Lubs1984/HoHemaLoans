@@ -15,6 +15,11 @@ root = "src/api/HoHemaLoans.Api"
 dockerfile = "Dockerfile"
 port = 8080
 
+[services.healthcheck]
+path = "/"
+timeout = 30
+interval = 10
+
 [[services]]
 name = "frontend"
 root = "src/frontend"
