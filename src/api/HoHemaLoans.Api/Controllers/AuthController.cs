@@ -90,39 +90,63 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto model)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user == null)
-            return BadRequest("Invalid email or password");
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-        if (result.Succeeded)
+        try
         {
-            var token = await GenerateJwtToken(user);
-            var roles = await _userManager.GetRolesAsync(user);
-            return Ok(new AuthResponseDto
+            _logger.LogInformation($"[LOGIN] Attempting login for email: {model.Email}");
+            
+            if (!ModelState.IsValid)
             {
-                Token = token,
-                User = new UserDto
-                {
-                    Id = user.Id,
-                    Email = user.Email!,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    IdNumber = user.IdNumber,
-                    DateOfBirth = user.DateOfBirth,
-                    Address = user.Address,
-                    MonthlyIncome = user.MonthlyIncome,
-                    PhoneNumber = user.PhoneNumber,
-                    IsVerified = user.IsVerified,
-                    Roles = roles
-                }
-            });
-        }
+                _logger.LogWarning($"[LOGIN] Invalid model state for email: {model.Email}");
+                return BadRequest(ModelState);
+            }
 
-        return BadRequest("Invalid email or password");
+            _logger.LogInformation($"[LOGIN] Looking up user: {model.Email}");
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            
+            if (user == null)
+            {
+                _logger.LogWarning($"[LOGIN] User not found: {model.Email}");
+                return BadRequest("Invalid email or password");
+            }
+
+            _logger.LogInformation($"[LOGIN] User found, checking password for: {model.Email}");
+            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+            
+            if (result.Succeeded)
+            {
+                _logger.LogInformation($"[LOGIN] Password check succeeded for: {model.Email}");
+                var token = await GenerateJwtToken(user);
+                var roles = await _userManager.GetRolesAsync(user);
+                
+                _logger.LogInformation($"[LOGIN] Login successful for: {model.Email}");
+                return Ok(new AuthResponseDto
+                {
+                    Token = token,
+                    User = new UserDto
+                    {
+                        Id = user.Id,
+                        Email = user.Email!,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        IdNumber = user.IdNumber,
+                        DateOfBirth = user.DateOfBirth,
+                        Address = user.Address,
+                        MonthlyIncome = user.MonthlyIncome,
+                        PhoneNumber = user.PhoneNumber,
+                        IsVerified = user.IsVerified,
+                        Roles = roles
+                    }
+                });
+            }
+
+            _logger.LogWarning($"[LOGIN] Password check failed for: {model.Email}");
+            return BadRequest("Invalid email or password");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[LOGIN] Exception during login for: {model?.Email}");
+            throw;
+        }
     }
 
     private async Task<string> GenerateJwtToken(ApplicationUser user)
