@@ -143,6 +143,13 @@ class ApiService {
   }
 
   // Loan application endpoints
+  async createLoanApplication(data: any): Promise<any> {
+    return this.request<any>('/loanapplications', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async submitLoanApplication(data: any): Promise<any> {
     return this.request<any>('/loanapplications', {
       method: 'POST',

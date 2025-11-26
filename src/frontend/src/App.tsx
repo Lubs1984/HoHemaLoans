@@ -9,6 +9,7 @@ const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
 const Login = React.lazy(() => import('./pages/auth/Login'));
 const Register = React.lazy(() => import('./pages/auth/Register'));
 const LoanApplications = React.lazy(() => import('./pages/loans/LoanApplications'));
+const LoanApply = React.lazy(() => import('./pages/loans/LoanApply'));
 const LoanApplicationDetail = React.lazy(() => import('./pages/loans/LoanApplicationDetail'));
 const Affordability = React.lazy(() => import('./pages/affordability/Affordability'));
 const Profile = React.lazy(() => import('./pages/auth/Profile'));
@@ -126,6 +127,7 @@ function App() {
               >
                 <Route index element={<Dashboard />} />
                 <Route path="loans" element={<LoanApplications />} />
+                <Route path="loans/apply" element={<LoanApply />} />
                 <Route path="loans/:id" element={<LoanApplicationDetail />} />
                 <Route path="affordability" element={<Affordability />} />
                 <Route path="profile" element={<Profile />} />
