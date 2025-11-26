@@ -9,6 +9,7 @@ const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
 const Login = React.lazy(() => import('./pages/auth/Login'));
 const Register = React.lazy(() => import('./pages/auth/Register'));
 const LoanApplications = React.lazy(() => import('./pages/loans/LoanApplications'));
+const LoanApplicationDetail = React.lazy(() => import('./pages/loans/LoanApplicationDetail'));
 const Profile = React.lazy(() => import('./pages/auth/Profile'));
 
 // Admin components
@@ -124,6 +125,7 @@ function App() {
               >
                 <Route index element={<Dashboard />} />
                 <Route path="loans" element={<LoanApplications />} />
+                <Route path="loans/:id" element={<LoanApplicationDetail />} />
                 <Route path="profile" element={<Profile />} />
               </Route>
               
