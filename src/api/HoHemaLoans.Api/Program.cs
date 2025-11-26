@@ -176,8 +176,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         var frontendUrl = builder.Configuration["FRONTEND_URL"];
+        var envFrontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
+        
         Console.WriteLine($"[DEBUG] FRONTEND_URL from config: {frontendUrl}");
-        Console.WriteLine($"[DEBUG] FRONTEND_URL from env: {Environment.GetEnvironmentVariable("FRONTEND_URL")}");
+        Console.WriteLine($"[DEBUG] FRONTEND_URL from env: {envFrontendUrl}");
         
         // Build list of allowed origins
         var allowedOrigins = new List<string>
@@ -189,14 +191,13 @@ builder.Services.AddCors(options =>
         };
         
         // Add FRONTEND_URL if configured
-        if (!string.IsNullOrEmpty(frontendUrl))
+        if (!string.IsNullOrEmpty(frontendUrl) && !allowedOrigins.Contains(frontendUrl))
         {
             allowedOrigins.Add(frontendUrl);
         }
         
         // Add from environment variable if set
-        var envFrontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
-        if (!string.IsNullOrEmpty(envFrontendUrl))
+        if (!string.IsNullOrEmpty(envFrontendUrl) && !allowedOrigins.Contains(envFrontendUrl))
         {
             allowedOrigins.Add(envFrontendUrl);
         }
@@ -258,8 +259,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS must come before authentication
 app.UseCors("AllowFrontend");
+
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
