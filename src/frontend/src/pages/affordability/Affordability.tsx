@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, BanknotesIcon, CreditCardIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
+import AddIncomeModal from '../../components/modals/AddIncomeModal';
+import AddExpenseModal from '../../components/modals/AddExpenseModal';
 
 interface Income {
   id: string;
@@ -41,6 +43,8 @@ const Affordability: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [assessment, setAssessment] = useState<AffordabilityAssessment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -90,6 +94,16 @@ const Affordability: React.FC = () => {
     }
   };
 
+  const handleAddIncome = async (data: any) => {
+    await apiService.addIncome(data);
+    await loadData();
+  };
+
+  const handleAddExpense = async (data: any) => {
+    await apiService.addExpense(data);
+    await loadData();
+  };
+
 
 
   const formatCurrency = (amount: number) => {
@@ -131,11 +145,7 @@ const Affordability: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900">Income Sources</h2>
             </div>
             <button
-              onClick={() => {
-                // setEditingIncome(null);
-                // setShowIncomeModal(true);
-                console.log('Add income clicked');
-              }}
+              onClick={() => setShowIncomeModal(true)}
               className="btn btn-sm btn-primary inline-flex items-center"
             >
               <PlusIcon className="w-4 h-4 mr-1" />
@@ -197,11 +207,7 @@ const Affordability: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900">Monthly Expenses</h2>
             </div>
             <button
-              onClick={() => {
-                // setEditingExpense(null);
-                // setShowExpenseModal(true);
-                console.log('Add expense clicked');
-              }}
+              onClick={() => setShowExpenseModal(true)}
               className="btn btn-sm btn-primary inline-flex items-center"
             >
               <PlusIcon className="w-4 h-4 mr-1" />
@@ -361,6 +367,18 @@ const Affordability: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <AddIncomeModal
+        isOpen={showIncomeModal}
+        onClose={() => setShowIncomeModal(false)}
+        onSubmit={handleAddIncome}
+      />
+      <AddExpenseModal
+        isOpen={showExpenseModal}
+        onClose={() => setShowExpenseModal(false)}
+        onSubmit={handleAddExpense}
+      />
     </div>
   );
 };
