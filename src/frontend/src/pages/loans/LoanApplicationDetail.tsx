@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
+import { useAuthStore } from '../../store/authStore';
 
 interface LoanApplication {
   id: string;
@@ -25,9 +26,21 @@ interface LoanApplication {
 const LoanApplicationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [application, setApplication] = useState<LoanApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  // Admin approval form state
+  const [interestRate, setInterestRate] = useState(12);
+  const [repaymentMonths, setRepaymentMonths] = useState(12);
+  const [notes, setNotes] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  
+  const isAdmin = user?.roles?.includes('Admin');
 
   useEffect(() => {
     if (id) {
@@ -72,8 +85,51 @@ const LoanApplicationDetail: React.FC = () => {
     return `${(rate * 100).toFixed(2)}%`;
   };
 
+  const handleApprove = async () => {
+    if (!id) return;
+    
+    try {
+      setActionLoading(true);
+      await apiService.request(`/admin/loans/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          interestRate: interestRate / 100, // Convert percentage to decimal
+          repaymentMonths, 
+          notes 
+        }),
+      });
+      setShowApproveModal(false);
+      await loadApplication(id);
+      alert('Loan approved successfully!');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to approve loan');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!id) return;
+    
+    try {
+      setActionLoading(true);
+      await apiService.request(`/admin/loans/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: rejectionReason }),
+      });
+      setShowRejectModal(false);
+      await loadApplication(id);
+      alert('Loan rejected successfully!');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to reject loan');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: any; text: string }> = {
+      Draft: { color: 'bg-gray-100 text-gray-800', icon: ClockIcon, text: 'Draft' },
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: ClockIcon, text: 'Pending Review' },
       UnderReview: { color: 'bg-blue-100 text-blue-800', icon: ClockIcon, text: 'Under Review' },
       Approved: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon, text: 'Approved' },
@@ -147,7 +203,25 @@ const LoanApplicationDetail: React.FC = () => {
         </button>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Loan Application Details</h1>
-          {getStatusBadge(application.status)}
+          <div className="flex items-center space-x-4">
+            {getStatusBadge(application.status)}
+            {isAdmin && application.status === 'Pending' && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setShowApproveModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
+                >
+                  ✓ Approve
+                </button>
+                <button
+                  onClick={() => setShowRejectModal(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
+                >
+                  ✕ Reject
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -283,6 +357,124 @@ const LoanApplicationDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Approve Modal */}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 flex items-center justify-between rounded-t-lg">
+              <h2 className="text-xl font-bold">Approve Loan Application</h2>
+              <button onClick={() => setShowApproveModal(false)} className="text-2xl hover:bg-green-500 p-1 rounded">×</button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Interest Rate (% per annum)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(parseFloat(e.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Repayment Period (months)
+                </label>
+                <select
+                  value={repaymentMonths}
+                  onChange={(e) => setRepaymentMonths(parseInt(e.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                >
+                  <option value="6">6 months</option>
+                  <option value="12">12 months</option>
+                  <option value="24">24 months</option>
+                  <option value="36">36 months</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Notes (optional)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 resize-none"
+                  rows={3}
+                  placeholder="Add any notes about this approval..."
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={handleApprove}
+                  disabled={actionLoading}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium disabled:opacity-50"
+                >
+                  {actionLoading ? 'Approving...' : 'Confirm Approval'}
+                </button>
+                <button
+                  onClick={() => setShowApproveModal(false)}
+                  disabled={actionLoading}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-3 rounded-lg font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 flex items-center justify-between rounded-t-lg">
+              <h2 className="text-xl font-bold">Reject Loan Application</h2>
+              <button onClick={() => setShowRejectModal(false)} className="text-2xl hover:bg-red-500 p-1 rounded">×</button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Rejection <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 resize-none"
+                  rows={4}
+                  placeholder="Explain why this application is being rejected..."
+                  required
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={handleReject}
+                  disabled={actionLoading || !rejectionReason.trim()}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium disabled:opacity-50"
+                >
+                  {actionLoading ? 'Rejecting...' : 'Confirm Rejection'}
+                </button>
+                <button
+                  onClick={() => setShowRejectModal(false)}
+                  disabled={actionLoading}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-3 rounded-lg font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
