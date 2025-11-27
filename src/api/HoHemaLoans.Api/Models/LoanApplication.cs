@@ -76,6 +76,7 @@ public class LoanApplication
 
 public enum LoanStatus
 {
+    Draft,
     Pending,
     UnderReview,
     Approved,
