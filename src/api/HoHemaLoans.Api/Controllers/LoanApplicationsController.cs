@@ -78,7 +78,7 @@ public class LoanApplicationsController : ControllerBase
                 ? channel 
                 : LoanApplicationChannel.Web,
             CurrentStep = 0,
-            StepData = "{}",
+            StepData = new Dictionary<string, object>(),
             WebInitiatedDate = DateTime.UtcNow
         };
 
@@ -109,7 +109,19 @@ public class LoanApplicationsController : ControllerBase
 
         // Update step data
         application.CurrentStep = stepNumber;
-        application.StepData = dto.StepData;
+        
+        // Parse step data JSON string to Dictionary
+        try
+        {
+            if (!string.IsNullOrEmpty(dto.StepData))
+            {
+                application.StepData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(dto.StepData);
+            }
+        }
+        catch
+        {
+            // If parsing fails, keep existing StepData
+        }
 
         // Update specific fields based on step number
         switch (stepNumber)
