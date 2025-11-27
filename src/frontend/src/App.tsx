@@ -9,7 +9,6 @@ const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
 const Login = React.lazy(() => import('./pages/auth/Login'));
 const Register = React.lazy(() => import('./pages/auth/Register'));
 const LoanApplications = React.lazy(() => import('./pages/loans/LoanApplications'));
-const LoanApply = React.lazy(() => import('./pages/loans/LoanApply'));
 const LoanApplicationWizard = React.lazy(() => import('./pages/loans/LoanApplicationWizard'));
 const LoanApplicationDetail = React.lazy(() => import('./pages/loans/LoanApplicationDetail'));
 const Affordability = React.lazy(() => import('./pages/affordability/Affordability'));

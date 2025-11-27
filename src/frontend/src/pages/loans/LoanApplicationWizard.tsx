@@ -22,6 +22,7 @@ interface LoanApplicationData {
   interestRate?: number;
   monthlyPayment?: number;
   totalAmount?: number;
+  otp?: string;
 }
 
 const STEPS = [
