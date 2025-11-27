@@ -3,6 +3,8 @@ import { PlusIcon, TrashIcon, PencilIcon, BanknotesIcon, CreditCardIcon, ChartBa
 import { apiService } from '../../services/api';
 import AddIncomeModal from '../../components/modals/AddIncomeModal';
 import AddExpenseModal from '../../components/modals/AddExpenseModal';
+import EditIncomeModal from '../../components/modals/EditIncomeModal';
+import EditExpenseModal from '../../components/modals/EditExpenseModal';
 
 interface Income {
   id: string;
@@ -44,6 +46,8 @@ const Affordability: React.FC = () => {
   const [assessment, setAssessment] = useState<AffordabilityAssessment | null>(null);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     loadData();
@@ -98,6 +102,18 @@ const Affordability: React.FC = () => {
   const handleAddExpense = async (data: any) => {
     await apiService.addExpense(data);
     await loadData();
+  };
+
+  const handleEditIncome = async (id: string, data: any) => {
+    await apiService.updateIncome(id, data);
+    await loadData();
+    setEditingIncome(null);
+  };
+
+  const handleEditExpense = async (id: string, data: any) => {
+    await apiService.updateExpense(id, data);
+    await loadData();
+    setEditingExpense(null);
   };
 
 
@@ -170,7 +186,10 @@ const Affordability: React.FC = () => {
                       <p className="text-lg font-semibold text-green-600 mt-2">{formatCurrency(income.monthlyAmount)}/mo</p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="text-gray-400 hover:text-blue-600">
+                      <button 
+                        onClick={() => setEditingIncome(income)}
+                        className="text-gray-400 hover:text-blue-600"
+                      >
                         <PencilIcon className="w-4 h-4" />
                       </button>
                       <button 
@@ -232,7 +251,10 @@ const Affordability: React.FC = () => {
                       <p className="text-lg font-semibold text-red-600 mt-2">{formatCurrency(expense.monthlyAmount)}/mo</p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="text-gray-400 hover:text-blue-600">
+                      <button 
+                        onClick={() => setEditingExpense(expense)}
+                        className="text-gray-400 hover:text-blue-600"
+                      >
                         <PencilIcon className="w-4 h-4" />
                       </button>
                       <button 
@@ -374,6 +396,18 @@ const Affordability: React.FC = () => {
         isOpen={showExpenseModal}
         onClose={() => setShowExpenseModal(false)}
         onSubmit={handleAddExpense}
+      />
+      <EditIncomeModal
+        isOpen={!!editingIncome}
+        onClose={() => setEditingIncome(null)}
+        onSubmit={handleEditIncome}
+        income={editingIncome}
+      />
+      <EditExpenseModal
+        isOpen={!!editingExpense}
+        onClose={() => setEditingExpense(null)}
+        onSubmit={handleEditExpense}
+        expense={editingExpense}
       />
     </div>
   );
