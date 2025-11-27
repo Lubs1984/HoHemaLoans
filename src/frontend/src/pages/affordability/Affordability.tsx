@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, BanknotesIcon, CreditCardIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { apiService } from '../../services/api';
 
 interface Income {
   id: string;
@@ -39,66 +40,57 @@ const Affordability: React.FC = () => {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [assessment, setAssessment] = useState<AffordabilityAssessment | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      // TODO: Load from API
-      // Mock data for now
-      setIncomes([
-        {
-          id: '1',
-          sourceType: 'Salary',
-          description: 'Monthly Salary',
-          monthlyAmount: 25000,
-          frequency: 'Monthly',
-          isVerified: true,
-        },
+      // Load incomes, expenses, and affordability assessment from API
+      const [incomesData, expensesData, assessmentData] = await Promise.all([
+        apiService.getIncomes(),
+        apiService.getExpenses(),
+        apiService.getAffordability(),
       ]);
-      setExpenses([
-        {
-          id: '1',
-          category: 'Housing',
-          description: 'Rent',
-          monthlyAmount: 8000,
-          frequency: 'Monthly',
-          isEssential: true,
-        },
-      ]);
-      calculateAssessment();
+
+      setIncomes(incomesData);
+      setExpenses(expensesData);
+      setAssessment(assessmentData);
     } catch (error) {
       console.error('Failed to load affordability data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const calculateAssessment = () => {
-    const totalIncome = incomes.reduce((sum: number, inc: Income) => sum + inc.monthlyAmount, 0);
-    const totalExpenses = expenses.reduce((sum: number, exp: Expense) => sum + exp.monthlyAmount, 0);
-    const essentialExp = expenses.filter((e: Expense) => e.isEssential).reduce((sum: number, exp: Expense) => sum + exp.monthlyAmount, 0);
-    const nonEssentialExp = totalExpenses - essentialExp;
-    const available = totalIncome - totalExpenses;
-    const expenseRatio = totalIncome > 0 ? totalExpenses / totalIncome : 0;
-
-    let status = 'Good';
-    if (expenseRatio > 0.7) status = 'Poor';
-    else if (expenseRatio > 0.5) status = 'Fair';
-
-    setAssessment({
-      grossMonthlyIncome: totalIncome,
-      netMonthlyIncome: totalIncome * 0.85, // Rough estimate
-      totalMonthlyExpenses: totalExpenses,
-      essentialExpenses: essentialExp,
-      nonEssentialExpenses: nonEssentialExp,
-      debtToIncomeRatio: 0, // Would need debt data
-      expenseToIncomeRatio: expenseRatio,
-      availableFunds: available,
-      affordabilityStatus: status,
-      maxRecommendedLoanAmount: available * 12 * 3, // 3 years of available funds
-    });
+  const handleDeleteIncome = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this income source?')) return;
+    
+    try {
+      await apiService.deleteIncome(id);
+      await loadData(); // Reload to get updated assessment
+    } catch (error) {
+      console.error('Failed to delete income:', error);
+      alert('Failed to delete income source');
+    }
   };
+
+  const handleDeleteExpense = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this expense?')) return;
+    
+    try {
+      await apiService.deleteExpense(id);
+      await loadData(); // Reload to get updated assessment
+    } catch (error) {
+      console.error('Failed to delete expense:', error);
+      alert('Failed to delete expense');
+    }
+  };
+
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -175,7 +167,10 @@ const Affordability: React.FC = () => {
                       <button className="text-gray-400 hover:text-blue-600">
                         <PencilIcon className="w-4 h-4" />
                       </button>
-                      <button className="text-gray-400 hover:text-red-600">
+                      <button 
+                        onClick={() => handleDeleteIncome(income.id)}
+                        className="text-gray-400 hover:text-red-600"
+                      >
                         <TrashIcon className="w-4 h-4" />
                       </button>
                     </div>
@@ -238,7 +233,10 @@ const Affordability: React.FC = () => {
                       <button className="text-gray-400 hover:text-blue-600">
                         <PencilIcon className="w-4 h-4" />
                       </button>
-                      <button className="text-gray-400 hover:text-red-600">
+                      <button 
+                        onClick={() => handleDeleteExpense(expense.id)}
+                        className="text-gray-400 hover:text-red-600"
+                      >
                         <TrashIcon className="w-4 h-4" />
                       </button>
                     </div>

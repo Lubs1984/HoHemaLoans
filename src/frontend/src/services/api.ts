@@ -175,6 +175,65 @@ class ApiService {
     return this.request<any>('/health');
   }
 
+  // Income endpoints
+  async getIncomes(): Promise<any[]> {
+    return this.request<any[]>('/profile/income');
+  }
+
+  async addIncome(data: any): Promise<any> {
+    return this.request<any>('/profile/income', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateIncome(id: string, data: any): Promise<void> {
+    return this.request<void>(`/profile/income/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteIncome(id: string): Promise<void> {
+    return this.request<void>(`/profile/income/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Expense endpoints
+  async getExpenses(): Promise<any[]> {
+    return this.request<any[]>('/profile/expense');
+  }
+
+  async addExpense(data: any): Promise<any> {
+    return this.request<any>('/profile/expense', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateExpense(id: string, data: any): Promise<void> {
+    return this.request<void>(`/profile/expense/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteExpense(id: string): Promise<void> {
+    return this.request<void>(`/profile/expense/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Affordability endpoints
+  async getAffordability(): Promise<any> {
+    return this.request<any>('/profile/affordability');
+  }
+
+  async getMaxLoanAmount(): Promise<any> {
+    return this.request<any>('/profile/affordability/max-loan');
+  }
+
   // Generic HTTP methods for flexible API calls
   async get<T>(endpoint: string): Promise<{ data: T }> {
     const data = await this.request<T>(endpoint, {
