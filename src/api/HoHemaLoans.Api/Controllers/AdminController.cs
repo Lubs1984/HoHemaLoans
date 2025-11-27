@@ -251,6 +251,98 @@ public class AdminController : ControllerBase
         return Ok(new { message = "Loan rejected successfully", loan.Id });
     }
 
+    /// <summary>
+    /// Disburse (payout) an approved loan
+    /// </summary>
+    [HttpPost("loans/{id}/disburse")]
+    public async Task<ActionResult> DisburseLoan(Guid id, [FromBody] DisburseLoanDto dto)
+    {
+        var loan = await _context.LoanApplications
+            .Include(l => l.User)
+            .FirstOrDefaultAsync(l => l.Id == id);
+        
+        if (loan == null)
+            return NotFound("Loan application not found");
+
+        if (loan.Status != LoanStatus.Approved)
+            return BadRequest("Only approved loans can be disbursed");
+
+        if (string.IsNullOrEmpty(loan.BankName) || string.IsNullOrEmpty(loan.AccountNumber))
+            return BadRequest("Bank details are required for disbursement");
+
+        loan.Status = LoanStatus.Disbursed;
+        loan.Notes = (loan.Notes ?? "") + $"\n\nDisbursed on {DateTime.UtcNow:yyyy-MM-dd HH:mm}: {dto.Notes}";
+
+        _context.LoanApplications.Update(loan);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation($"Loan {id} disbursed to {loan.User.FirstName} {loan.User.LastName}");
+
+        return Ok(new { 
+            message = "Loan disbursed successfully", 
+            loan.Id,
+            amount = loan.Amount,
+            bankName = loan.BankName,
+            accountNumber = loan.AccountNumber
+        });
+    }
+
+    /// <summary>
+    /// Get loans ready for disbursement (approved but not yet disbursed)
+    /// </summary>
+    [HttpGet("loans/ready-for-payout")]
+    public async Task<ActionResult<object>> GetLoansReadyForPayout(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        var query = _context.LoanApplications
+            .Include(l => l.User)
+            .Where(l => l.Status == LoanStatus.Approved)
+            .OrderBy(l => l.ApprovalDate);
+
+        var totalCount = await query.CountAsync();
+        var pageCount = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var loans = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(l => new
+            {
+                l.Id,
+                l.Amount,
+                l.InterestRate,
+                l.TermMonths,
+                l.MonthlyPayment,
+                l.TotalAmount,
+                l.Status,
+                l.ApplicationDate,
+                l.ApprovalDate,
+                l.BankName,
+                l.AccountNumber,
+                l.AccountHolderName,
+                l.Notes,
+                User = new
+                {
+                    l.User.Id,
+                    l.User.FirstName,
+                    l.User.LastName,
+                    l.User.Email,
+                    l.User.PhoneNumber,
+                    l.User.MonthlyIncome
+                }
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            totalCount,
+            pageCount,
+            currentPage = page,
+            pageSize,
+            data = loans
+        });
+    }
+
     // ============= WHATSAPP MANAGEMENT =============
 
     /// <summary>
@@ -450,6 +542,11 @@ public class ApproveLoanDto
 public class RejectLoanDto
 {
     public string? Reason { get; set; }
+}
+
+public class DisburseLoanDto
+{
+    public string? Notes { get; set; }
 }
 
 public class SendWhatsAppMessageDto

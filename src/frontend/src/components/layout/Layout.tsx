@@ -8,7 +8,8 @@ import {
   Bars3Icon,
   XMarkIcon,
   Cog6ToothIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import HohemaLogo from '../../assets/hohema-logo.png';
@@ -23,6 +24,7 @@ const navigation = [
 const adminNavigation = [
   { name: 'Admin Dashboard', href: '/admin', icon: Cog6ToothIcon },
   { name: 'Loan Management', href: '/admin/loans', icon: DocumentTextIcon },
+  { name: 'Loan Payouts', href: '/admin/payouts', icon: BanknotesIcon },
   { name: 'WhatsApp Messages', href: '/admin/whatsapp', icon: HomeIcon },
   { name: 'User Management', href: '/admin/users', icon: UserCircleIcon },
 ];

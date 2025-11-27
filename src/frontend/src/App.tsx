@@ -17,6 +17,7 @@ const Profile = React.lazy(() => import('./pages/auth/Profile'));
 // Admin components
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminLoans = React.lazy(() => import('./pages/admin/AdminLoans'));
+const AdminPayouts = React.lazy(() => import('./pages/admin/AdminPayouts'));
 const AdminWhatsApp = React.lazy(() => import('./pages/admin/AdminWhatsApp'));
 const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'));
 
@@ -112,6 +113,7 @@ function App() {
               >
                 <Route index element={<AdminDashboard />} />
                 <Route path="loans" element={<AdminLoans />} />
+                <Route path="payouts" element={<AdminPayouts />} />
                 <Route path="whatsapp" element={<AdminWhatsApp />} />
                 <Route path="users" element={<AdminUsers />} />
               </Route>
