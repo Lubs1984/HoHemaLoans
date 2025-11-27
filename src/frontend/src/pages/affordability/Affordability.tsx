@@ -42,7 +42,6 @@ const Affordability: React.FC = () => {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [assessment, setAssessment] = useState<AffordabilityAssessment | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
 
@@ -51,7 +50,6 @@ const Affordability: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-    setLoading(true);
     try {
       // Load incomes, expenses, and affordability assessment from API
       const [incomesData, expensesData, assessmentData] = await Promise.all([
@@ -65,8 +63,6 @@ const Affordability: React.FC = () => {
       setAssessment(assessmentData);
     } catch (error) {
       console.error('Failed to load affordability data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
