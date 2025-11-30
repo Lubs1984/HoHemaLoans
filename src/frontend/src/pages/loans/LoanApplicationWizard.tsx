@@ -140,9 +140,6 @@ const LoanApplicationWizard: React.FC = () => {
       setLoading(false);
     }
   };
-      setLoading(false);
-    }
-  };
 
   const saveStepData = async (stepNumber: number, data: Partial<LoanApplicationData>) => {
     if (!applicationData.id) return;
