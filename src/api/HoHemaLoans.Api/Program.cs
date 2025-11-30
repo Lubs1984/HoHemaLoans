@@ -213,6 +213,9 @@ builder.Services.AddCors(options =>
 // Add Affordability Service
 builder.Services.AddScoped<IAffordabilityService, AffordabilityService>();
 
+// Add Omnichannel Loan Service
+builder.Services.AddScoped<IOmnichannelLoanService, OmnichannelLoanService>();
+
 // Add WhatsApp Service
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsApp"));
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();

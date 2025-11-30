@@ -349,3 +349,22 @@ public class UpdateConversationStatusRequest
 {
     public ConversationStatus Status { get; set; }
 }
+// Helper method for processing RESUME commands from WhatsApp
+// This would be called from the webhook handler when a message like "RESUME {applicationId}" is received
+// For now, this is a placeholder - full WhatsApp webhook integration requires Meta's Business API setup
+public class WhatsAppResumeHelper
+{
+    // Extract application ID from message text like "RESUME abc-123-def"
+    public static string? ExtractApplicationId(string messageText)
+    {
+        if (string.IsNullOrWhiteSpace(messageText)) return null;
+        
+        var parts = messageText.Trim().Split(' ');
+        if (parts.Length >= 2 && parts[0].Equals("RESUME", StringComparison.OrdinalIgnoreCase))
+        {
+            return parts[1];
+        }
+        
+        return null;
+    }
+}

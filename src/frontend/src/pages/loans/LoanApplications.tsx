@@ -43,6 +43,7 @@ const LoanApplications: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: any; text: string }> = {
+      Draft: { color: 'bg-gray-100 text-gray-800', icon: ClockIcon, text: 'Draft' },
       Pending: { color: 'bg-yellow-100 text-yellow-800', icon: ClockIcon, text: 'Pending' },
       UnderReview: { color: 'bg-blue-100 text-blue-800', icon: ClockIcon, text: 'Under Review' },
       Approved: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon, text: 'Approved' },
@@ -58,6 +59,23 @@ const LoanApplications: React.FC = () => {
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         <Icon className="w-4 h-4 mr-1" />
         {config.text}
+      </span>
+    );
+  };
+
+  const getChannelBadge = (channel: string) => {
+    if (channel === 'WhatsApp') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="mr-1">📱</span>
+          WhatsApp
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        <span className="mr-1">🌐</span>
+        Web
       </span>
     );
   };
@@ -189,23 +207,26 @@ const LoanApplications: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(app.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      <span className={`px-2 py-1 text-xs rounded ${
-                        app.channelOrigin === 'WhatsApp' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {app.channelOrigin}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getChannelBadge(app.channelOrigin)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        to={`/loans/${app.id}`}
-                        className="text-blue-600 hover:text-blue-900 inline-flex items-center"
-                      >
-                        <EyeIcon className="w-4 h-4 mr-1" />
-                        View
-                      </Link>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      {app.status === 'Draft' ? (
+                        <Link
+                          to={`/loans/apply?id=${app.id}`}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                        >
+                          <span>Resume</span>
+                          <span className="ml-1">→</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          to={`/loans/${app.id}`}
+                          className="text-blue-600 hover:text-blue-900 transition"
+                        >
+                          <EyeIcon className="w-5 h-5 inline" />
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}

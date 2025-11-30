@@ -16,15 +16,18 @@ public class LoanApplicationsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<LoanApplicationsController> _logger;
+    private readonly IOmnichannelLoanService _omnichannelService;
 
     public LoanApplicationsController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        ILogger<LoanApplicationsController> logger)
+        ILogger<LoanApplicationsController> logger,
+        IOmnichannelLoanService omnichannelService)
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
+        _omnichannelService = omnichannelService;
     }
 
     [HttpGet]
@@ -34,11 +37,7 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var applications = await _context.LoanApplications
-            .Where(l => l.UserId == userId)
-            .OrderByDescending(l => l.ApplicationDate)
-            .ToListAsync();
-
+        var applications = await _omnichannelService.GetUserApplicationsAsync(userId);
         return Ok(applications);
     }
 
@@ -49,8 +48,7 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var application = await _context.LoanApplications
-            .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);
+        var application = await _omnichannelService.GetApplicationAsync(id, userId);
 
         if (application == null)
             return NotFound();
@@ -68,28 +66,21 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var application = new LoanApplication
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Status = LoanStatus.Draft,
-            ApplicationDate = DateTime.UtcNow,
-            ChannelOrigin = Enum.TryParse<LoanApplicationChannel>(dto.ChannelOrigin, out var channel) 
-                ? channel 
-                : LoanApplicationChannel.Web,
-            CurrentStep = 0,
-            StepData = new Dictionary<string, object>(),
-            WebInitiatedDate = DateTime.UtcNow
-        };
+        var channel = Enum.TryParse<LoanApplicationChannel>(dto.ChannelOrigin, out var ch) 
+            ? ch 
+            : LoanApplicationChannel.Web;
 
-        _context.LoanApplications.Add(application);
-        await _context.SaveChangesAsync();
+        var application = await _omnichannelService.CreateDraftApplicationAsync(
+            userId, 
+            channel, 
+            phoneNumber: null);
 
         return CreatedAtAction(nameof(GetLoanApplication), new { id = application.Id }, application);
     }
 
     /// <summary>
     /// Update a specific step in the application wizard
+    /// Syncs affordability and calculates loan terms automatically
     /// </summary>
     [HttpPut("{id}/step/{stepNumber}")]
     public async Task<ActionResult<LoanApplication>> UpdateApplicationStep(Guid id, int stepNumber, [FromBody] UpdateStepDto dto)
@@ -98,71 +89,37 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var application = await _context.LoanApplications
-            .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);
-
-        if (application == null)
-            return NotFound("Application not found");
-
-        if (application.Status != LoanStatus.Draft)
-            return BadRequest("Only draft applications can be updated");
-
-        // Update step data
-        application.CurrentStep = stepNumber;
-        
-        // Parse step data JSON string to Dictionary
         try
         {
-            if (!string.IsNullOrEmpty(dto.StepData))
-            {
-                application.StepData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(dto.StepData);
-            }
+            // Build step data dictionary from DTO
+            var stepData = new Dictionary<string, object>();
+            
+            if (dto.Amount.HasValue)
+                stepData["amount"] = dto.Amount.Value;
+            if (dto.TermMonths.HasValue)
+                stepData["termMonths"] = dto.TermMonths.Value;
+            if (!string.IsNullOrEmpty(dto.Purpose))
+                stepData["purpose"] = dto.Purpose;
+            if (!string.IsNullOrEmpty(dto.BankName))
+                stepData["bankName"] = dto.BankName;
+            if (!string.IsNullOrEmpty(dto.AccountNumber))
+                stepData["accountNumber"] = dto.AccountNumber;
+            if (!string.IsNullOrEmpty(dto.AccountHolderName))
+                stepData["accountHolderName"] = dto.AccountHolderName;
+
+            // Use omnichannel service for update (handles affordability sync)
+            var application = await _omnichannelService.UpdateApplicationStepAsync(
+                id, 
+                userId, 
+                stepNumber, 
+                stepData);
+
+            return Ok(application);
         }
-        catch
+        catch (InvalidOperationException ex)
         {
-            // If parsing fails, keep existing StepData
+            return BadRequest(ex.Message);
         }
-
-        // Update specific fields based on step number
-        switch (stepNumber)
-        {
-            case 0: // Loan Amount
-                if (dto.Amount.HasValue)
-                    application.Amount = dto.Amount.Value;
-                break;
-            case 1: // Term Months
-                if (dto.TermMonths.HasValue)
-                    application.TermMonths = dto.TermMonths.Value;
-                break;
-            case 2: // Purpose
-                if (!string.IsNullOrEmpty(dto.Purpose))
-                    application.Purpose = dto.Purpose;
-                break;
-            case 3: // Affordability Review
-                application.IsAffordabilityIncluded = true;
-                break;
-            case 4: // Preview Terms - Calculate final amounts
-                if (application.Amount > 0 && application.TermMonths > 0)
-                {
-                    application.InterestRate = CalculateInterestRate(application.Amount, application.TermMonths);
-                    application.MonthlyPayment = CalculateMonthlyPayment(application.Amount, application.InterestRate, application.TermMonths);
-                    application.TotalAmount = application.MonthlyPayment * application.TermMonths;
-                }
-                break;
-            case 5: // Bank Details
-                if (!string.IsNullOrEmpty(dto.BankName))
-                    application.BankName = dto.BankName;
-                if (!string.IsNullOrEmpty(dto.AccountNumber))
-                    application.AccountNumber = dto.AccountNumber;
-                if (!string.IsNullOrEmpty(dto.AccountHolderName))
-                    application.AccountHolderName = dto.AccountHolderName;
-                break;
-        }
-
-        _context.LoanApplications.Update(application);
-        await _context.SaveChangesAsync();
-
-        return Ok(application);
     }
 
     /// <summary>
@@ -175,45 +132,39 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var application = await _context.LoanApplications
-            .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);
+        try
+        {
+            var application = await _omnichannelService.SubmitApplicationAsync(id, userId, dto.Otp);
+            return Ok(application);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Resume an in-progress application from a different channel.
+    /// Enables seamless switching between Web and WhatsApp.
+    /// </summary>
+    [HttpPost("resume")]
+    public async Task<ActionResult<LoanApplication>> ResumeApplication([FromBody] ResumeApplicationDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        var targetChannel = Enum.TryParse<LoanApplicationChannel>(dto.TargetChannel, out var ch)
+            ? ch
+            : LoanApplicationChannel.Web;
+
+        var application = await _omnichannelService.ResumeFromChannelAsync(
+            userId, 
+            targetChannel, 
+            phoneNumber: null);
 
         if (application == null)
-            return NotFound("Application not found");
-
-        if (application.Status != LoanStatus.Draft)
-            return BadRequest("Only draft applications can be submitted");
-
-        // Validate required fields
-        if (application.Amount <= 0)
-            return BadRequest("Loan amount is required");
-        if (application.TermMonths <= 0)
-            return BadRequest("Loan term is required");
-        if (string.IsNullOrEmpty(application.Purpose))
-            return BadRequest("Loan purpose is required");
-        if (string.IsNullOrEmpty(application.BankName) || string.IsNullOrEmpty(application.AccountNumber))
-            return BadRequest("Bank details are required");
-
-        // TODO: Validate OTP (dto.Otp) - For now, we'll skip this
-        // In production, you would verify the OTP against a stored value
-
-        // Update status to Pending for admin review
-        application.Status = LoanStatus.Pending;
-        application.ApplicationDate = DateTime.UtcNow;
-        application.CurrentStep = 7; // Completed all steps
-
-        // Calculate final amounts if not already done
-        if (application.InterestRate == 0)
-        {
-            application.InterestRate = CalculateInterestRate(application.Amount, application.TermMonths);
-            application.MonthlyPayment = CalculateMonthlyPayment(application.Amount, application.InterestRate, application.TermMonths);
-            application.TotalAmount = application.MonthlyPayment * application.TermMonths;
-        }
-
-        _context.LoanApplications.Update(application);
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation($"Loan application {id} submitted by user {userId}");
+            return NotFound("No draft application found to resume");
 
         return Ok(application);
     }
@@ -297,4 +248,8 @@ public class UpdateStepDto
 public class SubmitApplicationDto
 {
     public string? Otp { get; set; }
+}
+public class ResumeApplicationDto
+{
+    public string TargetChannel { get; set; } = "Web";
 }

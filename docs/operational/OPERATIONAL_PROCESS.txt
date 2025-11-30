@@ -1,0 +1,314 @@
+--- Page 1 ---
+ 
+High line process parameters  
+ 
+The process for money lending at Ho Hema Loans is structured to ensure responsible and efficient 
+service for clients. Below is a typical flow outlining the key steps:  
+1. Initial Inquiry: The client, typically an employee, expresses interest in obtaining a short -term 
+or advance loan.  This will be done through the WhatsApp platform with an automated bot 
+prompting  the applicant to sup ply input data in terms of expenses and amount required. At 
+this stage the system must advise already on the applicants qualified amount, not allowing 
+applicants  to request advance more than that amount  
+2. Affordability Assessment: Ho Hema Loans conducts a full affordability assessment, as 
+required by the National Credit Act 34 of 2005, for all applications —regardless of approval 
+outcome.  Adjustable parameters will be set up within the  Ho Hema  software , and again all 
+input will be done through WhatsApp.  
+3. Employer Engagement: Ho Hema works with the employer to establish advance credit 
+guidelines tailored to their business and staff needs.  These perimeters will be set up per 
+customer within the Ho Hema software.  
+4. Application Submission: The client submits a loan application following the procedures 
+agreed upon between Ho Hema and the employer  via WhatsApp.  
+5. Loan Processing: The  Ho Hema  software  validates employment  with time and attendance 
+software and withdraws important information  such as ID, pay slip, and employment  date  
+from payroll system . The source reference will be the ID number .  
+6. Approval: Upon successful assessment,  an agreement  must be forwarded to employee for 
+approval. This agreement must contain an AOD  and will be legitimized through an OTP sent  
+to the applicant.  the approved loan amount is disbursed to the client, typically as an advance 
+on wages already earned in the current wage cycle.  
+7. Disbursement of Funds: Once an advance has been approved the Ho Hema software will 
+create upload into bank, and prompt Administrator for release . If immediate payment is 
+required,  the system will escalate release within time perimeters . 
+8. Repayment: The hosting software will  create a deduction schedule with reference to the 
+AOD amount  and reference that will be sent  to the payroll system at cut off. date. The 
+option for both manual schedule reports  as well as  automated system integration will be 
+necessary.  
+This process ensures that both the client and the employer are fully informed and that all lending 
+practices remain compliant with regulatory requirements.  
+ 
+ 
+
+--- Page 2 ---
+ 
+Ho Hema Product  
+Advance : An advance payment to a customer has no interest and only has a transactional fee . There 
+is no interest accumulated . Validation is done on shifts accumulated for the mont h 
+Short Term Loan : This is a loan where payment terms do not exceed three months. Monthly interest 
+is raised,  and validation is made against affordability, and leave accumulated  
+It is important to note that Short term loans are regulated by NCR and therefor needs to be 
+reported on under a separate basket . Advance payments are purely access to funds already 
+earned where a short -term  loan is based on surety  determined by the value of the applicants  
+leave as well as funds earned.  
+PRODUCT  FEES INCLUDED  VALIDATION  
+Advance Payment  Transactional Fee, flat rate i.e. 
+R 60 per transaction  Value of shifts accumulated , 
+based on days worked, capped 
+at set parameter  
+Short Term Loan  Initiation  Fee (percentage 
+adjustable)  but capped within 
+NCR  
+Admin. Fee value adjustable  
+but capped within NCR  
+Interest 5% in first loan within 
+calendar  year , an 3% 
+thereafter  
+ Validation against Shifts 
+worked for the month as well 
+as leave accumulated. Capped 
+amount of 25%  of shifts and 
+full va lue of leave  
+ 
+Ho Hema Software  
+The Ho Hema software will integrate with the time and attendance system, for validation of shifts, as 
+well as payroll system, for validation of employment (and associated information such as ID nr., 
+employment date, leave accumulated etc.) . It will also “house” the input data details such as 
+affordability and ID and Bank Account details as s well as FAQ, processes and tutorial video’s.  
+The s et up of the parameters  to each client will be tailor -made . Perimeters will include.  
+• Short -term loans transactional fees  
+a) Initiation fee  
+b) Admin. Fee 
+c) Term  
+d) Interest is dictated to by regulation  
+• Advance  
+a) Transactional Fee  
+
+--- Page 3 ---
+ 
+Engagement Platform  
+The engagement platform wil l be WhatsApp Busine ss. This will be the only medium which will 
+facilitate communication with the applicant . It will however integrate with the  Ho Hema software 
+and facilitate input into Ho Hema software.  Response  will be automated through a bot and 
+discrepancies in input escalated to Administrator.  
+Detailed Process  
+Phase 1: Pre Set Up  
+Establishing Parameters  
+Ho Hema Loans will present to a prospective customer.  
+• Product Basket and Fees  
+• Integration  
+• System security  
+• Product advantages  
+During this we will establish the following parameters.  
+• Product offering  
+• Quantum Parameters  
+a) Value  
+b) Employee profile (years, grade)  
+c) Integration feasibility  
+Phase 2: Set up 
+Hosting Software set up with:  
+• Client Logo  and names in generic docs such as welcome docs and processes and FAQ  
+• Loan Parameters and Calculator  
+• Set up WhatsApp bot with welcome note  and references  to customer specific docs  
+Phase 3: Integration  
+a) Set UP integration with time and attendance and payroll system . Download employee 
+details  
+• ID nr.  
+• Employee no. 
+• Date engages  
+
+--- Page 4 ---
+ 
+• Leave accrued  
+• Rate of pay  
+• Phone Number  
+b) Integration into payroll for deduction schedule  
+c) Integration into bank  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- Page 5 ---
+ 
+Process Steps  
+Step 1 Introduction  
+All employees with details downloaded as per set parameters  receives a WhatsApp with 
+introduction communication from Ho Hema . Below example with two dropdowns:  
+DROPDOWN  
+a) I AM INTERESTED TO KNOW MORE  
+b) I WOULD LIKE TO APPLY  
+ 
+a) I AM INTERESTED TO KNOW MORE  
+DROP DOWN  
+• WHO IS HO HEMA LOANS  
+• WHAT DO WE OFFER  
+• OUR RATES  
+• HOW DOES IT WORK  
+• I WOULD LIKE TO APPLY  
+b) I WOULD LIKE TO APPLY  
+Step 2 Application  
+c) I WOULD LIKE TO APPLY  
+ 
+DROPDOWN  
+a) SHORT TERM LOAN  
+b) ADVANCE PAYMENT  
+ 
+1. SHORT TERM LOAN  
+1. Enter ID No  
+2. Please upload picture of ID  
+System Validate s active employees  against ID nr  
+Pulls all relevant information from  payroll   
+o Employee no  
+o Phone number  
+
+
+--- Page 6 ---
+ 
+o Remuniration for three months  
+o ID no 
+o Leave accumulated  
+o Bank account no  
+Pulls all relevant information from  T&A system  
+o Shifts accumulated  
+Note  
+(Calculates shifts accumulated  against rate to determine wage due)  
+ 
+3. ID validation successful  
+WhatsApp  
+ 
+DROPDOWN  
+a) Applicant enters company number  (Next level validation  against employee number ) 
+b) I DO NOT KNOW MY EMPLOYEE NUMBER  
+System validated against phone number  
+1.  
+2. Thank you , please enter your expenses   
+DROP Down BELOW  
+ 
+
+
+--- Page 7 ---
+ 
+Note  
+In the back ground  system confirms downloaded remuneration and does calculation based on 
+expenses  
+ 
+ 
+ 
+ 
+Step 3: Quote  
+ 
+ 
+ 
+DROPDOWN  
+A. (BOX NOT ALLOWING APLICANT TO ENTER M ORE THAN Max AMMOUNT REFERRED 
+TO 
+System calculated repayment amount and send quote  
+Quote has detailed breakdown of all fees and term  
+ 
+ 
+
+
+--- Page 8 ---
+ 
+ 
+ 
+B. I AM NO LONGER INTERESTED    
+DROPDOWN  
+1. I AGREE PLEASE  SEND  CONTRACT  
+2. I AM NO LONGER INTERESTED  
+ 
+ 
+DROPDOWN  
+o Account Holder  
+o Bank (Dropdown)  
+o Account Number  
+System verifies this against payroll, must be same  
+ 
+Step 4: Contract  
+System send contract  
+DROPDOWN  
+1. AGREE WITH TERMS AND CONDITIONS PLEASE SEND OTP  
+2. I AM NO LONGER INTERESTED  
+ 
+I DO NOT AGREE WITH TERMS  
+I NO LONGER NEED THE MONEY  
+ 
+AGREE WITH TERMS AND CONDITIONS PLEASE SEND OTP  
+System Send O TP 
+ 
+Applicant enters OTP  
+
+
+--- Page 9 ---
+ 
+Step 5: Deduction Schedule  
+System adds all employee deductions to schedule  
+o Per employee number  
+o Name and surname  
+o ID number  
+o Deductible amount  
+o Term  
+o Unique ref. Number  
+ 
+Step 6: Payment of Funds  
+System generates Payment amount  
+Generates schedule  
+Upload schedule into bank  
+Release payment in batch  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+

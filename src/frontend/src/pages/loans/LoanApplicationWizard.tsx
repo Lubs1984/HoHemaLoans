@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { apiService } from '../../services/api';
-import Step0_LoanAmount from './steps/Step0_LoanAmount';
-import Step1_TermMonths from './steps/Step1_TermMonths';
-import Step2_Purpose from './steps/Step2_Purpose';
-import Step3_AffordabilityReview from './steps/Step3_AffordabilityReview';
-import Step4_PreviewTerms from './steps/Step4_PreviewTerms';
-import Step5_BankDetails from './steps/Step5_BankDetails';
-import Step6_DigitalSignature from './steps/Step6_DigitalSignature';
+import Step0_LoanAmount from './steps/Step0_LoanAmount.tsx';
+import Step1_TermMonths from './steps/Step1_TermMonths.tsx';
+import Step2_Purpose from './steps/Step2_Purpose.tsx';
+import Step3_AffordabilityReview from './steps/Step3_AffordabilityReview.tsx';
+import Step4_PreviewTerms from './steps/Step4_PreviewTerms.tsx';
+import Step5_BankDetails from './steps/Step5_BankDetails.tsx';
+import Step6_DigitalSignature from './steps/Step6_DigitalSignature.tsx';
 
 interface LoanApplicationData {
   id?: string;
@@ -52,11 +52,15 @@ const LoanApplicationWizard: React.FC = () => {
     currentStep: 0,
   });
 
-  // Load existing draft application if ID is provided
+  // Load existing draft application if ID is provided, or resume from another channel
   useEffect(() => {
     const draftId = searchParams.get('id');
+    const shouldResume = searchParams.get('resume') === 'true';
+    
     if (draftId) {
       loadDraftApplication(draftId);
+    } else if (shouldResume) {
+      resumeApplication();
     } else {
       createDraftApplication();
     }
@@ -102,6 +106,44 @@ const LoanApplicationWizard: React.FC = () => {
     }
   };
 
+  const resumeApplication = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.request<any>('/loanapplications/resume', {
+        method: 'POST',
+        body: JSON.stringify({ targetChannel: 'Web' }),
+      });
+      
+      if (response) {
+        setApplicationData({
+          id: response.id,
+          amount: response.amount || 5000,
+          termMonths: response.termMonths || 12,
+          purpose: response.purpose || '',
+          bankName: response.bankName || '',
+          accountNumber: response.accountNumber || '',
+          accountHolderName: response.accountHolderName || '',
+          currentStep: response.currentStep || 0,
+          interestRate: response.interestRate,
+          monthlyPayment: response.monthlyPayment,
+          totalAmount: response.totalAmount,
+        });
+        setCurrentStep(response.currentStep || 0);
+      } else {
+        // No draft found, create new
+        await createDraftApplication();
+      }
+    } catch (err) {
+      // If no draft found, create new one
+      await createDraftApplication();
+    } finally {
+      setLoading(false);
+    }
+  };
+      setLoading(false);
+    }
+  };
+
   const saveStepData = async (stepNumber: number, data: Partial<LoanApplicationData>) => {
     if (!applicationData.id) return;
 
@@ -112,7 +154,6 @@ const LoanApplicationWizard: React.FC = () => {
         {
           method: 'PUT',
           body: JSON.stringify({
-            stepData: JSON.stringify(data),
             amount: data.amount,
             termMonths: data.termMonths,
             purpose: data.purpose,
@@ -123,7 +164,7 @@ const LoanApplicationWizard: React.FC = () => {
         }
       );
 
-      // Update local state with response
+      // Update local state with response (includes calculated fields)
       setApplicationData((prev) => ({
         ...prev,
         ...data,
@@ -169,6 +210,17 @@ const LoanApplicationWizard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleContinueOnWhatsApp = () => {
+    if (!applicationData.id) return;
+    
+    // TODO: Replace with actual WhatsApp business number
+    const whatsappNumber = '27822531234'; // Placeholder
+    const message = `RESUME ${applicationData.id}`;
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
 
   const renderStep = () => {
@@ -248,6 +300,28 @@ const LoanApplicationWizard: React.FC = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
+      {/* Continue on WhatsApp Button */}
+      {applicationData.id && currentStep < 6 && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <span className="text-3xl">📱</span>
+              <div>
+                <h3 className="font-semibold text-gray-900">Continue on WhatsApp</h3>
+                <p className="text-sm text-gray-600">Switch to WhatsApp to complete your application on the go</p>
+              </div>
+            </div>
+            <button
+              onClick={handleContinueOnWhatsApp}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium shadow-md hover:shadow-lg transition flex items-center space-x-2"
+            >
+              <span>Continue on WhatsApp</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
       )}
 
