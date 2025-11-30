@@ -316,78 +316,92 @@ const LoanDetailModal: React.FC<LoanDetailModalProps> = ({ loan, onClose, onUpda
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Loan Details</h2>
-          <button onClick={onClose} className="text-2xl hover:bg-blue-500 p-1 rounded">×</button>
+      <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex items-center justify-between z-10">
+          <h2 className="text-2xl font-bold">Loan Application Details</h2>
+          <button onClick={onClose} className="text-3xl hover:bg-blue-500 p-2 rounded transition">×</button>
         </div>
 
-        <div className="p-6 space-y-4">
-          {/* Applicant Info */}
+        <div className="p-8 space-y-6">{/* Applicant Info */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Applicant Information</h3>
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Applicant Information</h3>
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-5 rounded-lg border border-gray-200">
               <div>
-                <p className="text-sm text-gray-600">Name</p>
-                <p className="font-medium">{loan.user.firstName} {loan.user.lastName}</p>
+                <p className="text-sm font-medium text-gray-600">Name</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">{loan.user.firstName} {loan.user.lastName}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="font-medium">{loan.user.email}</p>
+                <p className="text-sm font-medium text-gray-600">Email</p>
+                <p className="text-lg font-medium text-gray-900 mt-1">{loan.user.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Phone</p>
-                <p className="font-medium">{loan.user.phoneNumber}</p>
+                <p className="text-sm font-medium text-gray-600">Phone</p>
+                <p className="text-lg font-medium text-gray-900 mt-1">{loan.user.phoneNumber}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Monthly Income</p>
-                <p className="font-medium">R {loan.user.monthlyIncome.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Monthly Income</p>
+                <p className="text-lg font-semibold text-green-600 mt-1">R {loan.user.monthlyIncome.toLocaleString()}</p>
               </div>
             </div>
           </div>
 
           {/* Loan Info */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Loan Details</h3>
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Loan Details</h3>
+            <div className="grid grid-cols-3 gap-4 bg-blue-50 p-5 rounded-lg border border-blue-200">
               <div>
-                <p className="text-sm text-gray-600">Requested Amount</p>
-                <p className="font-medium">R {loan.amount.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Requested Amount</p>
+                <p className="text-2xl font-bold text-blue-600 mt-1">R {loan.amount.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Current Status</p>
-                <p className="font-medium">{loan.status}</p>
+                <p className="text-sm font-medium text-gray-600">Current Status</p>
+                <p className="text-lg font-semibold text-gray-900 mt-1">
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    loan.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    loan.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                    loan.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {loan.status}
+                  </span>
+                </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Applied Date</p>
-                <p className="font-medium">{new Date(loan.applicationDate).toLocaleDateString()}</p>
+                <p className="text-sm font-medium text-gray-600">Applied Date</p>
+                <p className="text-lg font-medium text-gray-900 mt-1">{new Date(loan.applicationDate).toLocaleDateString('en-ZA', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</p>
               </div>
             </div>
           </div>
 
           {/* Actions */}
           {loan.status === 'Pending' && (
-            <div className="space-y-4 border-t pt-4">
+            <div className="space-y-4 border-t-2 border-gray-200 pt-6">
               {!action ? (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <button
                     onClick={() => setAction('approve')}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition"
                   >
-                    ✓ Approve
+                    ✓ Approve Loan
                   </button>
                   <button
                     onClick={() => setAction('reject')}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium"
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition"
                   >
-                    ✕ Reject
+                    ✕ Reject Loan
                   </button>
                 </div>
               ) : action === 'approve' ? (
-                <div className="space-y-3 bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900">Approve Loan</h4>
+                <div className="space-y-5 bg-green-50 p-6 rounded-lg border border-green-200">
+                  <h4 className="text-lg font-semibold text-gray-900">Approve Loan Application</h4>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-base font-medium text-gray-700 mb-2">
                       Interest Rate (%)
                     </label>
                     <input
@@ -395,73 +409,74 @@ const LoanDetailModal: React.FC<LoanDetailModalProps> = ({ loan, onClose, onUpda
                       step="0.1"
                       value={interestRate}
                       onChange={(e) => setInterestRate(parseFloat(e.target.value))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-base font-medium text-gray-700 mb-2">
                       Repayment Months
                     </label>
                     <input
                       type="number"
                       value={repaymentMonths}
                       onChange={(e) => setRepaymentMonths(parseInt(e.target.value))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Notes
+                    <label className="block text-base font-medium text-gray-700 mb-2">
+                      Notes (Optional)
                     </label>
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 resize-none"
-                      rows={2}
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-base resize-none focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                      rows={3}
+                      placeholder="Add any additional notes or conditions..."
                     />
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-4 pt-2">
                     <button
                       onClick={handleApprove}
                       disabled={loading}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold text-lg disabled:opacity-50 shadow-md hover:shadow-lg transition"
                     >
                       {loading ? 'Approving...' : 'Confirm Approval'}
                     </button>
                     <button
                       onClick={() => setAction(null)}
-                      className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-medium"
+                      className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3 bg-red-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900">Reject Loan</h4>
+                <div className="space-y-5 bg-red-50 p-6 rounded-lg border border-red-200">
+                  <h4 className="text-lg font-semibold text-gray-900">Reject Loan Application</h4>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-base font-medium text-gray-700 mb-2">
                       Reason for Rejection
                     </label>
                     <textarea
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 resize-none"
-                      rows={3}
+                      className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-base resize-none focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                      rows={4}
                       placeholder="Explain why this application is being rejected..."
                     />
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-4 pt-2">
                     <button
                       onClick={handleReject}
                       disabled={loading}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold text-lg disabled:opacity-50 shadow-md hover:shadow-lg transition"
                     >
                       {loading ? 'Rejecting...' : 'Confirm Rejection'}
                     </button>
                     <button
                       onClick={() => setAction(null)}
-                      className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-medium"
+                      className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-semibold text-lg shadow-md hover:shadow-lg transition"
                     >
                       Cancel
                     </button>
