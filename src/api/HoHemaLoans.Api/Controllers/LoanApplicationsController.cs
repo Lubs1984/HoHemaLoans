@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
+using HoHemaLoans.Api.Services;
 using System.Security.Claims;
 
 namespace HoHemaLoans.Api.Controllers;
@@ -248,8 +249,4 @@ public class UpdateStepDto
 public class SubmitApplicationDto
 {
     public string? Otp { get; set; }
-}
-public class ResumeApplicationDto
-{
-    public string TargetChannel { get; set; } = "Web";
 }
