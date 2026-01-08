@@ -120,13 +120,22 @@ const LoanApplications: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Loan Applications</h1>
           <p className="text-gray-600">View and manage your loan applications</p>
         </div>
-        <Link
-          to="/loans/apply"
-          className="btn btn-primary inline-flex items-center"
-        >
-          <PlusIcon className="w-5 h-5 mr-2" />
-          New Application
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            to="/loans/new"
+            className="btn btn-primary inline-flex items-center"
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            New Loan (Worker)
+          </Link>
+          <Link
+            to="/loans/apply"
+            className="btn bg-gray-600 hover:bg-gray-700 text-white inline-flex items-center"
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Legacy Application
+          </Link>
+        </div>
       </div>
 
       {error && (

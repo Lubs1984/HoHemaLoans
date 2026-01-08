@@ -69,6 +69,31 @@ public class LoanApplication
     [StringLength(100)]
     public string? AccountHolderName { get; set; }
     
+    // Worker earnings fields
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? HoursWorked { get; set; }
+    
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? HourlyRate { get; set; }
+    
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? MonthlyEarnings { get; set; }
+    
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? MaxLoanAmount { get; set; }
+    
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal? AppliedInterestRate { get; set; }
+    
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? AppliedAdminFee { get; set; }
+    
+    public int? RepaymentDay { get; set; } // 25-31
+    
+    public DateTime? ExpectedRepaymentDate { get; set; }
+    
+    public bool HasIncomeExpenseChanged { get; set; } = false;
+    
     // Navigation properties
     [ForeignKey("UserId")]
     public virtual ApplicationUser User { get; set; } = null!;

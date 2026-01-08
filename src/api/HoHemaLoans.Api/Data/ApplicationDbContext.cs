@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
     public DbSet<LoanApplication> LoanApplications { get; set; }
+    public DbSet<SystemSettings> SystemSettings { get; set; }
     public DbSet<WhatsAppSession> WhatsAppSessions { get; set; }
     public DbSet<WhatsAppContact> WhatsAppContacts { get; set; }
     public DbSet<WhatsAppConversation> WhatsAppConversations { get; set; }

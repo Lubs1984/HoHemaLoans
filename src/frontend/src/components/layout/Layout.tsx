@@ -23,6 +23,7 @@ const navigation = [
 
 const adminNavigation = [
   { name: 'Admin Dashboard', href: '/admin', icon: Cog6ToothIcon },
+  { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
   { name: 'Loan Management', href: '/admin/loans', icon: DocumentTextIcon },
   { name: 'Loan Payouts', href: '/admin/payouts', icon: BanknotesIcon },
   { name: 'WhatsApp Messages', href: '/admin/whatsapp', icon: HomeIcon },

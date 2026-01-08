@@ -78,7 +78,7 @@ public class OmnichannelLoanService : IOmnichannelLoanService
                 };
 
                 _context.WhatsAppSessions.Add(session);
-                application.WhatsAppSessionId = session.Id;
+                application.WhatsAppSessionId = session.Id.ToString();
             }
         }
 
@@ -211,10 +211,11 @@ public class OmnichannelLoanService : IOmnichannelLoanService
         application.CurrentStep = 7; // All steps completed
 
         // Update WhatsApp session if exists
-        if (application.WhatsAppSessionId.HasValue)
+        if (!string.IsNullOrEmpty(application.WhatsAppSessionId))
         {
+            var sessionId = Guid.Parse(application.WhatsAppSessionId);
             var session = await _context.WhatsAppSessions
-                .FirstOrDefaultAsync(s => s.Id == application.WhatsAppSessionId);
+                .FirstOrDefaultAsync(s => s.Id == sessionId);
 
             if (session != null)
             {
@@ -264,9 +265,12 @@ public class OmnichannelLoanService : IOmnichannelLoanService
             // Create or update WhatsApp session
             if (!string.IsNullOrEmpty(phoneNumber))
             {
-                var existingSession = application.WhatsAppSessionId.HasValue
-                    ? await _context.WhatsAppSessions.FindAsync(application.WhatsAppSessionId.Value)
-                    : null;
+                WhatsAppSession? existingSession = null;
+                if (!string.IsNullOrEmpty(application.WhatsAppSessionId))
+                {
+                    var sessionId = Guid.Parse(application.WhatsAppSessionId);
+                    existingSession = await _context.WhatsAppSessions.FindAsync(sessionId);
+                }
 
                 if (existingSession == null)
                 {
@@ -283,7 +287,7 @@ public class OmnichannelLoanService : IOmnichannelLoanService
                     };
 
                     _context.WhatsAppSessions.Add(newSession);
-                    application.WhatsAppSessionId = newSession.Id;
+                    application.WhatsAppSessionId = newSession.Id.ToString();
                 }
                 else
                 {

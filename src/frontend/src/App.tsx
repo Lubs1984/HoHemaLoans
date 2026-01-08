@@ -10,12 +10,14 @@ const Login = React.lazy(() => import('./pages/auth/Login'));
 const Register = React.lazy(() => import('./pages/auth/Register'));
 const LoanApplications = React.lazy(() => import('./pages/loans/LoanApplications'));
 const LoanApplicationWizard = React.lazy(() => import('./pages/loans/LoanApplicationWizard'));
+const NewLoanWizard = React.lazy(() => import('./pages/loans/NewLoanWizard'));
 const LoanApplicationDetail = React.lazy(() => import('./pages/loans/LoanApplicationDetail'));
 const Affordability = React.lazy(() => import('./pages/affordability/Affordability'));
 const Profile = React.lazy(() => import('./pages/auth/Profile'));
 
 // Admin components
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
 const AdminLoans = React.lazy(() => import('./pages/admin/AdminLoans'));
 const AdminPayouts = React.lazy(() => import('./pages/admin/AdminPayouts'));
 const AdminWhatsApp = React.lazy(() => import('./pages/admin/AdminWhatsApp'));
@@ -112,6 +114,7 @@ function App() {
                 }
               >
                 <Route index element={<AdminDashboard />} />
+                <Route path="settings" element={<AdminSettings />} />
                 <Route path="loans" element={<AdminLoans />} />
                 <Route path="payouts" element={<AdminPayouts />} />
                 <Route path="whatsapp" element={<AdminWhatsApp />} />
@@ -129,6 +132,7 @@ function App() {
               >
                 <Route index element={<Dashboard />} />
                 <Route path="loans" element={<LoanApplications />} />
+                <Route path="loans/new" element={<NewLoanWizard />} />
                 <Route path="loans/apply" element={<LoanApplicationWizard />} />
                 <Route path="loans/:id" element={<LoanApplicationDetail />} />
                 <Route path="affordability" element={<Affordability />} />

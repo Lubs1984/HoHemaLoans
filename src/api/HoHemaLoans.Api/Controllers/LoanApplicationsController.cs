@@ -155,7 +155,7 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var targetChannel = Enum.TryParse<LoanApplicationChannel>(dto.TargetChannel, out var ch)
+        var targetChannel = Enum.TryParse<LoanApplicationChannel>(dto.Channel, out var ch)
             ? ch
             : LoanApplicationChannel.Web;
 
@@ -170,7 +170,75 @@ public class LoanApplicationsController : ControllerBase
         return Ok(application);
     }
 
+    /// <summary>
+    /// Create a new worker-based loan application
+    /// </summary>
     [HttpPost]
+    public async Task<ActionResult<LoanApplication>> CreateWorkerLoanApplication(CreateWorkerLoanDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Unauthorized();
+
+        try
+        {
+            // Calculate expected repayment date
+            var today = DateTime.UtcNow;
+            var repaymentDate = new DateTime(
+                today.Month == 12 ? today.Year + 1 : today.Year,
+                today.Month == 12 ? 1 : today.Month + 1,
+                Math.Min(dto.RepaymentDay, DateTime.DaysInMonth(
+                    today.Month == 12 ? today.Year + 1 : today.Year,
+                    today.Month == 12 ? 1 : today.Month + 1))
+            );
+
+            var application = new LoanApplication
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Amount = dto.Amount,
+                TotalAmount = dto.TotalAmount,
+                TermMonths = dto.TermMonths,
+                Purpose = dto.Purpose,
+                Status = LoanStatus.Pending,
+                InterestRate = dto.AppliedInterestRate / 100m,
+                MonthlyPayment = dto.TotalAmount, // Single payment
+                ApplicationDate = DateTime.UtcNow,
+                ChannelOrigin = LoanApplicationChannel.Web,
+                WebInitiatedDate = DateTime.UtcNow,
+                CurrentStep = 7, // Completed all steps
+                
+                // Worker earnings fields
+                HoursWorked = dto.HoursWorked,
+                HourlyRate = dto.HourlyRate,
+                MonthlyEarnings = dto.MonthlyEarnings,
+                MaxLoanAmount = dto.MaxLoanAmount,
+                AppliedInterestRate = dto.AppliedInterestRate,
+                AppliedAdminFee = dto.AppliedAdminFee,
+                RepaymentDay = dto.RepaymentDay,
+                ExpectedRepaymentDate = repaymentDate,
+                HasIncomeExpenseChanged = dto.HasIncomeExpenseChanged,
+                IsAffordabilityIncluded = true
+            };
+
+            _context.LoanApplications.Add(application);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "[LOAN] Worker loan application created: {ApplicationId} for user {UserId}, Amount: R{Amount}",
+                application.Id, userId, application.Amount
+            );
+
+            return CreatedAtAction(nameof(GetLoanApplication), new { id = application.Id }, application);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[LOAN] Error creating worker loan application for user {UserId}", userId);
+            return StatusCode(500, new { message = "Failed to create loan application" });
+        }
+    }
+
+    [HttpPost("legacy")]
     public async Task<ActionResult<LoanApplication>> CreateLoanApplication(CreateLoanApplicationDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -249,4 +317,20 @@ public class UpdateStepDto
 public class SubmitApplicationDto
 {
     public string? Otp { get; set; }
+}
+
+public class CreateWorkerLoanDto
+{
+    public decimal HoursWorked { get; set; }
+    public decimal HourlyRate { get; set; }
+    public decimal MonthlyEarnings { get; set; }
+    public decimal Amount { get; set; }
+    public decimal MaxLoanAmount { get; set; }
+    public decimal AppliedInterestRate { get; set; }
+    public decimal AppliedAdminFee { get; set; }
+    public decimal TotalAmount { get; set; }
+    public int RepaymentDay { get; set; }
+    public string Purpose { get; set; } = string.Empty;
+    public bool HasIncomeExpenseChanged { get; set; }
+    public int TermMonths { get; set; }
 }
