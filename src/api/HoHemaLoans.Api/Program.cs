@@ -174,11 +174,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        var frontendUrl = builder.Configuration["FRONTEND_URL"];
-        var envFrontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
+        var corsOrigins = builder.Configuration["CORS_ORIGINS"] ?? Environment.GetEnvironmentVariable("CORS_ORIGINS");
+        var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? Environment.GetEnvironmentVariable("FRONTEND_URL");
         
-        Console.WriteLine($"[DEBUG] FRONTEND_URL from config: {frontendUrl}");
-        Console.WriteLine($"[DEBUG] FRONTEND_URL from env: {envFrontendUrl}");
+        Console.WriteLine($"[DEBUG] CORS_ORIGINS: {corsOrigins}");
+        Console.WriteLine($"[DEBUG] FRONTEND_URL: {frontendUrl}");
         
         // Build list of allowed origins
         var allowedOrigins = new List<string>
@@ -189,16 +189,23 @@ builder.Services.AddCors(options =>
             "https://hohemaweb-development.up.railway.app"
         };
         
+        // Parse CORS_ORIGINS (comma-separated list)
+        if (!string.IsNullOrEmpty(corsOrigins))
+        {
+            var origins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var origin in origins)
+            {
+                if (!allowedOrigins.Contains(origin))
+                {
+                    allowedOrigins.Add(origin);
+                }
+            }
+        }
+        
         // Add FRONTEND_URL if configured
         if (!string.IsNullOrEmpty(frontendUrl) && !allowedOrigins.Contains(frontendUrl))
         {
             allowedOrigins.Add(frontendUrl);
-        }
-        
-        // Add from environment variable if set
-        if (!string.IsNullOrEmpty(envFrontendUrl) && !allowedOrigins.Contains(envFrontendUrl))
-        {
-            allowedOrigins.Add(envFrontendUrl);
         }
         
         Console.WriteLine($"[DEBUG] CORS allowed origins: {string.Join(", ", allowedOrigins)}");
