@@ -28,6 +28,9 @@ public class AffordabilityAssessment
     [Column(TypeName = "decimal(18,2)")]
     public decimal NonEssentialExpenses { get; set; }
     
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal ExistingDebtPayments { get; set; } // Total monthly debt obligations (loans + debt expenses)
+    
     // Affordability Metrics
     [Column(TypeName = "decimal(5,2)")]
     public decimal DebtToIncomeRatio { get; set; } // Debt / Gross Income - Should be < 0.35 per NCA
