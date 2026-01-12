@@ -1,0 +1,33 @@
+# Railway ignore file - exclude unnecessary files from deployment
+
+# Development files
+.git/
+.vscode/
+.vs/
+*.md
+!README.md
+
+# Build artifacts
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+
+# Local environment files
+**/.env.local
+**/.env.*.local
+**/appsettings.Development.json
+
+# Test files
+**/Tests/
+**/*.Test/
+**/*.Tests/
+
+# Documentation (except main README)
+docs/
+scripts/dev-start.sh
+scripts/docker-dev.sh
+
+# Docker files (we use specific Dockerfiles)
+docker-compose.yml
+**/Dockerfile.dev

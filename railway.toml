@@ -3,30 +3,16 @@
 
 [build]
 builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.api"
 
 [deploy]
 numReplicas = 1
 restartPolicyMaxRetries = 10
+startCommand = "dotnet HoHemaLoans.Api.dll"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
 
-# Services configuration
-[[services]]
-name = "api"
-root = "src/api/HoHemaLoans.Api"
-dockerfile = "Dockerfile"
-port = 8080
-
-[services.healthcheck]
-path = "/"
-timeout = 30
-interval = 10
-
-[[services]]
-name = "frontend"
-root = "src/frontend"
-dockerfile = "Dockerfile"
-port = 3000
-
-[[services]]
-name = "postgres"
-# Railway manages PostgreSQL automatically
-type = "postgresql"
+# Environment variables that Railway should inject
+[env]
+ASPNETCORE_ENVIRONMENT = "Production"
+ASPNETCORE_URLS = "http://+:$PORT"
