@@ -21,3 +21,5 @@ healthcheckTimeout = 30
 [env]
 ASPNETCORE_ENVIRONMENT = "Production"
 ASPNETCORE_URLS = "http://+:$PORT"
+Railway__SkipHttpsRedirection = "true"
+CORS_ORIGINS = "https://hohemaweb-development.up.railway.app"
