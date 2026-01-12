@@ -4,35 +4,61 @@ import type { LoginRequest, LoginResponse, RegisterRequest } from '../types';
 function getApiUrl(): string {
   // 1. Check for runtime config (set by docker-entrypoint.sh)
   if ((window as any).__API_URL__) {
+    console.log('[API] Using runtime config API URL:', (window as any).__API_URL__);
     return (window as any).__API_URL__;
   }
   
   // 2. Check for build-time env var
   if (import.meta.env.VITE_API_URL) {
+    console.log('[API] Using VITE_API_URL:', import.meta.env.VITE_API_URL);
     return import.meta.env.VITE_API_URL;
   }
   
-  // 3. Docker development: use service name
-  if (typeof window !== 'undefined' && window.location.hostname === 'hohema-frontend') {
-    return 'http://hohema-api:5000/api';
+  // 3. Railway detection - if on Railway frontend, use Railway API
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Check if we're on Railway
+    if (hostname.includes('hohemaweb-development.up.railway.app')) {
+      const apiUrl = 'https://hohemaapi-development.up.railway.app';
+      console.log('[API] Detected Railway environment, using:', apiUrl);
+      return apiUrl;
+    }
+    
+    if (hostname.includes('hohemaweb') && hostname.includes('railway.app')) {
+      // For other Railway deployments, try to infer API URL
+      const apiUrl = hostname.replace('hohemaweb', 'hohemaapi');
+      console.log('[API] Detected Railway environment, using:', `https://${apiUrl}`);
+      return `https://${apiUrl}`;
+    }
   }
   
-  // 4. Smart local development fallback
+  // 4. Docker development: use service name
+  if (typeof window !== 'undefined' && window.location.hostname === 'hohema-frontend') {
+    console.log('[API] Using Docker service name: http://hohema-api:5000');
+    return 'http://hohema-api:5000';
+  }
+  
+  // 5. Smart local development fallback
   // If accessed via localhost, use localhost:5001
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return 'http://localhost:5001/api';
+    console.log('[API] Using localhost: http://localhost:5001');
+    return 'http://localhost:5001';
   }
   
-  // 5. Docker localhost detection - if port is 5174 (frontend port)
+  // 6. Docker localhost detection - if port is 5174 (frontend port)
   if (typeof window !== 'undefined' && window.location.port === '5174') {
-    return 'http://localhost:5001/api';
+    console.log('[API] Using localhost (port 5174): http://localhost:5001');
+    return 'http://localhost:5001';
   }
   
-  // 6. Default fallback for production
+  // 7. Default fallback for production
+  console.log('[API] Using default relative path: /api');
   return '/api';
 }
 
 const API_BASE_URL = getApiUrl();
+console.log('[API] Final API base URL:', API_BASE_URL);
 
 class ApiService {
   private baseUrl = API_BASE_URL;
@@ -42,6 +68,8 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    
+    console.log(`[API] Making ${options.method || 'GET'} request to:`, url);
     
     // Get token from auth store
     const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
@@ -58,7 +86,10 @@ class ApiService {
         ...options,
         headers,
         credentials: 'include',
+        mode: 'cors',
       });
+
+      console.log(`[API] Response status:`, response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -71,18 +102,24 @@ class ApiService {
           errorMessage = errorText || errorMessage;
         }
         
+        console.error(`[API] Error response:`, errorMessage);
         throw new Error(errorMessage);
       }
 
       // Handle empty responses
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
-        return await response.json();
+        const data = await response.json();
+        console.log(`[API] Success response received`);
+        return data;
       }
       
       return {} as T;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('[API] Request failed:', error);
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+      }
       throw error;
     }
   }

@@ -20,7 +20,7 @@ public class HealthController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        _logger.LogInformation("[HEALTH] Health check endpoint called");
+        _logger.LogInformation("[HEALTH] Health check endpoint called from origin: {origin}", Request.Headers["Origin"].ToString());
         
         try
         {
@@ -33,6 +33,11 @@ public class HealthController : ControllerBase
                 timestamp = DateTime.UtcNow,
                 service = "HoHema Loans API",
                 version = "1.0.0",
+                cors = new
+                {
+                    origin = Request.Headers["Origin"].ToString(),
+                    allowedOrigins = Response.Headers["Access-Control-Allow-Origin"].ToString()
+                },
                 database = new
                 {
                     connected = canConnect,
