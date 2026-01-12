@@ -4,6 +4,11 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.api"
+watchPatterns = ["src/**"]
+
+# Use development branch for deployments
+[deploy.source]
+branch = "development"
 
 [deploy]
 numReplicas = 1
