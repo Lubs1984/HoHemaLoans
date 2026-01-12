@@ -179,8 +179,8 @@ builder.Services.AddCors(options =>
         var environment = builder.Configuration["ASPNETCORE_ENVIRONMENT"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
         
         Console.WriteLine($"[DEBUG] Environment: {environment}");
-        Console.WriteLine($"[DEBUG] CORS_ORIGINS: {corsOrigins}");
-        Console.WriteLine($"[DEBUG] FRONTEND_URL: {frontendUrl}");
+        Console.WriteLine($"[DEBUG] CORS_ORIGINS from config/env: {corsOrigins}");
+        Console.WriteLine($"[DEBUG] FRONTEND_URL from config/env: {frontendUrl}");
         
         // Build list of allowed origins
         var allowedOrigins = new List<string>();
@@ -197,7 +197,7 @@ builder.Services.AddCors(options =>
             });
         }
         
-        // Add Railway development URLs
+        // ALWAYS add Railway development URLs (hardcoded for reliability)
         allowedOrigins.Add("https://hohemaweb-development.up.railway.app");
         
         // Parse CORS_ORIGINS (comma-separated list)
@@ -208,6 +208,7 @@ builder.Services.AddCors(options =>
             {
                 if (!string.IsNullOrEmpty(origin) && !allowedOrigins.Contains(origin))
                 {
+                    Console.WriteLine($"[DEBUG] Adding CORS origin from config: {origin}");
                     allowedOrigins.Add(origin);
                 }
             }
@@ -216,18 +217,24 @@ builder.Services.AddCors(options =>
         // Add FRONTEND_URL if configured
         if (!string.IsNullOrEmpty(frontendUrl) && !allowedOrigins.Contains(frontendUrl))
         {
+            Console.WriteLine($"[DEBUG] Adding FRONTEND_URL: {frontendUrl}");
             allowedOrigins.Add(frontendUrl);
         }
         
-        Console.WriteLine($"[DEBUG] CORS allowed origins count: {allowedOrigins.Count}");
-        Console.WriteLine($"[DEBUG] CORS allowed origins: {string.Join(", ", allowedOrigins)}");
+        Console.WriteLine($"[DEBUG] ==========================================");
+        Console.WriteLine($"[DEBUG] CORS Configuration:");
+        Console.WriteLine($"[DEBUG] Total allowed origins: {allowedOrigins.Count}");
+        foreach (var origin in allowedOrigins)
+        {
+            Console.WriteLine($"[DEBUG]   - {origin}");
+        }
+        Console.WriteLine($"[DEBUG] ==========================================");
         
         policy.WithOrigins(allowedOrigins.ToArray())
-              .SetIsOriginAllowedToAllowWildcardSubdomains()
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
-              .WithExposedHeaders("*");
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 
@@ -323,14 +330,15 @@ app.Use(async (context, next) =>
 });
 
 // Configure the HTTP request pipeline.
+
+// CORS must be the VERY FIRST middleware (before swagger, before anything)
+app.UseCors("AllowFrontend");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// CORS must come FIRST, before any other middleware
-app.UseCors("AllowFrontend");
 
 // Skip HTTPS redirection on Railway (Railway handles SSL)
 if (!builder.Configuration.GetValue<bool>("Railway:SkipHttpsRedirection"))
