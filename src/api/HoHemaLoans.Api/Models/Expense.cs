@@ -14,7 +14,7 @@ public class Expense
     [Required]
     [StringLength(100)]
     public string Category { get; set; } = string.Empty; 
-    // Per National Credit Act & affordability guidelines: Rent, Bond, Groceries, Utilities, Insurance, Debt, Transport, Childcare, Healthcare, Education, Other
+    // Housing, Utilities, Transport, Food, Debt, Communication, Insurance, Dependents, Medical, Personal, Other
     
     [Required]
     [StringLength(200)]

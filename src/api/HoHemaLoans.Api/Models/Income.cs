@@ -13,7 +13,8 @@ public class Income
     
     [Required]
     [StringLength(100)]
-    public string SourceType { get; set; } = string.Empty; // Employment, SelfEmployment, Grant, Investment, Other
+    public string SourceType { get; set; } = string.Empty; 
+    // Employment, SelfEmployment, GovernmentGrants, Other
     
     [Required]
     [StringLength(200)]

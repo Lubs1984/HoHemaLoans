@@ -41,8 +41,26 @@ interface Affordability {
   expiryDate: string;
 }
 
-const INCOME_SOURCES = ['Employment', 'Self-Employment', 'Grant', 'Investment', 'Pension', 'Other'];
-const EXPENSE_CATEGORIES = ['Rent', 'Bond', 'Groceries', 'Utilities', 'Insurance', 'Debt', 'Transport', 'Childcare', 'Healthcare', 'Education', 'Other'];
+const INCOME_SOURCES = [
+  { value: 'Employment', label: 'Employment (Salary/Wages)' },
+  { value: 'SelfEmployment', label: 'Self-Employment/Business' },
+  { value: 'GovernmentGrants', label: 'Government Grants' },
+  { value: 'Other', label: 'Other Income' }
+];
+
+const EXPENSE_CATEGORIES = [
+  { value: 'Housing', label: 'Housing (Rent/Bond)', essential: true },
+  { value: 'Utilities', label: 'Utilities (Water/Electricity)', essential: true },
+  { value: 'Transport', label: 'Transport (Fuel/Public)', essential: true },
+  { value: 'Food', label: 'Food & Groceries', essential: true },
+  { value: 'Debt', label: 'Debt Repayments', essential: true },
+  { value: 'Communication', label: 'Communication (Phone/Internet)', essential: true },
+  { value: 'Insurance', label: 'Insurance', essential: true },
+  { value: 'Dependents', label: 'Dependents (Childcare/Support)', essential: true },
+  { value: 'Medical', label: 'Medical & Healthcare', essential: true },
+  { value: 'Personal', label: 'Personal & Lifestyle', essential: false },
+  { value: 'Other', label: 'Other Expenses', essential: false }
+];
 
 const Profile: React.FC = () => {
   const { user } = useAuthStore();
@@ -250,7 +268,7 @@ const Profile: React.FC = () => {
                     >
                       <option value="">Select source...</option>
                       {INCOME_SOURCES.map((source) => (
-                        <option key={source} value={source}>{source}</option>
+                        <option key={source.value} value={source.value}>{source.label}</option>
                       ))}
                     </select>
                   </div>
@@ -359,12 +377,19 @@ const Profile: React.FC = () => {
                     <select
                       required
                       value={newExpense.category}
-                      onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                      onChange={(e) => {
+                        const selected = EXPENSE_CATEGORIES.find(c => c.value === e.target.value);
+                        setNewExpense({ 
+                          ...newExpense, 
+                          category: e.target.value,
+                          isEssential: selected?.essential || false
+                        });
+                      }}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
                       <option value="">Select category...</option>
                       {EXPENSE_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat.value} value={cat.value}>{cat.label}</option>
                       ))}
                     </select>
                   </div>
