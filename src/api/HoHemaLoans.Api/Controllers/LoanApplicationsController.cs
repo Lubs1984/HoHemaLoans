@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
 using HoHemaLoans.Api.Services;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace HoHemaLoans.Api.Controllers;
@@ -180,6 +181,12 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
+        // Validate repayment day range
+        if (dto.RepaymentDay < 25 || dto.RepaymentDay > 31)
+        {
+            return BadRequest(new { message = "Repayment day must be between 25 and 31" });
+        }
+
         try
         {
             // Calculate expected repayment date
@@ -321,16 +328,37 @@ public class SubmitApplicationDto
 
 public class CreateWorkerLoanDto
 {
+    [Required]
+    [Range(0.1, 1000, ErrorMessage = "Hours worked must be between 0.1 and 1000")]
     public decimal HoursWorked { get; set; }
+    
+    [Required]
+    [Range(1, 10000, ErrorMessage = "Hourly rate must be between R1 and R10,000")]
     public decimal HourlyRate { get; set; }
+    
+    [Required]
     public decimal MonthlyEarnings { get; set; }
+    
+    [Required]
+    [Range(1, 1000000, ErrorMessage = "Loan amount must be between R1 and R1,000,000")]
     public decimal Amount { get; set; }
+    
     public decimal MaxLoanAmount { get; set; }
     public decimal AppliedInterestRate { get; set; }
     public decimal AppliedAdminFee { get; set; }
     public decimal TotalAmount { get; set; }
+    
+    [Required]
+    [Range(25, 31, ErrorMessage = "Repayment day must be between 25 and 31")]
     public int RepaymentDay { get; set; }
+    
+    [Required]
+    [StringLength(100, MinimumLength = 3, ErrorMessage = "Purpose must be between 3 and 100 characters")]
     public string Purpose { get; set; } = string.Empty;
+    
     public bool HasIncomeExpenseChanged { get; set; }
+    
+    [Required]
+    [Range(1, 1, ErrorMessage = "Worker loans are single-payment only (1 month term)")]
     public int TermMonths { get; set; }
 }

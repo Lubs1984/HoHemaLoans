@@ -16,6 +16,7 @@ interface LoanApplication {
   approvalDate?: string;
   channelOrigin: string;
   currentStep: number;
+  repaymentDay?: number;
 }
 
 const LoanApplications: React.FC = () => {
@@ -95,6 +96,16 @@ const LoanApplications: React.FC = () => {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const getOrdinalSuffix = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
   };
 
   if (isLoading) {
@@ -185,6 +196,9 @@ const LoanApplications: React.FC = () => {
                     Monthly Payment
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Repayment Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -212,6 +226,9 @@ const LoanApplications: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatCurrency(app.monthlyPayment)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {app.repaymentDay ? `${app.repaymentDay}${getOrdinalSuffix(app.repaymentDay)} of month` : 'Not set'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(app.status)}
