@@ -17,6 +17,9 @@ interface LoanApplication {
   channelOrigin: string;
   currentStep: number;
   repaymentDay?: number;
+  affordabilityStatus?: string;
+  passedAffordabilityCheck?: boolean;
+  affordabilityNotes?: string;
 }
 
 const LoanApplications: React.FC = () => {
@@ -106,6 +109,25 @@ const LoanApplications: React.FC = () => {
       case 3: return 'rd';
       default: return 'th';
     }
+  };
+
+  const getAffordabilityBadge = (status?: string, _passed?: boolean) => {
+    if (!status) return null;
+    
+    const config = {
+      'Affordable': { color: 'bg-green-100 text-green-800', icon: '✓', text: 'Affordable' },
+      'LimitedAffordability': { color: 'bg-yellow-100 text-yellow-800', icon: '⚠', text: 'Limited' },
+      'NotAffordable': { color: 'bg-red-100 text-red-800', icon: '✗', text: 'Not Affordable' }
+    };
+
+    const statusConfig = config[status as keyof typeof config] || config.Affordable;
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.color}`}>
+        <span className="mr-1">{statusConfig.icon}</span>
+        {statusConfig.text}
+      </span>
+    );
   };
 
   if (isLoading) {
@@ -199,6 +221,9 @@ const LoanApplications: React.FC = () => {
                     Repayment Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Affordability
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -229,6 +254,9 @@ const LoanApplications: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {app.repaymentDay ? `${app.repaymentDay}${getOrdinalSuffix(app.repaymentDay)} of month` : 'Not set'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getAffordabilityBadge(app.affordabilityStatus, app.passedAffordabilityCheck)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(app.status)}

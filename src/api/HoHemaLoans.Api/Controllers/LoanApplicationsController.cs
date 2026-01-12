@@ -19,17 +19,20 @@ public class LoanApplicationsController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<LoanApplicationsController> _logger;
     private readonly IOmnichannelLoanService _omnichannelService;
+    private readonly IAffordabilityService _affordabilityService;
 
     public LoanApplicationsController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
         ILogger<LoanApplicationsController> logger,
-        IOmnichannelLoanService omnichannelService)
+        IOmnichannelLoanService omnichannelService,
+        IAffordabilityService affordabilityService)
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
         _omnichannelService = omnichannelService;
+        _affordabilityService = affordabilityService;
     }
 
     [HttpGet]
@@ -189,6 +192,21 @@ public class LoanApplicationsController : ControllerBase
 
         try
         {
+            // Check affordability before creating loan
+            var affordabilityAssessment = await _affordabilityService.CalculateAffordabilityAsync(userId);
+            var canAfford = await _affordabilityService.CanAffordLoanAsync(userId, dto.Amount, dto.TotalAmount);
+            
+            if (!canAfford)
+            {
+                _logger.LogWarning(
+                    "[LOAN] User {UserId} failed affordability check for loan amount {Amount}, Status: {Status}",
+                    userId, dto.Amount, affordabilityAssessment.AffordabilityStatus
+                );
+                
+                // Still create the application but mark it for review
+                // Admin can override affordability decision
+            }
+
             // Calculate expected repayment date
             var today = DateTime.UtcNow;
             var repaymentDate = new DateTime(
@@ -225,7 +243,12 @@ public class LoanApplicationsController : ControllerBase
                 RepaymentDay = dto.RepaymentDay,
                 ExpectedRepaymentDate = repaymentDate,
                 HasIncomeExpenseChanged = dto.HasIncomeExpenseChanged,
-                IsAffordabilityIncluded = true
+                IsAffordabilityIncluded = true,
+                
+                // Affordability tracking
+                AffordabilityStatus = affordabilityAssessment.AffordabilityStatus,
+                PassedAffordabilityCheck = canAfford,
+                AffordabilityNotes = affordabilityAssessment.AssessmentNotes
             };
 
             _context.LoanApplications.Add(application);

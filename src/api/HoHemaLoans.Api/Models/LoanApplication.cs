@@ -61,6 +61,14 @@ public class LoanApplication
     public bool IsAffordabilityIncluded { get; set; } = false;
     
     [StringLength(20)]
+    public string? AffordabilityStatus { get; set; } // From affordability assessment: Affordable, LimitedAffordability, NotAffordable
+    
+    public bool PassedAffordabilityCheck { get; set; } = false;
+    
+    [StringLength(500)]
+    public string? AffordabilityNotes { get; set; }
+    
+    [StringLength(20)]
     public string? BankName { get; set; }
     
     [StringLength(50)]
