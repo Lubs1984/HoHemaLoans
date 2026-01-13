@@ -99,6 +99,18 @@ string ConvertPostgresUriToConnectionString(string uri)
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure PORT is set for Railway
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    Console.WriteLine($"[STARTUP] Binding to Railway PORT: {port}");
+}
+else
+{
+    Console.WriteLine($"[STARTUP] No PORT environment variable, using default Kestrel configuration");
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -286,35 +298,37 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // Log startup information
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? $"http://+:{port}";
+var actualPort = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 Console.WriteLine($"[STARTUP] ==========================================");
 Console.WriteLine($"[STARTUP] HoHema Loans API Starting...");
 Console.WriteLine($"[STARTUP] Environment: {app.Environment.EnvironmentName}");
-Console.WriteLine($"[STARTUP] PORT: {port}");
-Console.WriteLine($"[STARTUP] ASPNETCORE_URLS: {urls}");
+Console.WriteLine($"[STARTUP] PORT: {actualPort}");
+Console.WriteLine($"[STARTUP] Binding: http://0.0.0.0:{actualPort}");
 Console.WriteLine($"[STARTUP] ==========================================");
 
-// Run database migrations synchronously on startup
-Console.WriteLine("[STARTUP] Applying database migrations...");
-try
+// Run database migrations in background (don't block startup)
+_ = Task.Run(async () =>
 {
-    using (var scope = app.Services.CreateScope())
+    await Task.Delay(1000); // Let the app start listening first
+    Console.WriteLine("[STARTUP] Applying database migrations in background...");
+    try
     {
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        
-        logger.LogInformation("[STARTUP] Running database migrations...");
-        context.Database.Migrate();
-        logger.LogInformation("[STARTUP] Database migrations completed successfully");
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            
+            logger.LogInformation("[STARTUP] Running database migrations...");
+            context.Database.Migrate();
+            logger.LogInformation("[STARTUP] Database migrations completed successfully");
+        }
     }
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"[ERROR] Failed to apply database migrations: {ex.Message}");
-    Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
-    // Continue anyway - Railway needs the app to be listening
-}
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERROR] Failed to apply database migrations: {ex.Message}");
+        Console.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+    }
+});
 
 // Add global exception handling middleware
 app.Use(async (context, next) =>
@@ -392,8 +406,8 @@ _ = Task.Run(async () =>
     }
 });
 
-Console.WriteLine($"[STARTUP] Application started successfully!");
-Console.WriteLine($"[STARTUP] Listening on: {urls}");
-Console.WriteLine($"[STARTUP] Health check: {urls.Replace("+", "0.0.0.0")}/health");
+Console.WriteLine($"[STARTUP] ✅ Application started successfully!");
+Console.WriteLine($"[STARTUP] 🚀 Listening on: http://0.0.0.0:{actualPort}");
+Console.WriteLine($"[STARTUP] 💚 Health check: http://0.0.0.0:{actualPort}/health");
 
 app.Run();

@@ -20,6 +20,6 @@ healthcheckInterval = 20
 # Environment variables that Railway should inject
 [env]
 ASPNETCORE_ENVIRONMENT = "Production"
-ASPNETCORE_URLS = "http://+:$PORT"
+ASPNETCORE_URLS = "http://0.0.0.0:$PORT"
 Railway__SkipHttpsRedirection = "true"
 CORS_ORIGINS = "https://hohemaweb-development.up.railway.app"
