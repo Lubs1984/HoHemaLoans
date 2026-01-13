@@ -11,26 +11,33 @@ public class TestDataController : ControllerBase
     private readonly TestDataSeeder _seeder;
     private readonly ILogger<TestDataController> _logger;
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
     public TestDataController(
         TestDataSeeder seeder,
         ILogger<TestDataController> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         _seeder = seeder;
         _logger = logger;
         _configuration = configuration;
+        _environment = environment;
     }
 
     /// <summary>
     /// Seeds test data with 4 different user scenarios
-    /// Only available in Development environment
+    /// Only available in Development/Non-Production environments
     /// </summary>
     [HttpPost("seed")]
     public async Task<IActionResult> SeedTestData()
     {
-        // Only allow in development
-        if (!_configuration.GetValue<bool>("IsDevelopment", false))
+        // Allow in development or when IsDevelopment is explicitly set
+        var isDevelopment = _environment.IsDevelopment() || 
+                           _configuration.GetValue<bool>("IsDevelopment", false) ||
+                           _environment.EnvironmentName == "Development";
+        
+        if (!isDevelopment)
         {
             return BadRequest(new { message = "Test data seeding is only available in development environment" });
         }
