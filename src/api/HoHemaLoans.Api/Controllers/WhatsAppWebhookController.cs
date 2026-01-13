@@ -32,24 +32,41 @@ public class WhatsAppWebhookController : ControllerBase
 
     /// <summary>
     /// GET endpoint for webhook verification with Meta
+    /// Meta sends: hub.mode, hub.verify_token, hub.challenge
     /// </summary>
     [HttpGet("webhook")]
     [AllowAnonymous]
     public async Task<IActionResult> VerifyWebhook(
-        [FromQuery] string mode,
-        [FromQuery] string token,
-        [FromQuery] string challenge)
+        [FromQuery(Name = "hub.mode")] string? hubMode,
+        [FromQuery(Name = "hub.verify_token")] string? hubVerifyToken,
+        [FromQuery(Name = "hub.challenge")] string? hubChallenge,
+        [FromQuery] string? mode,
+        [FromQuery] string? token,
+        [FromQuery] string? challenge)
     {
-        _logger.LogInformation("Webhook verification request. Mode: {Mode}, Token present: {TokenPresent}",
-            mode, !string.IsNullOrEmpty(token));
+        // Support both Meta's format (hub.*) and simple format for testing
+        var actualMode = hubMode ?? mode;
+        var actualToken = hubVerifyToken ?? token;
+        var actualChallenge = hubChallenge ?? challenge;
 
-        var isValid = await _whatsAppService.VerifyWebhookAsync(mode, token, challenge);
+        _logger.LogInformation("Webhook verification request. Mode: {Mode}, Token present: {TokenPresent}",
+            actualMode, !string.IsNullOrEmpty(actualToken));
+
+        if (string.IsNullOrEmpty(actualMode) || string.IsNullOrEmpty(actualToken) || string.IsNullOrEmpty(actualChallenge))
+        {
+            _logger.LogWarning("Missing required webhook verification parameters");
+            return BadRequest("Missing required parameters");
+        }
+
+        var isValid = await _whatsAppService.VerifyWebhookAsync(actualMode, actualToken, actualChallenge);
 
         if (isValid)
         {
-            return Ok(challenge);
+            _logger.LogInformation("Webhook verification successful, returning challenge");
+            return Ok(actualChallenge);
         }
 
+        _logger.LogWarning("Webhook verification failed");
         return Unauthorized("Webhook verification failed");
     }
 
