@@ -285,6 +285,16 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// Log startup information
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? $"http://+:{port}";
+Console.WriteLine($"[STARTUP] ==========================================");
+Console.WriteLine($"[STARTUP] HoHema Loans API Starting...");
+Console.WriteLine($"[STARTUP] Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"[STARTUP] PORT: {port}");
+Console.WriteLine($"[STARTUP] ASPNETCORE_URLS: {urls}");
+Console.WriteLine($"[STARTUP] ==========================================");
+
 // Run database migrations synchronously on startup
 Console.WriteLine("[STARTUP] Applying database migrations...");
 try
@@ -381,5 +391,9 @@ _ = Task.Run(async () =>
         Console.WriteLine($"[ERROR] Background database seeding failed: {ex}");
     }
 });
+
+Console.WriteLine($"[STARTUP] Application started successfully!");
+Console.WriteLine($"[STARTUP] Listening on: {urls}");
+Console.WriteLine($"[STARTUP] Health check: {urls.Replace("+", "0.0.0.0")}/health");
 
 app.Run();

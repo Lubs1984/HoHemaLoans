@@ -13,9 +13,9 @@ branch = "development"
 [deploy]
 numReplicas = 1
 restartPolicyMaxRetries = 10
-startCommand = "dotnet HoHemaLoans.Api.dll"
 healthcheckPath = "/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 100
+healthcheckInterval = 20
 
 # Environment variables that Railway should inject
 [env]
