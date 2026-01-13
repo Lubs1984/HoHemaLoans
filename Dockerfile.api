@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0.11 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Verify .NET version
@@ -15,7 +15,7 @@ COPY . .
 WORKDIR "/src/src/api/HoHemaLoans.Api"
 RUN dotnet publish -c Release -o /app/publish /p:TargetFramework=net8.0
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.11
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim
 WORKDIR /app
 COPY --from=build /app/publish .
 
