@@ -88,7 +88,7 @@ public class WhatsAppService : IWhatsAppService
         try
         {
             var cleanPhoneNumber = CleanPhoneNumber(phoneNumber);
-            var url = $"https://graph.instagram.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+            var url = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
 
             var request = new
             {
@@ -126,7 +126,7 @@ public class WhatsAppService : IWhatsAppService
         try
         {
             var cleanPhoneNumber = CleanPhoneNumber(phoneNumber);
-            var url = $"https://graph.instagram.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+            var url = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
 
             var parameterList = parameters?.Select(p => new { type = "text", text = p }).Cast<object>().ToList() ?? new List<object>();
 
@@ -172,7 +172,7 @@ public class WhatsAppService : IWhatsAppService
         try
         {
             var cleanPhoneNumber = CleanPhoneNumber(phoneNumber);
-            var url = $"https://graph.instagram.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+            var url = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
 
             var mediaTypeUpper = mediaType.ToLower();
             
