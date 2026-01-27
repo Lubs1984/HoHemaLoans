@@ -1,6 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { apiService } from '../../services/api';
+
+interface LoanApplication {
+  id: string;
+  status: string;
+}
 
 const Dashboard: React.FC = () => {
+  const [draftApplication, setDraftApplication] = useState<LoanApplication | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadDraftApplication();
+  }, []);
+
+  const loadDraftApplication = async () => {
+    try {
+      setIsLoading(true);
+      const applications = await apiService.getLoanApplications();
+      const draft = applications.find((app: LoanApplication) => app.status === 'Draft');
+      setDraftApplication(draft || null);
+    } catch (err) {
+      console.error('Failed to load applications:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -70,8 +97,25 @@ const Dashboard: React.FC = () => {
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="space-y-3">
-            <button className="w-full btn-primary">Apply for Salary Advance</button>
-            <button className="w-full btn-secondary">Apply for Short-term Loan</button>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : draftApplication ? (
+              <Link
+                to={`/loans/new?id=${draftApplication.id}`}
+                className="w-full btn-primary block text-center"
+              >
+                Resume Application
+              </Link>
+            ) : (
+              <Link
+                to="/loans/new"
+                className="w-full btn-primary block text-center"
+              >
+                New Loan Application
+              </Link>
+            )}
           </div>
         </div>
 

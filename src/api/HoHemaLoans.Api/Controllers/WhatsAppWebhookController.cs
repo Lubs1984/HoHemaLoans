@@ -79,6 +79,10 @@ public class WhatsAppWebhookController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("========== WhatsApp Webhook POST Received ==========");
+            _logger.LogInformation("Request ContentType: {ContentType}", Request.ContentType);
+            _logger.LogInformation("Request Headers: {Headers}", string.Join(", ", Request.Headers.Keys));
+
             // Read and verify signature (optional but recommended)
             var signature = Request.Headers["X-Hub-Signature-256"].ToString();
             if (!string.IsNullOrEmpty(signature))
@@ -91,15 +95,21 @@ public class WhatsAppWebhookController : ControllerBase
             }
 
             // Parse the webhook payload
+            _logger.LogInformation("Parsing webhook payload...");
             var payload = await _whatsAppService.ParseWebhookAsync(Request.Body);
 
             if (payload == null || payload.Entry == null || payload.Entry.Count == 0)
             {
                 _logger.LogWarning("Empty or invalid webhook payload");
-                return Ok(); // Return OK anyway to acknowledge receipt
+                return Ok(new { status = "received", message = "Empty payload" }); // Return OK to acknowledge receipt
             }
 
+            _logger.LogInformation("Webhook payload parsed successfully. Entries: {Count}", payload.Entry.Count);
+
             // Process each entry in the webhook
+            var messagesProcessed = 0;
+            var statusesProcessed = 0;
+
             foreach (var entry in payload.Entry)
             {
                 if (entry.Changes == null) continue;
@@ -111,23 +121,42 @@ public class WhatsAppWebhookController : ControllerBase
                     // Process incoming messages
                     if (change.Value.Messages != null)
                     {
+                        _logger.LogInformation("Processing {Count} incoming messages", change.Value.Messages.Count);
                         await ProcessIncomingMessagesAsync(change.Value);
+                        messagesProcessed += change.Value.Messages.Count;
                     }
 
                     // Process message status updates (delivered, read, failed, etc.)
                     if (change.Value.Statuses != null)
                     {
+                        _logger.LogInformation("Processing {Count} status updates", change.Value.Statuses.Count);
                         await ProcessMessageStatusesAsync(change.Value);
+                        statusesProcessed += change.Value.Statuses.Count;
                     }
                 }
             }
 
-            return Ok(new { success = true });
+            _logger.LogInformation("Webhook processing complete. Messages: {Messages}, Statuses: {Statuses}", 
+                messagesProcessed, statusesProcessed);
+
+            return Ok(new { 
+                status = "received", 
+                messagesProcessed, 
+                statusesProcessed 
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing webhook");
-            return StatusCode(500, new { error = "Internal server error" });
+            _logger.LogError(ex, "Error processing webhook: {Message}", ex.Message);
+            _logger.LogError("Stack trace: {StackTrace}", ex.StackTrace);
+            
+            // Return 200 OK even on error to prevent Meta from retrying
+            // Log the error but acknowledge receipt
+            return Ok(new { 
+                status = "error", 
+                message = "Error processing webhook, but acknowledged",
+                error = ex.Message 
+            });
         }
     }
 
@@ -179,6 +208,9 @@ public class WhatsAppWebhookController : ControllerBase
                     _ => $"[{message.Type} message]"
                 };
 
+                _logger.LogInformation("Creating WhatsApp message record: From={From}, Type={Type}, Text={Text}",
+                    phoneNumber, messageType, messageText.Length > 100 ? messageText.Substring(0, 100) + "..." : messageText);
+
                 // Create and store the message
                 var whatsAppMessage = new WhatsAppMessage
                 {
@@ -203,8 +235,12 @@ public class WhatsAppWebhookController : ControllerBase
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation(
-                    "Processed incoming message from {PhoneNumber}. Type: {MessageType}, Content: {Content}",
-                    phoneNumber, messageType, messageText);
+                    "✅ SUCCESS: Saved message to database. MessageId={MessageId}, From={PhoneNumber}, ConversationId={ConversationId}, ContactId={ContactId}",
+                    whatsAppMessage.Id, phoneNumber, conversation.Id, contact.Id);
+                
+                _logger.LogInformation(
+                    "Message details - Type: {MessageType}, Direction: {Direction}, Status: {Status}, Text: {Content}",
+                    messageType, whatsAppMessage.Direction, whatsAppMessage.Status, messageText);
             }
             catch (Exception ex)
             {

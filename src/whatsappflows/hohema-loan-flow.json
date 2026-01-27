@@ -472,6 +472,7 @@
                                 "on-click-action": {
                                     "name": "navigate",
                                     "next": {
+                                        "name": "external_link",
                                         "type": "external_link",
                                         "url": "https://hohemaweb-development.up.railway.app/affordability"
                                     }
@@ -713,6 +714,7 @@
                                 "on-click-action": {
                                     "name": "navigate",
                                     "next": {
+                                        "name": "external_link",
                                         "type": "external_link",
                                         "url": "${data.tracking_url}"
                                     }

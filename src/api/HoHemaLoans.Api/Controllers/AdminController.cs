@@ -354,6 +354,9 @@ public class AdminController : ControllerBase
         [FromQuery] int pageSize = 50,
         [FromQuery] string? search = null)
     {
+        _logger.LogInformation("Admin requesting WhatsApp conversations. Page={Page}, PageSize={PageSize}, Search={Search}", 
+            page, pageSize, search);
+
         var query = _context.WhatsAppConversations
             .Include(c => c.Contact)
             .Include(c => c.Messages)
@@ -367,6 +370,9 @@ public class AdminController : ControllerBase
         }
 
         var totalCount = await query.CountAsync();
+        
+        _logger.LogInformation("Found {Count} total WhatsApp conversations", totalCount);
+
         var conversations = await query
             .OrderByDescending(c => c.UpdatedAt)
             .Skip((page - 1) * pageSize)
@@ -374,20 +380,54 @@ public class AdminController : ControllerBase
             .Select(c => new
             {
                 c.Id,
+                c.Subject,
+                c.Status,
+                c.Type,
+                c.CreatedAt,
+                c.UpdatedAt,
                 Contact = new
                 {
                     c.Contact.Id,
                     c.Contact.PhoneNumber,
                     c.Contact.DisplayName
                 },
-                Messages = c.Messages.OrderByDescending(m => m.CreatedAt).Take(10)
-                    .Select(m => new { m.Id, m.MessageText, m.Direction, m.CreatedAt, m.Status })
-                    .ToList(),
-                c.UpdatedAt
+                MessageCount = c.Messages.Count,
+                UnreadCount = c.Messages.Count(m => m.Direction == MessageDirection.Inbound && m.Status != MessageStatus.Read),
+                LastMessage = c.Messages
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Select(m => new 
+                    { 
+                        m.Id, 
+                        m.MessageText, 
+                        m.Direction, 
+                        m.CreatedAt, 
+                        m.Status,
+                        m.Type
+                    })
+                    .FirstOrDefault(),
+                Messages = c.Messages
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Take(20)
+                    .Select(m => new 
+                    { 
+                        m.Id, 
+                        m.MessageText, 
+                        m.Direction, 
+                        m.CreatedAt, 
+                        m.Status,
+                        m.Type,
+                        m.MediaUrl,
+                        m.MediaType,
+                        m.DeliveredAt,
+                        m.ReadAt
+                    })
+                    .ToList()
             })
             .ToListAsync();
 
         var pageCount = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        _logger.LogInformation("Returning {Count} conversations for page {Page}", conversations.Count, page);
 
         return Ok(new
         {
@@ -405,14 +445,24 @@ public class AdminController : ControllerBase
     [HttpPost("whatsapp/send-message")]
     public async Task<ActionResult> SendMessage([FromBody] SendWhatsAppMessageDto dto)
     {
+        _logger.LogInformation("Admin sending WhatsApp message. ConversationId={ConversationId}, ContentLength={Length}", 
+            dto.ConversationId, dto.Content?.Length ?? 0);
+
         if (!int.TryParse(dto.ConversationId, out var conversationId))
+        {
+            _logger.LogWarning("Invalid conversation ID format: {ConversationId}", dto.ConversationId);
             return BadRequest("Invalid conversation ID");
+        }
 
         var conversation = await _context.WhatsAppConversations
+            .Include(c => c.Contact)
             .FirstOrDefaultAsync(c => c.Id == conversationId);
 
         if (conversation == null)
+        {
+            _logger.LogWarning("Conversation not found: {ConversationId}", conversationId);
             return NotFound("Conversation not found");
+        }
 
         // Determine message direction (outbound for admin sending)
         var direction = MessageDirection.Outbound;
@@ -425,6 +475,7 @@ public class AdminController : ControllerBase
             ConversationId = conversationId,
             ContactId = conversation.ContactId,
             MessageText = dto.Content,
+            Type = MessageType.Text,
             Direction = direction,
             Status = status,
             CreatedAt = DateTime.UtcNow
@@ -434,7 +485,15 @@ public class AdminController : ControllerBase
         conversation.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Message sent", messageId = message.Id });
+        _logger.LogInformation("✅ Message saved to database. MessageId={MessageId}, To={PhoneNumber}", 
+            message.Id, conversation.Contact.PhoneNumber);
+
+        return Ok(new { 
+            message = "Message sent", 
+            messageId = message.Id,
+            conversationId = conversationId,
+            timestamp = message.CreatedAt
+        });
     }
 
     // ============= USER MANAGEMENT =============
