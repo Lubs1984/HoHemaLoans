@@ -1,5 +1,10 @@
 # WhatsApp Integration Setup for Railway
 
+## API Version & Documentation
+
+**API Version:** v24.0  
+**OpenAPI Reference:** https://github.com/facebook/openapi
+
 ## Environment Variables (Already Configured)
 
 Add these to your Railway API service under **Variables**:
@@ -7,7 +12,7 @@ Add these to your Railway API service under **Variables**:
 ```bash
 WhatsApp__AccessToken=EAAI5txi38s8BQGvigGoI1LT43A84Y5JK6ePoOj6ijqqPkmmnSnRNnzSLVx0XfaS68epituqfQKHlPvZB2zpOZBPZB6FhbdAZBOS1jmlt7jC5hVWFxzdjsNZCqMjN4t6uk2vEKN7Ry1ixZBVHvanz6tI78oZCm1ZChsgmuLOWVpwTop5qsvFpqBJztlvPqbBdSDRjruJjX3ZAHPbi7Hw36ArGGkiYZBtJVINqwOXaCSc0a8iUgtRNLdbZBONkZCr5ZCDbz0qoyS0Kk9svnQnWPq9CSsQZDZD
 
-WhatsApp__ApiVersion=v22.0
+WhatsApp__ApiVersion=v24.0
 
 WhatsApp__PhoneNumberId=933810716485561
 
