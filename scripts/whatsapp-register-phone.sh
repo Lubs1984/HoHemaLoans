@@ -14,8 +14,8 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}=== WhatsApp Business API Phone Number Registration ===${NC}\n"
 
 # Configuration
-PHONE_NUMBER_ID="417098424822509"
-API_VERSION="v22.0"
+PHONE_NUMBER_ID="933810716485561"
+API_VERSION="v24.0"
 
 # Prompt for access token
 echo -e "${YELLOW}Enter your WhatsApp Business Access Token:${NC}"

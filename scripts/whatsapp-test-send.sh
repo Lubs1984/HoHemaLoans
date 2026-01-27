@@ -14,8 +14,8 @@ NC='\033[0m'
 echo -e "${GREEN}=== WhatsApp Test Message Sender ===${NC}\n"
 
 # Configuration
-PHONE_NUMBER_ID="417098424822509"
-API_VERSION="v22.0"
+PHONE_NUMBER_ID="933810716485561"
+API_VERSION="v24.0"
 
 # Get access token
 echo -e "${YELLOW}Enter your WhatsApp Business Access Token:${NC}"
