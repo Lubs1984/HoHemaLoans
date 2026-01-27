@@ -9,7 +9,9 @@ WhatsApp__AccessToken=EAAI5txi38s8BQGvigGoI1LT43A84Y5JK6ePoOj6ijqqPkmmnSnRNnzSLV
 
 WhatsApp__ApiVersion=v22.0
 
-WhatsApp__PhoneNumberId=417098424822509
+WhatsApp__PhoneNumberId=933810716485561
+
+WhatsApp__BusinessAccountId=2124933594979327
 
 WhatsApp__VerifyToken=your_webhook_verify_token_123456
 

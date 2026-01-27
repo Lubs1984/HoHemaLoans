@@ -31,9 +31,11 @@ ASPNETCORE_URLS=http://+:$PORT
 
 ### Optional: WhatsApp Integration
 ```bash
-WHATSAPP_ACCESS_TOKEN=<your-whatsapp-token>
-WHATSAPP_PHONE_NUMBER_ID=<your-phone-number-id>
-WHATSAPP_VERIFY_TOKEN=<your-webhook-verify-token>
+WhatsApp__AccessToken=<your-whatsapp-access-token>
+WhatsApp__PhoneNumberId=933810716485561
+WhatsApp__BusinessAccountId=2124933594979327
+WhatsApp__VerifyToken=<your-webhook-verify-token>
+WhatsApp__ApiVersion=v24.0
 ```
 
 ## How to Set Environment Variables in Railway
