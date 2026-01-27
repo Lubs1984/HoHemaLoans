@@ -213,7 +213,7 @@ const LoanApplicationWizard: React.FC = () => {
     if (!applicationData.id) return;
     
     // TODO: Replace with actual WhatsApp business number
-    const whatsappNumber = '27822531234'; // Placeholder
+    const whatsappNumber = '27619912528'; // Placeholder
     const message = `RESUME ${applicationData.id}`;
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
