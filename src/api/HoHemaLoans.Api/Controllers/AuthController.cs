@@ -192,19 +192,31 @@ public class AuthController : ControllerBase
             // Send PIN via WhatsApp using the hohemalogin template
             try
             {
+                // Try template first
                 var sent = await _whatsAppService.SendTemplateMessageAsync(
                     model.PhoneNumber, 
                     "hohemalogin", 
                     new List<string> { pin }
                 );
 
+                // If template fails, fall back to plain text message
                 if (!sent)
                 {
-                    _logger.LogError($"[MOBILE-LOGIN] WhatsApp service returned false for: {model.PhoneNumber}");
+                    _logger.LogWarning($"[MOBILE-LOGIN] Template failed, trying plain text to: {model.PhoneNumber}");
+                    sent = await _whatsAppService.SendMessageAsync(
+                        model.PhoneNumber,
+                        $"Your HoHema Loans login PIN is: {pin}\n\nThis PIN expires in 5 minutes. Do not share this code with anyone."
+                    );
+                }
+
+                if (!sent)
+                {
+                    _logger.LogError($"[MOBILE-LOGIN] Both template and plain text failed for: {model.PhoneNumber}");
                     return StatusCode(500, new { 
                         error = "Failed to send verification PIN", 
-                        details = "WhatsApp service failed. Check: 1) Template 'hohemalogin' exists and is approved, 2) WhatsApp credentials are configured, 3) Phone number format is correct",
-                        phoneNumber = model.PhoneNumber
+                        details = "WhatsApp service failed. Check: 1) WhatsApp credentials in appsettings.json, 2) Phone number is registered in WhatsApp, 3) Check API logs for more details",
+                        phoneNumber = model.PhoneNumber,
+                        suggestion = "Create template 'hohemalogin' in WhatsApp Business Manager for production use"
                     });
                 }
 
@@ -321,18 +333,33 @@ public class AuthController : ControllerBase
             // Generate test PIN
             var testPin = "123456";
             
-            // Try to send via WhatsApp
-            var sent = await _whatsAppService.SendTemplateMessageAsync(
+            // Try template first
+            var templateSent = await _whatsAppService.SendTemplateMessageAsync(
                 model.PhoneNumber, 
                 "hohemalogin", 
                 new List<string> { testPin }
             );
 
-            if (sent)
+            // If template fails, try plain text
+            var plainTextSent = false;
+            if (!templateSent)
+            {
+                _logger.LogWarning($"[TEST] Template failed, trying plain text to: {model.PhoneNumber}");
+                plainTextSent = await _whatsAppService.SendMessageAsync(
+                    model.PhoneNumber,
+                    "Test message from HoHema Loans. Your WhatsApp integration is working!"
+                );
+            }
+
+            if (templateSent || plainTextSent)
             {
                 return Ok(new { 
                     success = true,
-                    message = "Test message sent successfully!",
+                    templateWorked = templateSent,
+                    plainTextWorked = plainTextSent,
+                    message = templateSent 
+                        ? "Template message sent successfully!" 
+                        : "Template failed but plain text message worked. Create 'hohemalogin' template in WhatsApp Business Manager.",
                     phoneNumber = model.PhoneNumber,
                     testPin = testPin
                 });
@@ -341,13 +368,15 @@ public class AuthController : ControllerBase
             {
                 return Ok(new { 
                     success = false,
-                    message = "WhatsApp service returned false",
+                    message = "Both template and plain text failed. Check WhatsApp credentials.",
                     phoneNumber = model.PhoneNumber,
                     checks = new[] {
-                        "Is the 'hohemalogin' template created and approved in WhatsApp Business?",
-                        "Are WhatsApp credentials configured in appsettings.json?",
-                        "Is the phone number in E.164 format (+27...)?",
-                        "Check the API logs for more details"
+                        "1. Verify WhatsApp credentials in appsettings.json",
+                        "2. Check phone number is registered on WhatsApp",
+                        "3. Create 'hohemalogin' template in WhatsApp Business Manager",
+                        "4. Check API logs for detailed error messages",
+                        "5. Verify phone number format is E.164 (+27xxxxxxxxx)",
+                        "6. Test with your own WhatsApp number first"
                     }
                 });
             }
