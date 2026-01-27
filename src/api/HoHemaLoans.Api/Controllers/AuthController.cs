@@ -190,19 +190,35 @@ public class AuthController : ControllerBase
             CleanExpiredPins();
 
             // Send PIN via WhatsApp using the hohemalogin template
-            var sent = await _whatsAppService.SendTemplateMessageAsync(
-                model.PhoneNumber, 
-                "hohemalogin", 
-                new List<string> { pin }
-            );
-
-            if (!sent)
+            try
             {
-                _logger.LogError($"[MOBILE-LOGIN] Failed to send WhatsApp PIN to: {model.PhoneNumber}");
-                return StatusCode(500, "Failed to send verification PIN");
-            }
+                var sent = await _whatsAppService.SendTemplateMessageAsync(
+                    model.PhoneNumber, 
+                    "hohemalogin", 
+                    new List<string> { pin }
+                );
 
-            _logger.LogInformation($"[MOBILE-LOGIN] PIN sent successfully to: {model.PhoneNumber}");
+                if (!sent)
+                {
+                    _logger.LogError($"[MOBILE-LOGIN] WhatsApp service returned false for: {model.PhoneNumber}");
+                    return StatusCode(500, new { 
+                        error = "Failed to send verification PIN", 
+                        details = "WhatsApp service failed. Check: 1) Template 'hohemalogin' exists and is approved, 2) WhatsApp credentials are configured, 3) Phone number format is correct",
+                        phoneNumber = model.PhoneNumber
+                    });
+                }
+
+                _logger.LogInformation($"[MOBILE-LOGIN] PIN sent successfully to: {model.PhoneNumber}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[MOBILE-LOGIN] Exception sending WhatsApp PIN to: {model.PhoneNumber}");
+                return StatusCode(500, new { 
+                    error = "Failed to send verification PIN", 
+                    details = ex.Message,
+                    phoneNumber = model.PhoneNumber
+                });
+            }
             
             return Ok(new { 
                 message = "PIN sent to your WhatsApp", 
@@ -292,6 +308,58 @@ public class AuthController : ControllerBase
         {
             _logger.LogError(ex, $"[MOBILE-LOGIN] Exception during PIN verification for: {model?.PhoneNumber}");
             return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+
+    [HttpPost("test-whatsapp")]
+    public async Task<IActionResult> TestWhatsApp(PhoneLoginDto model)
+    {
+        try
+        {
+            _logger.LogInformation($"[TEST] Testing WhatsApp to: {model.PhoneNumber}");
+            
+            // Generate test PIN
+            var testPin = "123456";
+            
+            // Try to send via WhatsApp
+            var sent = await _whatsAppService.SendTemplateMessageAsync(
+                model.PhoneNumber, 
+                "hohemalogin", 
+                new List<string> { testPin }
+            );
+
+            if (sent)
+            {
+                return Ok(new { 
+                    success = true,
+                    message = "Test message sent successfully!",
+                    phoneNumber = model.PhoneNumber,
+                    testPin = testPin
+                });
+            }
+            else
+            {
+                return Ok(new { 
+                    success = false,
+                    message = "WhatsApp service returned false",
+                    phoneNumber = model.PhoneNumber,
+                    checks = new[] {
+                        "Is the 'hohemalogin' template created and approved in WhatsApp Business?",
+                        "Are WhatsApp credentials configured in appsettings.json?",
+                        "Is the phone number in E.164 format (+27...)?",
+                        "Check the API logs for more details"
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[TEST] Exception testing WhatsApp to: {model.PhoneNumber}");
+            return StatusCode(500, new { 
+                success = false,
+                error = ex.Message,
+                stackTrace = ex.StackTrace
+            });
         }
     }
 
