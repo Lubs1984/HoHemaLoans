@@ -3,24 +3,35 @@ import { apiService } from '../../services/api';
 import { PaperAirplaneIcon, CheckIcon } from '@heroicons/react/24/solid';
 
 interface WhatsAppContact {
-  id: string;
+  id: number;
   phoneNumber: string;
-  name: string;
+  displayName: string;
 }
 
 interface WhatsAppMessage {
-  id: string;
-  content: string;
+  id: number;
+  messageText: string;
   direction: string;
-  timestamp: string;
+  createdAt: string;
   status: string;
+  type?: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  deliveredAt?: string;
+  readAt?: string;
 }
 
 interface WhatsAppConversation {
-  id: string;
+  id: number;
   contact: WhatsAppContact;
-  lastMessage: string;
-  lastMessageTime: string;
+  subject?: string;
+  status?: string;
+  type?: string;
+  createdAt: string;
+  updatedAt: string;
+  messageCount?: number;
+  unreadCount?: number;
+  lastMessage?: WhatsAppMessage;
   messages: WhatsAppMessage[];
 }
 
@@ -116,9 +127,16 @@ const AdminWhatsApp: React.FC = () => {
                       : 'hover:bg-gray-50'
                   }`}
                 >
-                  <p className="font-medium text-gray-900">{conv.contact.name}</p>
+                  <p className="font-medium text-gray-900">{conv.contact.displayName}</p>
                   <p className="text-sm text-gray-600 truncate">{conv.contact.phoneNumber}</p>
-                  <p className="text-xs text-gray-500 mt-1 truncate">{conv.lastMessage}</p>
+                  <p className="text-xs text-gray-500 mt-1 truncate">
+                    {conv.lastMessage?.messageText || 'No messages yet'}
+                  </p>
+                  {conv.unreadCount && conv.unreadCount > 0 && (
+                    <span className="inline-block bg-green-600 text-white text-xs px-2 py-0.5 rounded-full mt-1">
+                      {conv.unreadCount}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -167,11 +185,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onRefresh }) => {
       setMessages([
         ...messages,
         {
-          id: Date.now().toString(),
-          content: newMessage,
-          direction: 'outbound',
-          timestamp: new Date().toISOString(),
-          status: 'sent',
+          id: Date.now(),
+          messageText: newMessage,
+          direction: 'Outbound',
+          createdAt: new Date().toISOString(),
+          status: 'Sent',
         },
       ]);
       
@@ -189,11 +207,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onRefresh }) => {
       {/* Header */}
       <div className="px-6 py-4 border-b bg-gradient-to-r from-green-500 to-green-600 text-white flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold">{conversation.contact.name}</h2>
+          <h2 className="text-lg font-bold">{conversation.contact.displayName}</h2>
           <p className="text-sm text-green-100">{conversation.contact.phoneNumber}</p>
         </div>
         <div className="text-right">
-          <p className="text-sm font-medium">Status: Active</p>
+          <p className="text-sm font-medium">
+            {conversation.messageCount || 0} messages
+          </p>
+          {conversation.status && (
+            <p className="text-xs text-green-100">{conversation.status}</p>
+          )}
         </div>
       </div>
 
@@ -207,25 +230,29 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onRefresh }) => {
           messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.direction === 'Outbound' ? 'justify-end' : 'justify-start'}`}
             >
               <div
                 className={`max-w-xs px-4 py-2 rounded-lg ${
-                  message.direction === 'outbound'
+                  message.direction === 'Outbound'
                     ? 'bg-green-600 text-white rounded-br-none'
                     : 'bg-gray-300 text-gray-900 rounded-bl-none'
                 }`}
               >
-                <p className="break-words text-sm">{message.content}</p>
+                <p className="break-words text-sm">{message.messageText}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs opacity-70">
-                    {new Date(message.timestamp).toLocaleTimeString([], {
+                    {new Date(message.createdAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
                   </span>
-                  {message.direction === 'outbound' && message.status === 'sent' && (
-                    <CheckIcon className="h-3 w-3 ml-1" />
+                  {message.direction === 'Outbound' && (
+                    <span className="text-xs ml-2">
+                      {message.status === 'Read' && '✓✓'}
+                      {message.status === 'Delivered' && '✓'}
+                      {message.status === 'Sent' && <CheckIcon className="h-3 w-3 inline" />}
+                    </span>
                   )}
                 </div>
               </div>
