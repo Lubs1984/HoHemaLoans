@@ -1,1131 +1,742 @@
 {
-  "version": "7.3",
-  "data_api_version": "3.0",
-  "routing_model": {
-    "WORK_EARNINGS": ["LOAN_AMOUNT"],
-    "LOAN_AMOUNT": ["REPAYMENT_DATE"],
-    "REPAYMENT_DATE": ["LOAN_PURPOSE"],
-    "LOAN_PURPOSE": ["INCOME_EXPENSE_CHECK"],
-    "INCOME_EXPENSE_CHECK": ["REVIEW_CONFIRM"],
-    "REVIEW_CONFIRM": ["SUCCESS"],
-    "SUCCESS": []
-  },
-  "screens": [
-    {
-      "id": "WORK_EARNINGS",
-      "title": "Work & Earnings",
-      "data": {},
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "work_earnings_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Calculate Your Earnings"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "Tell us about your work this month"
-              },
-              {
-                "type": "TextInput",
-                "name": "hours_worked",
-                "label": "Hours/Shifts Worked",
-                "input-type": "number",
-                "required": true,
-                "helper-text": "Total hours or shifts worked this month"
-              },
-              {
-                "type": "TextInput",
-                "name": "pay_rate",
-                "label": "Rate of Pay (R)",
-                "input-type": "number",
-                "required": true,
-                "helper-text": "Your hourly or per-shift rate in Rand"
-              },
-              {
-                "type": "TextCaption",
-                "text": "💡 We'll calculate your monthly earnings and maximum loan amount"
-              },
-              {
-                "type": "Footer",
-                "label": "Calculate",
-                "on-click-action": {
-                  "name": "data_exchange",
-                  "payload": {
-                    "hours_worked": "${form.hours_worked}",
-                    "pay_rate": "${form.pay_rate}",
-                    "screen": "WORK_EARNINGS"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
+    "version": "7.3",
+    "data_api_version": "3.0",
+    "routing_model": {
+        "WORK_EARNINGS": [
+            "LOAN_AMOUNT"
+        ],
+        "LOAN_AMOUNT": [
+            "REPAYMENT_DATE"
+        ],
+        "REPAYMENT_DATE": [
+            "LOAN_PURPOSE"
+        ],
+        "LOAN_PURPOSE": [
+            "INCOME_EXPENSE_CHECK"
+        ],
+        "INCOME_EXPENSE_CHECK": [
+            "REVIEW_CONFIRM"
+        ],
+        "REVIEW_CONFIRM": [
+            "SUCCESS"
+        ],
+        "SUCCESS": []
     },
-    {
-      "id": "LOAN_AMOUNT",
-      "title": "Loan Amount",
-      "data": {
-        "monthly_earnings": { "type": "string", "__example__": "R8,000" },
-        "max_loan_amount": { "type": "string", "__example__": "R1,600" },
-        "max_percentage": { "type": "string", "__example__": "20%" }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "loan_amount_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "How much do you need?"
-              },
-              {
-                "type": "TextBody",
-                "text": "📊 Your Monthly Earnings: ${data.monthly_earnings}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💰 Maximum Loan Amount: ${data.max_loan_amount}"
-              },
-              {
-                "type": "TextCaption",
-                "text": "You can borrow up to ${data.max_percentage} of your earnings"
-              },
-              {
-                "type": "TextInput",
-                "name": "loan_amount",
-                "label": "Loan Amount (R)",
-                "input-type": "number",
-                "required": true,
-                "helper-text": "Maximum: ${data.max_loan_amount}"
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "data_exchange",
-                  "payload": {
-                    "loan_amount": "${form.loan_amount}",
-                    "screen": "LOAN_AMOUNT"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "REPAYMENT_DATE",
-      "title": "Repayment Date",
-      "data": {
-        "loan_amount": { "type": "string", "__example__": "R1,600" },
-        "interest_amount": { "type": "string", "__example__": "R80" },
-        "admin_fee": { "type": "string", "__example__": "R50" },
-        "total_repayment": { "type": "string", "__example__": "R1,730" },
-        "repayment_dates": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "date": { "type": "string" }
-            }
-          },
-          "__example__": [
-            { "id": "25", "date": "25th" },
-            { "id": "26", "date": "26th" },
-            { "id": "27", "date": "27th" },
-            { "id": "28", "date": "28th" },
-            { "id": "29", "date": "29th" },
-            { "id": "30", "date": "30th" },
-            { "id": "31", "date": "31st" }
-          ]
-        }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "repayment_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Select Repayment Date"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "When will you repay the loan?"
-              },
-              {
-                "type": "TextBody",
-                "text": "💳 Loan Breakdown:"
-              },
-              {
-                "type": "TextBody",
-                "text": "Loan Amount: ${data.loan_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Interest (5%): ${data.interest_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Admin Fee: ${data.admin_fee}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💰 Total to Repay: ${data.total_repayment}"
-              },
-              {
-                "type": "Dropdown",
-                "name": "repayment_date",
-                "label": "Repayment Date",
-                "required": true,
-                "data-source": "${data.repayment_dates}"
-              },
-              {
-                "type": "TextCaption",
-                "text": "⚠️ Single payment due on selected date (between 25th-31st)"
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "repayment_date": "${form.repayment_date}",
-                    "screen": "REPAYMENT_DATE"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "LOAN_PURPOSE",
-      "title": "Loan Purpose",
-      "data": {
-        "purposes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" }
-            }
-          },
-          "__example__": [
-            { "id": "transport", "title": "🚌 Transport" },
-            { "id": "groceries", "title": "🛒 Groceries" },
-            { "id": "expenses", "title": "💳 Day-to-day expenses" },
-            { "id": "airtime", "title": "📱 Airtime & data" },
-            { "id": "utilities", "title": "⚡ Utilities" },
-            { "id": "medical", "title": "🏥 Medical expenses" },
-            { "id": "family", "title": "👨‍👩‍👧 Family support" },
-            { "id": "education", "title": "📚 Education" },
-            { "id": "rent", "title": "🏠 Rent assistance" },
-            { "id": "repairs", "title": "🔧 Emergency repairs" },
-            { "id": "debt", "title": "💰 Debt consolidation" },
-            { "id": "other", "title": "🎯 Other" }
-          ]
-        }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "purpose_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "What is the loan for?"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "Select the main purpose of your loan"
-              },
-              {
-                "type": "RadioButtonsGroup",
-                "name": "loan_purpose",
-                "label": "Loan Purpose",
-                "required": true,
-                "data-source": "${data.purposes}"
-              },
-              {
-                "type": "TextInput",
-                "name": "purpose_details",
-                "label": "Additional Details (Optional)",
-                "input-type": "text",
-                "required": false,
-                "helper-text": "Tell us more about how you'll use the loan"
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "loan_purpose": "${form.loan_purpose}",
-                    "purpose_details": "${form.purpose_details}",
-                    "screen": "LOAN_PURPOSE"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "INCOME_EXPENSE_CHECK",
-      "title": "Financial Check",
-      "data": {
-        "has_existing_data": { "type": "boolean", "__example__": true },
-        "monthly_income": { "type": "string", "__example__": "R8,500" },
-        "monthly_expenses": { "type": "string", "__example__": "R5,200" },
-        "available_funds": { "type": "string", "__example__": "R3,300" },
-        "total_repayment": { "type": "string", "__example__": "R1,730" },
-        "can_afford": { "type": "boolean", "__example__": true }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "financial_check_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Income & Expense Check"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "Has your income or expenses changed?"
-              },
-              {
-                "type": "TextBody",
-                "text": "📊 Current Information:"
-              },
-              {
-                "type": "TextBody",
-                "text": "Monthly Income: ${data.monthly_income}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Monthly Expenses: ${data.monthly_expenses}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Available Funds: ${data.available_funds}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Loan Repayment: ${data.total_repayment}"
-              },
-              {
-                "type": "RadioButtonsGroup",
-                "name": "info_changed",
-                "label": "Update Required?",
-                "required": true,
-                "data-source": [
-                  { "id": "no", "title": "No, everything is the same" },
-                  { "id": "yes", "title": "Yes, I need to update my information" }
+    "screens": [
+        {
+            "id": "WORK_EARNINGS",
+            "title": "Work & Earnings",
+            "data": {},
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "work_earnings_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Calculate Your Earnings"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Tell us about your work this month"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "hours_worked",
+                                "label": "Hours/Shifts Worked",
+                                "input-type": "number",
+                                "required": true,
+                                "helper-text": "Total hours or shifts worked this month"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "pay_rate",
+                                "label": "Rate of Pay (R)",
+                                "input-type": "number",
+                                "required": true,
+                                "helper-text": "Your hourly or per-shift rate in Rand"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "\ud83d\udca1 We'll calculate your monthly earnings and maximum loan amount"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Calculate",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "hours_worked": "${form.hours_worked}",
+                                        "pay_rate": "${form.pay_rate}",
+                                        "screen": "WORK_EARNINGS"
+                                    }
+                                }
+                            }
+                        ]
+                    }
                 ]
-              },
-              {
-                "type": "EmbeddedLink",
-                "text": "Update Income & Expenses",
-                "on-click-action": {
-                  "name": "navigate",
-                  "next": {
-                    "type": "external_link",
-                    "url": "https://hohemaweb-development.up.railway.app/affordability"
-                  }
-                }
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "info_changed": "${form.info_changed}",
-                    "screen": "INCOME_EXPENSE_CHECK"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "REVIEW_CONFIRM",
-      "title": "Review & Confirm",
-      "data": {
-        "monthly_earnings": { "type": "string", "__example__": "R8,000" },
-        "hours_worked": { "type": "string", "__example__": "160" },
-        "pay_rate": { "type": "string", "__example__": "R50" },
-        "loan_amount": { "type": "string", "__example__": "R1,600" },
-        "interest_amount": { "type": "string", "__example__": "R80" },
-        "admin_fee": { "type": "string", "__example__": "R50" },
-        "total_repayment": { "type": "string", "__example__": "R1,730" },
-        "repayment_date": { "type": "string", "__example__": "28th" },
-        "loan_purpose": { "type": "string", "__example__": "Transport" },
-        "affordability_status": { "type": "string", "__example__": "✅ Approved" }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "review_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Review Your Application"
-              },
-              {
-                "type": "TextBody",
-                "text": "📊 Earnings Breakdown:"
-              },
-              {
-                "type": "TextBody",
-                "text": "Hours/Shifts: ${data.hours_worked}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Pay Rate: ${data.pay_rate}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Monthly Earnings: ${data.monthly_earnings}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💰 Loan Details:"
-              },
-              {
-                "type": "TextBody",
-                "text": "Loan Amount: ${data.loan_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Interest (5%): ${data.interest_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Admin Fee: ${data.admin_fee}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Total Repayment: ${data.total_repayment}"
-              },
-              {
-                "type": "TextBody",
-                "text": "📅 Repayment Date: ${data.repayment_date}"
-              },
-              {
-                "type": "TextBody",
-                "text": "🎯 Purpose: ${data.loan_purpose}"
-              },
-              {
-                "type": "TextBody",
-                "text": "${data.affordability_status}"
-              },
-              {
-                "type": "OptIn",
-                "name": "terms_accepted",
-                "label": "I accept the terms and conditions",
-                "required": true
-              },
-              {
-                "type": "OptIn",
-                "name": "debit_consent",
-                "label": "I authorize debit on the repayment date",
-                "required": true
-              },
-              {
-                "type": "TextCaption",
-                "text": "⚖️ NCR Registered | Responsible Lending"
-              },
-              {
-                "type": "Footer",
-                "label": "Submit Application",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "terms_accepted": "${form.terms_accepted}",
-                    "debit_consent": "${form.debit_consent}",
-                    "screen": "REVIEW_CONFIRM"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "SUCCESS",
-      "title": "Application Submitted!",
-      "terminal": true,
-      "data": {
-        "application_id": { "type": "string", "__example__": "LA-2026-0001" },
-        "loan_amount": { "type": "string", "__example__": "R1,600" },
-        "repayment_amount": { "type": "string", "__example__": "R1,730" },
-        "repayment_date": { "type": "string", "__example__": "28th January" },
-        "tracking_url": { "type": "string", "__example__": "https://hohemaweb-development.up.railway.app/loans" }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "success_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "✅ Application Submitted!"
-              },
-              {
-                "type": "TextBody",
-                "text": "Your loan application is being reviewed"
-              },
-              {
-                "type": "TextBody",
-                "text": "📄 Application: ${data.application_id}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💰 Loan Amount: ${data.loan_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💳 Repayment: ${data.repayment_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "📅 Due Date: ${data.repayment_date}"
-              },
-              {
-                "type": "TextBody",
-                "text": "📱 What happens next:"
-              },
-              {
-                "type": "TextBody",
-                "text": "1️⃣ Admin reviews your application (1-2 hours)"
-              },
-              {
-                "type": "TextBody",
-                "text": "2️⃣ You'll get a WhatsApp notification"
-              },
-              {
-                "type": "TextBody",
-                "text": "3️⃣ If approved, funds sent to your account"
-              },
-              {
-                "type": "TextBody",
-                "text": "4️⃣ Single payment due on ${data.repayment_date}"
-              },
-              {
-                "type": "EmbeddedLink",
-                "text": "Track your application",
-                "on-click-action": {
-                  "name": "navigate",
-                  "next": {
-                    "type": "external_link",
-                    "url": "${data.tracking_url}"
-                  }
-                }
-              },
-              {
-                "type": "TextCaption",
-                "text": "💬 Reply anytime for help or questions"
-              },
-              {
-                "type": "Footer",
-                "label": "Done",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "flow_completed": true,
-                    "screen": "SUCCESS"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
-}
-      "title": "Loan Amount",
-      "data": {
-        "min_amount": {
-          "type": "number",
-          "__example__": 500
+            }
         },
-        "max_amount": {
-          "type": "number",
-          "__example__": 50000
-        }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "loan_amount_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "How much do you need?"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "Select your desired loan amount"
-              },
-              {
-                "type": "TextInput",
-                "name": "loan_amount",
-                "label": "Loan Amount (R)",
-                "input-type": "number",
-                "required": true,
-                "helper-text": "Minimum R${data.min_amount} - Maximum R${data.max_amount}"
-              },
-              {
-                "type": "TextCaption",
-                "text": "💡 Your monthly payment will be calculated on the next step"
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "loan_amount": "${form.loan_amount}",
-                    "screen": "LOAN_AMOUNT"
-                  }
+        {
+            "id": "LOAN_AMOUNT",
+            "title": "Loan Amount",
+            "data": {
+                "monthly_earnings": {
+                    "type": "string",
+                    "__example__": "R8,000"
+                },
+                "max_loan_amount": {
+                    "type": "string",
+                    "__example__": "R1,600"
+                },
+                "max_percentage": {
+                    "type": "string",
+                    "__example__": "20%"
                 }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "TERM_MONTHS",
-      "title": "Repayment Term",
-      "data": {
-        "term_options": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "months": { "type": "number" },
-              "monthly_payment": { "type": "string" }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "loan_amount_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "How much do you need?"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcca Your Monthly Earnings: ${data.monthly_earnings}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcb0 Maximum Loan Amount: ${data.max_loan_amount}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "You can borrow up to ${data.max_percentage} of your earnings"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "loan_amount",
+                                "label": "Loan Amount (R)",
+                                "input-type": "number",
+                                "required": true,
+                                "helper-text": "Maximum: ${data.max_loan_amount}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "loan_amount": "${form.loan_amount}",
+                                        "screen": "LOAN_AMOUNT"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
-          },
-          "__example__": [
-            { "id": "6", "months": 6, "monthly_payment": "R875" },
-            { "id": "12", "months": 12, "monthly_payment": "R458" },
-            { "id": "24", "months": 24, "monthly_payment": "R242" },
-            { "id": "36", "months": 36, "monthly_payment": "R171" }
-          ]
-        }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "term_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Select Repayment Period"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "Choose how long you'd like to repay the loan"
-              },
-              {
-                "type": "RadioButtonsGroup",
-                "name": "term_months",
-                "label": "Repayment Term",
-                "required": true,
-                "data-source": "${data.term_options}",
-                "on-select-action": {
-                  "name": "data_exchange",
-                  "payload": {
-                    "selected_term": "${form.term_months}"
-                  }
+        },
+        {
+            "id": "REPAYMENT_DATE",
+            "title": "Repayment Date",
+            "data": {
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R1,600"
+                },
+                "interest_amount": {
+                    "type": "string",
+                    "__example__": "R80"
+                },
+                "admin_fee": {
+                    "type": "string",
+                    "__example__": "R50"
+                },
+                "total_repayment": {
+                    "type": "string",
+                    "__example__": "R1,730"
+                },
+                "repayment_dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "__example__": [
+                        {
+                            "id": "25",
+                            "date": "25th"
+                        },
+                        {
+                            "id": "26",
+                            "date": "26th"
+                        },
+                        {
+                            "id": "27",
+                            "date": "27th"
+                        },
+                        {
+                            "id": "28",
+                            "date": "28th"
+                        },
+                        {
+                            "id": "29",
+                            "date": "29th"
+                        },
+                        {
+                            "id": "30",
+                            "date": "30th"
+                        },
+                        {
+                            "id": "31",
+                            "date": "31st"
+                        }
+                    ]
                 }
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "term_months": "${form.term_months}",
-                    "screen": "TERM_MONTHS"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "LOAN_PURPOSE",
-      "title": "Loan Purpose",
-      "data": {
-        "purposes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "repayment_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Select Repayment Date"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "When will you repay the loan?"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcb3 Loan Breakdown:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Loan Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Interest (5%): ${data.interest_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Admin Fee: ${data.admin_fee}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcb0 Total to Repay: ${data.total_repayment}"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "repayment_date",
+                                "label": "Repayment Date",
+                                "required": true,
+                                "data-source": "${data.repayment_dates}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "\u26a0\ufe0f Single payment due on selected date (between 25th-31st)"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "repayment_date": "${form.repayment_date}",
+                                        "screen": "REPAYMENT_DATE"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
-          },
-          "__example__": [
-            { "id": "emergency", "title": "🚨 Emergency" },
-            { "id": "education", "title": "📚 Education" },
-            { "id": "medical", "title": "⚕️ Medical" },
-            { "id": "home", "title": "🏠 Home Improvement" },
-            { "id": "debt", "title": "💳 Debt Consolidation" },
-            { "id": "other", "title": "📝 Other" }
-          ]
-        }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "purpose_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "What is the loan for?"
-              },
-              {
-                "type": "RadioButtonsGroup",
-                "name": "loan_purpose",
-                "label": "Loan Purpose",
-                "required": true,
-                "data-source": "${data.purposes}"
-              },
-              {
-                "type": "TextInput",
-                "name": "purpose_description",
-                "label": "Additional Details (Optional)",
-                "input-type": "text",
-                "required": false,
-                "helper-text": "Provide more information about your loan purpose"
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "loan_purpose": "${form.loan_purpose}",
-                    "purpose_description": "${form.purpose_description}",
-                    "screen": "LOAN_PURPOSE"
-                  }
+        },
+        {
+            "id": "LOAN_PURPOSE",
+            "title": "Loan Purpose",
+            "data": {
+                "purposes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "__example__": [
+                        {
+                            "id": "transport",
+                            "title": "\ud83d\ude8c Transport"
+                        },
+                        {
+                            "id": "groceries",
+                            "title": "\ud83d\uded2 Groceries"
+                        },
+                        {
+                            "id": "expenses",
+                            "title": "\ud83d\udcb3 Day-to-day expenses"
+                        },
+                        {
+                            "id": "airtime",
+                            "title": "\ud83d\udcf1 Airtime & data"
+                        },
+                        {
+                            "id": "utilities",
+                            "title": "\u26a1 Utilities"
+                        },
+                        {
+                            "id": "medical",
+                            "title": "\ud83c\udfe5 Medical expenses"
+                        },
+                        {
+                            "id": "family",
+                            "title": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67 Family support"
+                        },
+                        {
+                            "id": "education",
+                            "title": "\ud83d\udcda Education"
+                        },
+                        {
+                            "id": "rent",
+                            "title": "\ud83c\udfe0 Rent assistance"
+                        },
+                        {
+                            "id": "repairs",
+                            "title": "\ud83d\udd27 Emergency repairs"
+                        },
+                        {
+                            "id": "debt",
+                            "title": "\ud83d\udcb0 Debt consolidation"
+                        },
+                        {
+                            "id": "other",
+                            "title": "\ud83c\udfaf Other"
+                        }
+                    ]
                 }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "AFFORDABILITY_CHECK",
-      "title": "Affordability Check",
-      "data": {
-        "monthly_income": { "type": "string", "__example__": "R8,500" },
-        "monthly_expenses": { "type": "string", "__example__": "R5,200" },
-        "disposable_income": { "type": "string", "__example__": "R3,300" },
-        "monthly_payment": { "type": "string", "__example__": "R458" },
-        "can_afford": { "type": "boolean", "__example__": true }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "affordability_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Affordability Assessment"
-              },
-              {
-                "type": "TextBody",
-                "text": "Based on your financial information:"
-              },
-              {
-                "type": "TextBody",
-                "text": "📊 Monthly Income: ${data.monthly_income}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💰 Monthly Expenses: ${data.monthly_expenses}"
-              },
-              {
-                "type": "TextBody",
-                "text": "✅ Disposable Income: ${data.disposable_income}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💳 Loan Payment: ${data.monthly_payment}/month"
-              },
-              {
-                "type": "EmbeddedLink",
-                "text": "Update my financial information",
-                "on-click-action": {
-                  "name": "navigate",
-                  "next": {
-                    "type": "external_link",
-                    "url": "https://hohemaweb-development.up.railway.app/affordability"
-                  }
-                }
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "affordability_checked": true,
-                    "screen": "AFFORDABILITY_CHECK"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "TERMS_PREVIEW",
-      "title": "Loan Terms",
-      "data": {
-        "loan_amount": { "type": "string", "__example__": "R5,000" },
-        "term_months": { "type": "number", "__example__": 12 },
-        "interest_rate": { "type": "string", "__example__": "5%" },
-        "monthly_payment": { "type": "string", "__example__": "R458" },
-        "total_interest": { "type": "string", "__example__": "R496" },
-        "total_amount": { "type": "string", "__example__": "R5,496" }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "terms_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Review Your Loan Terms"
-              },
-              {
-                "type": "TextBody",
-                "text": "📋 Loan Summary"
-              },
-              {
-                "type": "TextBody",
-                "text": "Amount: ${data.loan_amount}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Term: ${data.term_months} months"
-              },
-              {
-                "type": "TextBody",
-                "text": "Interest Rate: ${data.interest_rate}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💳 Monthly Payment: ${data.monthly_payment}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Total Interest: ${data.total_interest}"
-              },
-              {
-                "type": "TextBody",
-                "text": "💰 Total Repayment: ${data.total_amount}"
-              },
-              {
-                "type": "TextCaption",
-                "text": "⚖️ NCR Registered | Responsible Lending"
-              },
-              {
-                "type": "Footer",
-                "label": "Accept Terms",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "terms_accepted": true,
-                    "screen": "TERMS_PREVIEW"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "BANK_DETAILS",
-      "title": "Bank Details",
-      "data": {
-        "banks": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "name": { "type": "string" }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "purpose_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "What is the loan for?"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Select the main purpose of your loan"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "loan_purpose",
+                                "label": "Loan Purpose",
+                                "required": true,
+                                "data-source": "${data.purposes}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "purpose_details",
+                                "label": "Additional Details (Optional)",
+                                "input-type": "text",
+                                "required": false,
+                                "helper-text": "Tell us more about how you'll use the loan"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "loan_purpose": "${form.loan_purpose}",
+                                        "purpose_details": "${form.purpose_details}",
+                                        "screen": "LOAN_PURPOSE"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
-          },
-          "__example__": [
-            { "id": "absa", "name": "ABSA" },
-            { "id": "fnb", "name": "FNB" },
-            { "id": "standard_bank", "name": "Standard Bank" },
-            { "id": "nedbank", "name": "Nedbank" },
-            { "id": "capitec", "name": "Capitec" },
-            { "id": "african_bank", "name": "African Bank" },
-            { "id": "tymebank", "name": "TymeBank" },
-            { "id": "discovery", "name": "Discovery Bank" },
-            { "id": "investec", "name": "Investec" },
-            { "id": "bidvest", "name": "Bidvest Bank" },
-            { "id": "other", "name": "Other" }
-          ]
+        },
+        {
+            "id": "INCOME_EXPENSE_CHECK",
+            "title": "Financial Check",
+            "data": {
+                "has_existing_data": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "monthly_income": {
+                    "type": "string",
+                    "__example__": "R8,500"
+                },
+                "monthly_expenses": {
+                    "type": "string",
+                    "__example__": "R5,200"
+                },
+                "available_funds": {
+                    "type": "string",
+                    "__example__": "R3,300"
+                },
+                "total_repayment": {
+                    "type": "string",
+                    "__example__": "R1,730"
+                },
+                "can_afford": {
+                    "type": "boolean",
+                    "__example__": true
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "financial_check_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Income & Expense Check"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Has your income or expenses changed?"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcca Current Information:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Income: ${data.monthly_income}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Expenses: ${data.monthly_expenses}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Available Funds: ${data.available_funds}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Loan Repayment: ${data.total_repayment}"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "info_changed",
+                                "label": "Update Required?",
+                                "required": true,
+                                "data-source": [
+                                    {
+                                        "id": "no",
+                                        "title": "No, everything is the same"
+                                    },
+                                    {
+                                        "id": "yes",
+                                        "title": "Yes, I need to update my information"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "EmbeddedLink",
+                                "text": "Update Income & Expenses",
+                                "on-click-action": {
+                                    "name": "navigate",
+                                    "next": {
+                                        "type": "external_link",
+                                        "url": "https://hohemaweb-development.up.railway.app/affordability"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "info_changed": "${form.info_changed}",
+                                        "screen": "INCOME_EXPENSE_CHECK"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "REVIEW_CONFIRM",
+            "title": "Review & Confirm",
+            "data": {
+                "monthly_earnings": {
+                    "type": "string",
+                    "__example__": "R8,000"
+                },
+                "hours_worked": {
+                    "type": "string",
+                    "__example__": "160"
+                },
+                "pay_rate": {
+                    "type": "string",
+                    "__example__": "R50"
+                },
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R1,600"
+                },
+                "interest_amount": {
+                    "type": "string",
+                    "__example__": "R80"
+                },
+                "admin_fee": {
+                    "type": "string",
+                    "__example__": "R50"
+                },
+                "total_repayment": {
+                    "type": "string",
+                    "__example__": "R1,730"
+                },
+                "repayment_date": {
+                    "type": "string",
+                    "__example__": "28th"
+                },
+                "loan_purpose": {
+                    "type": "string",
+                    "__example__": "Transport"
+                },
+                "affordability_status": {
+                    "type": "string",
+                    "__example__": "\u2705 Approved"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "review_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Review Your Application"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcca Earnings Breakdown:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Hours/Shifts: ${data.hours_worked}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Pay Rate: ${data.pay_rate}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Earnings: ${data.monthly_earnings}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcb0 Loan Details:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Loan Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Interest (5%): ${data.interest_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Admin Fee: ${data.admin_fee}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Total Repayment: ${data.total_repayment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcc5 Repayment Date: ${data.repayment_date}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83c\udfaf Purpose: ${data.loan_purpose}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.affordability_status}"
+                            },
+                            {
+                                "type": "OptIn",
+                                "name": "terms_accepted",
+                                "label": "I accept the terms and conditions",
+                                "required": true
+                            },
+                            {
+                                "type": "OptIn",
+                                "name": "debit_consent",
+                                "label": "I authorize debit on the repayment date",
+                                "required": true
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "\u2696\ufe0f NCR Registered | Responsible Lending"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Submit Application",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "terms_accepted": "${form.terms_accepted}",
+                                        "debit_consent": "${form.debit_consent}",
+                                        "screen": "REVIEW_CONFIRM"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "SUCCESS",
+            "title": "Application Submitted!",
+            "terminal": true,
+            "data": {
+                "application_id": {
+                    "type": "string",
+                    "__example__": "LA-2026-0001"
+                },
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R1,600"
+                },
+                "repayment_amount": {
+                    "type": "string",
+                    "__example__": "R1,730"
+                },
+                "repayment_date": {
+                    "type": "string",
+                    "__example__": "28th January"
+                },
+                "tracking_url": {
+                    "type": "string",
+                    "__example__": "https://hohemaweb-development.up.railway.app/loans"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "success_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "\u2705 Application Submitted!"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Your loan application is being reviewed"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcc4 Application: ${data.application_id}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcb0 Loan Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcb3 Repayment: ${data.repayment_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcc5 Due Date: ${data.repayment_date}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "\ud83d\udcf1 What happens next:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "1\ufe0f\u20e3 Admin reviews your application (1-2 hours)"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "2\ufe0f\u20e3 You'll get a WhatsApp notification"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "3\ufe0f\u20e3 If approved, funds sent to your account"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "4\ufe0f\u20e3 Single payment due on ${data.repayment_date}"
+                            },
+                            {
+                                "type": "EmbeddedLink",
+                                "text": "Track your application",
+                                "on-click-action": {
+                                    "name": "navigate",
+                                    "next": {
+                                        "type": "external_link",
+                                        "url": "${data.tracking_url}"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "\ud83d\udcac Reply anytime for help or questions"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Done",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "flow_completed": true,
+                                        "screen": "SUCCESS"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
         }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "bank_details_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Bank Account Details"
-              },
-              {
-                "type": "TextSubheading",
-                "text": "Where should we send your loan?"
-              },
-              {
-                "type": "Dropdown",
-                "name": "bank_name",
-                "label": "Bank Name",
-                "required": true,
-                "data-source": "${data.banks}"
-              },
-              {
-                "type": "TextInput",
-                "name": "account_holder_name",
-                "label": "Account Holder Name",
-                "input-type": "text",
-                "required": true,
-                "helper-text": "Full name as shown on your bank account"
-              },
-              {
-                "type": "TextInput",
-                "name": "account_number",
-                "label": "Account Number",
-                "input-type": "number",
-                "required": true,
-                "helper-text": "Your bank account number (8-20 digits)"
-              },
-              {
-                "type": "TextCaption",
-                "text": "🔒 Your banking information is secure and encrypted"
-              },
-              {
-                "type": "Footer",
-                "label": "Continue",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "bank_name": "${form.bank_name}",
-                    "account_holder_name": "${form.account_holder_name}",
-                    "account_number": "${form.account_number}",
-                    "screen": "BANK_DETAILS"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "CONFIRM_SUBMIT",
-      "title": "Confirm & Submit",
-      "data": {
-        "loan_summary": { "type": "string", "__example__": "R5,000 over 12 months" },
-        "monthly_payment": { "type": "string", "__example__": "R458" },
-        "bank_details": { "type": "string", "__example__": "Capitec - *****1234" }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "submit_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "Ready to Submit?"
-              },
-              {
-                "type": "TextBody",
-                "text": "📋 Application Summary:"
-              },
-              {
-                "type": "TextBody",
-                "text": "Loan: ${data.loan_summary}"
-              },
-              {
-                "type": "TextBody",
-                "text": "Payment: ${data.monthly_payment}/month"
-              },
-              {
-                "type": "TextBody",
-                "text": "Account: ${data.bank_details}"
-              },
-              {
-                "type": "OptIn",
-                "name": "terms_agreement",
-                "label": "I agree to the loan terms and conditions",
-                "required": true
-              },
-              {
-                "type": "OptIn",
-                "name": "debit_order_consent",
-                "label": "I authorize debit order for monthly payments",
-                "required": true
-              },
-              {
-                "type": "TextCaption",
-                "text": "⏱️ Processing typically takes 1-2 business days"
-              },
-              {
-                "type": "Footer",
-                "label": "Submit Application",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "terms_agreement": "${form.terms_agreement}",
-                    "debit_order_consent": "${form.debit_order_consent}",
-                    "screen": "CONFIRM_SUBMIT"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "SUCCESS",
-      "title": "Application Submitted!",
-      "terminal": true,
-      "data": {
-        "application_id": { "type": "string", "__example__": "LA-2026-0001" },
-        "tracking_url": { "type": "string", "__example__": "https://hohemaweb-development.up.railway.app/loans" }
-      },
-      "layout": {
-        "type": "SingleColumnLayout",
-        "children": [
-          {
-            "type": "Form",
-            "name": "success_form",
-            "children": [
-              {
-                "type": "TextHeading",
-                "text": "✅ Application Submitted!"
-              },
-              {
-                "type": "TextBody",
-                "text": "Your loan application has been received and is being reviewed."
-              },
-              {
-                "type": "TextBody",
-                "text": "Application ID: ${data.application_id}"
-              },
-              {
-                "type": "TextBody",
-                "text": "📱 What happens next:"
-              },
-              {
-                "type": "TextBody",
-                "text": "1️⃣ We'll review your application (1-2 business days)"
-              },
-              {
-                "type": "TextBody",
-                "text": "2️⃣ You'll receive a WhatsApp notification of the decision"
-              },
-              {
-                "type": "TextBody",
-                "text": "3️⃣ If approved, funds will be disbursed to your account"
-              },
-              {
-                "type": "EmbeddedLink",
-                "text": "Track your application",
-                "on-click-action": {
-                  "name": "navigate",
-                  "next": {
-                    "type": "external_link",
-                    "url": "${data.tracking_url}"
-                  }
-                }
-              },
-              {
-                "type": "TextCaption",
-                "text": "💬 Reply to this message anytime for assistance"
-              },
-              {
-                "type": "Footer",
-                "label": "Done",
-                "on-click-action": {
-                  "name": "complete",
-                  "payload": {
-                    "flow_completed": true,
-                    "screen": "SUCCESS"
-                  }
-                }
-              }
-            ]
-          }
-        ]
-      }
-    }
-  ]
+    ]
 }
