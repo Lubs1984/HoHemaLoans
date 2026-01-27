@@ -153,22 +153,13 @@ const LoanApplications: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Loan Applications</h1>
           <p className="text-gray-600">View and manage your loan applications</p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            to="/loans/new"
-            className="btn btn-primary inline-flex items-center"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            New Loan (Worker)
-          </Link>
-          <Link
-            to="/loans/apply"
-            className="btn bg-gray-600 hover:bg-gray-700 text-white inline-flex items-center"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Legacy Application
-          </Link>
-        </div>
+        <Link
+          to="/loans/new"
+          className="btn btn-primary inline-flex items-center"
+        >
+          <PlusIcon className="w-5 h-5 mr-2" />
+          New Loan Application
+        </Link>
       </div>
 
       {error && (
@@ -188,7 +179,7 @@ const LoanApplications: React.FC = () => {
           <p className="mt-1 text-sm text-gray-500">Get started by creating a new loan application.</p>
           <div className="mt-6">
             <Link
-              to="/loans/apply"
+              to="/loans/new"
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PlusIcon className="w-5 h-5 mr-2" />
@@ -267,7 +258,7 @@ const LoanApplications: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       {app.status === 'Draft' ? (
                         <Link
-                          to={`/loans/apply?id=${app.id}`}
+                          to={`/loans/new?id=${app.id}`}
                           className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                         >
                           <span>Resume</span>
