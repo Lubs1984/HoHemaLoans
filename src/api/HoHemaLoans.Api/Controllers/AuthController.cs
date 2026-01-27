@@ -5,6 +5,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using HoHemaLoans.Api.Models;
+using HoHemaLoans.Api.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace HoHemaLoans.Api.Controllers;
 
@@ -16,17 +18,23 @@ public class AuthController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthController> _logger;
+    private readonly IWhatsAppService _whatsAppService;
+    
+    // In-memory store for PIN codes (use Redis or database in production)
+    private static readonly Dictionary<string, (string Pin, DateTime Expiry)> _pinStore = new();
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IConfiguration configuration,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        IWhatsAppService whatsAppService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
         _logger = logger;
+        _whatsAppService = whatsAppService;
     }
 
     [HttpPost("register")]
@@ -149,6 +157,156 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("login-mobile-request")]
+    public async Task<IActionResult> LoginMobileRequest(PhoneLoginDto model)
+    {
+        try
+        {
+            _logger.LogInformation($"[MOBILE-LOGIN] PIN request for phone: {model.PhoneNumber}");
+            
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Find user by phone number
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+
+            if (user == null)
+            {
+                _logger.LogWarning($"[MOBILE-LOGIN] User not found for phone: {model.PhoneNumber}");
+                return BadRequest("Phone number not registered");
+            }
+
+            // Generate 6-digit PIN
+            var random = new Random();
+            var pin = random.Next(100000, 999999).ToString();
+            
+            // Store PIN with 5-minute expiry
+            _pinStore[model.PhoneNumber] = (pin, DateTime.UtcNow.AddMinutes(5));
+            
+            // Clean up expired PINs
+            CleanExpiredPins();
+
+            // Send PIN via WhatsApp using the hohemalogin template
+            var sent = await _whatsAppService.SendTemplateMessageAsync(
+                model.PhoneNumber, 
+                "hohemalogin", 
+                new List<string> { pin }
+            );
+
+            if (!sent)
+            {
+                _logger.LogError($"[MOBILE-LOGIN] Failed to send WhatsApp PIN to: {model.PhoneNumber}");
+                return StatusCode(500, "Failed to send verification PIN");
+            }
+
+            _logger.LogInformation($"[MOBILE-LOGIN] PIN sent successfully to: {model.PhoneNumber}");
+            
+            return Ok(new { 
+                message = "PIN sent to your WhatsApp", 
+                phoneNumber = model.PhoneNumber 
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[MOBILE-LOGIN] Exception during PIN request for: {model?.PhoneNumber}");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+
+    [HttpPost("login-mobile-verify")]
+    public async Task<IActionResult> LoginMobileVerify(PhoneVerifyDto model)
+    {
+        try
+        {
+            _logger.LogInformation($"[MOBILE-LOGIN] PIN verification for phone: {model.PhoneNumber}");
+            
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Check if PIN exists and is valid
+            if (!_pinStore.TryGetValue(model.PhoneNumber, out var pinData))
+            {
+                _logger.LogWarning($"[MOBILE-LOGIN] No PIN found for phone: {model.PhoneNumber}");
+                return BadRequest("Invalid or expired PIN");
+            }
+
+            // Check if PIN has expired
+            if (DateTime.UtcNow > pinData.Expiry)
+            {
+                _pinStore.Remove(model.PhoneNumber);
+                _logger.LogWarning($"[MOBILE-LOGIN] Expired PIN for phone: {model.PhoneNumber}");
+                return BadRequest("PIN has expired. Please request a new one");
+            }
+
+            // Verify PIN
+            if (pinData.Pin != model.Pin)
+            {
+                _logger.LogWarning($"[MOBILE-LOGIN] Invalid PIN attempt for phone: {model.PhoneNumber}");
+                return BadRequest("Invalid PIN");
+            }
+
+            // PIN is valid, remove it from store
+            _pinStore.Remove(model.PhoneNumber);
+
+            // Find user
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+
+            if (user == null)
+            {
+                _logger.LogError($"[MOBILE-LOGIN] User disappeared for phone: {model.PhoneNumber}");
+                return BadRequest("User not found");
+            }
+
+            // Generate JWT token
+            var token = await GenerateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+
+            _logger.LogInformation($"[MOBILE-LOGIN] Login successful for: {model.PhoneNumber}");
+            
+            return Ok(new AuthResponseDto
+            {
+                Token = token,
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email!,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    IdNumber = user.IdNumber,
+                    DateOfBirth = user.DateOfBirth,
+                    Address = user.Address,
+                    MonthlyIncome = user.MonthlyIncome,
+                    PhoneNumber = user.PhoneNumber,
+                    IsVerified = user.IsVerified,
+                    Roles = roles
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[MOBILE-LOGIN] Exception during PIN verification for: {model?.PhoneNumber}");
+            return StatusCode(500, "An error occurred while processing your request");
+        }
+    }
+
+    private void CleanExpiredPins()
+    {
+        var expired = _pinStore.Where(kvp => DateTime.UtcNow > kvp.Value.Expiry)
+            .Select(kvp => kvp.Key)
+            .ToList();
+        
+        foreach (var key in expired)
+        {
+            _pinStore.Remove(key);
+        }
+    }
+
     private async Task<string> GenerateJwtToken(ApplicationUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -198,6 +356,17 @@ public class LoginDto
 {
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+}
+
+public class PhoneLoginDto
+{
+    public string PhoneNumber { get; set; } = string.Empty;
+}
+
+public class PhoneVerifyDto
+{
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string Pin { get; set; } = string.Empty;
 }
 
 public class UserDto

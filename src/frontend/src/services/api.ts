@@ -1,4 +1,5 @@
 import type { LoginRequest, LoginResponse, RegisterRequest } from '../types';
+import type { PhoneLoginRequest, PhoneVerifyRequest } from '../types';
 
 // Determine API URL based on environment
 function getApiUrl(): string {
@@ -129,6 +130,20 @@ class ApiService {
     return this.request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
+    });
+  }
+
+  async loginMobileRequest(data: PhoneLoginRequest): Promise<{ message: string; phoneNumber: string }> {
+    return this.request<{ message: string; phoneNumber: string }>('/auth/login-mobile-request', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async loginMobileVerify(data: PhoneVerifyRequest): Promise<LoginResponse> {
+    return this.request<LoginResponse>('/auth/login-mobile-verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 

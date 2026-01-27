@@ -28,6 +28,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface PhoneLoginRequest {
+  phoneNumber: string;
+}
+
+export interface PhoneVerifyRequest {
+  phoneNumber: string;
+  pin: string;
+}
+
 export interface LoginResponse {
   token: string;
   user: User;
