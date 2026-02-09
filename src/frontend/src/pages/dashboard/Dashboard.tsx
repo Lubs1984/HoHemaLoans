@@ -20,6 +20,13 @@ interface DocumentStatus {
   missingDocuments: string[];
 }
 
+interface DashboardStats {
+  availableAdvance: number;
+  currentBalance: number;
+  hoursThisMonth: number;
+  earningsThisMonth: number;
+}
+
 const Dashboard: React.FC = () => {
   const [draftApplication, setDraftApplication] = useState<LoanApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +36,12 @@ const Dashboard: React.FC = () => {
     affordabilityComplete: false,
   });
   const [documentStatus, setDocumentStatus] = useState<DocumentStatus | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    availableAdvance: 0,
+    currentBalance: 0,
+    hoursThisMonth: 0,
+    earningsThisMonth: 0,
+  });
 
   useEffect(() => {
     loadDashboardData();
@@ -40,6 +53,7 @@ const Dashboard: React.FC = () => {
       await Promise.all([
         loadDraftApplication(),
         loadPrerequisiteStatus(),
+        loadDashboardStats(),
       ]);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -89,6 +103,48 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const loadDashboardStats = async () => {
+    try {
+      // Get affordability data for available advance
+      const affordability = await apiService.getAffordability();
+      const maxLoan = await apiService.getMaxLoanAmount();
+      
+      // Get active loan applications to calculate current balance
+      const applications = await apiService.getLoanApplications();
+      const activeLoans = applications.filter(
+        (app: any) => app.status === 'Approved' || app.status === 'Disbursed'
+      );
+      const currentBalance = activeLoans.reduce((sum: number, loan: any) => 
+        sum + (loan.outstandingAmount || loan.amount || 0), 0
+      );
+
+      // Calculate hours and earnings from income data
+      const incomes = await apiService.getIncomes();
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      let totalHours = 0;
+      let totalEarnings = 0;
+      
+      incomes.forEach((income: any) => {
+        const incomeDate = new Date(income.date || income.createdAt);
+        if (incomeDate.getMonth() === currentMonth && incomeDate.getFullYear() === currentYear) {
+          totalHours += income.hoursWorked || 0;
+          totalEarnings += (income.hoursWorked || 0) * (income.hourlyRate || 0);
+        }
+      });
+
+      setDashboardStats({
+        availableAdvance: maxLoan?.maxLoanAmount || affordability?.maxLoanAmount || 0,
+        currentBalance,
+        hoursThisMonth: totalHours,
+        earningsThisMonth: totalEarnings,
+      });
+    } catch (err) {
+      console.error('Failed to load dashboard stats:', err);
+    }
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -106,7 +162,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-500">Available Advance</h3>
-              <p className="text-2xl font-bold text-gray-900">R 2,450</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {isLoading ? '...' : `R ${dashboardStats.availableAdvance.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+              </p>
             </div>
           </div>
         </div>
@@ -120,7 +178,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-500">Current Balance</h3>
-              <p className="text-2xl font-bold text-gray-900">R 0</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {isLoading ? '...' : `R ${dashboardStats.currentBalance.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+              </p>
             </div>
           </div>
         </div>
@@ -134,7 +194,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-500">Hours This Month</h3>
-              <p className="text-2xl font-bold text-gray-900">156</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {isLoading ? '...' : dashboardStats.hoursThisMonth}
+              </p>
             </div>
           </div>
         </div>
@@ -148,7 +210,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <h3 className="text-sm font-medium text-gray-500">Earnings This Month</h3>
-              <p className="text-2xl font-bold text-gray-900">R 3,120</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {isLoading ? '...' : `R ${dashboardStats.earningsThisMonth.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+              </p>
             </div>
           </div>
         </div>
