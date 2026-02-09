@@ -94,7 +94,9 @@ export const DocumentList: React.FC<DocumentListProps> = ({
       </div>
     );
   }
->
+
+  return (
+    <>
       {viewingDocument && (
         <DocumentViewer
           document={{
@@ -106,96 +108,94 @@ export const DocumentList: React.FC<DocumentListProps> = ({
         />
       )}
       
-      <
-                  className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setViewingDocument(doc)}
-                  title="Click to view full size"
-                
-  return (
-    <div className="space-y-4">
-      {documents.map((doc) => (
-        <div
-          key={doc.id}
-          className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-3 flex-1">
-              {/* Show image preview for ID documents with BASE64 data */}
-              {doc.fileContentBase64 && doc.contentType.startsWith('image/') ? (
-                <div className="flex-shrink-0">
-                  <img
-                    src={`data:${doc.contentType};base64,${doc.fileContentBase64}`}
-                    alt={doc.fileName}
-                    className="h-20 w-20 object-cover rounded border border-gray-300"
-                  />
-                </div>
-              ) : (
-                <DocumentIcon className="h-10 w-10 text-gray-400 flex-shrink-0" />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-3">
-                  <h4 className="font-medium text-gray-900 truncate">
-                    {doc.fileName}
-                  </h4>
-                  {getStatusBadge(doc.statusName)}
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  {doc.documentTypeName} • {formatFileSize(doc.fileSize)}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Uploaded {formatDate(doc.uploadedAt)}
-                  {doc.verifiedAt && ` • Verified ${formatDate(doc.verifiedAt)}`}
-                </p>
-                {doc.rejectionReason && (
-                 doc.fileContentBase64 && (
-                  <button
+      <div className="space-y-4">
+        {documents.map((doc) => (
+          <div
+            key={doc.id}
+            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3 flex-1">
+                {/* Show image preview for ID documents with BASE64 data */}
+                {doc.fileContentBase64 && doc.contentType.startsWith('image/') ? (
+                  <div
+                    className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setViewingDocument(doc)}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                    title="View Document"
+                    title="Click to view full size"
                   >
-                    <EyeIcon className="h-5 w-5" />
-                  </button>
-                )}
-                { <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                    <p className="text-sm text-red-700">
-                      <span className="font-medium">Reason:</span>{' '}
-                      {doc.rejectionReason}
-                    </p>
+                    <img
+                      src={`data:${doc.contentType};base64,${doc.fileContentBase64}`}
+                      alt={doc.fileName}
+                      className="h-20 w-20 object-cover rounded border border-gray-300"
+                    />
                   </div>
+                ) : (
+                  <DocumentIcon className="h-10 w-10 text-gray-400 flex-shrink-0" />
                 )}
-                {doc.notes && doc.statusName !== 'Rejected' && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
-                    <p className="text-sm text-blue-700">{doc.notes}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-3">
+                    <h4 className="font-medium text-gray-900 truncate">
+                      {doc.fileName}
+                    </h4>
+                    {getStatusBadge(doc.statusName)}
                   </div>
-                )}
+                  <p className="text-sm text-gray-500 mt-1">
+                    {doc.documentTypeName} • {formatFileSize(doc.fileSize)}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Uploaded {formatDate(doc.uploadedAt)}
+                    {doc.verifiedAt && ` • Verified ${formatDate(doc.verifiedAt)}`}
+                  </p>
+                  {doc.rejectionReason && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                      <p className="text-sm text-red-700">
+                        <span className="font-medium">Reason:</span>{' '}
+                        {doc.rejectionReason}
+                      </p>
+                    </div>
+                  )}
+                  {doc.notes && doc.statusName !== 'Rejected' && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                      <p className="text-sm text-blue-700">{doc.notes}</p>
+                    </div>
+                  )}
+                </div>
               </div>
+              {showActions && (
+                <div className="flex items-center space-x-2 ml-4">
+                  {doc.fileContentBase64 && (
+                    <button
+                      onClick={() => setViewingDocument(doc)}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                      title="View Document"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                    </button>
+                  )}
+                  {onDownload && (
+                    <button
+                      onClick={() => onDownload(doc.id)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Download"
+                    >
+                      <CloudArrowDownIcon className="h-5 w-5" />
+                    </button>
+                  )}
+                  {onDelete && doc.statusName !== 'Approved' && (
+                    <button
+                      onClick={() => onDelete(doc.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      title="Delete"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-            {showActions && (
-    </>
-              <div className="flex items-center space-x-2 ml-4">
-                {onDownload && (
-                  <button
-                    onClick={() => onDownload(doc.id)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    title="Download"
-                  >
-                    <CloudArrowDownIcon className="h-5 w-5" />
-                  </button>
-                )}
-                {onDelete && doc.statusName !== 'Approved' && (
-                  <button
-                    onClick={() => onDelete(doc.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Delete"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-            )}
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 };
