@@ -48,6 +48,7 @@ const Affordability: React.FC = () => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [assessmentError, setAssessmentError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -63,39 +64,41 @@ const Affordability: React.FC = () => {
 
   const loadData = async () => {
     try {
-      // Load incomes, expenses, and affordability assessment from API
-      const [incomesData, expensesData, assessmentData] = await Promise.all([
+      setAssessmentError(null);
+
+      const [incomeResult, expenseResult, assessmentResult] = await Promise.allSettled([
         apiService.getIncomes(),
         apiService.getExpenses(),
         apiService.getAffordability(),
       ]);
 
-      console.log('=== AFFORDABILITY DATA LOADED ===');
-      console.log('Incomes raw response:', incomesData);
-      console.log('Incomes type:', typeof incomesData);
-      console.log('Incomes is array?', Array.isArray(incomesData));
-      console.log('Incomes length:', Array.isArray(incomesData) ? incomesData.length : 'N/A');
-      
-      console.log('Expenses raw response:', expensesData);
-      console.log('Expenses type:', typeof expensesData);
-      console.log('Expenses is array?', Array.isArray(expensesData));
-      console.log('Expenses length:', Array.isArray(expensesData) ? expensesData.length : 'N/A');
-      
-      console.log('Assessment:', assessmentData);
-      console.log('===================================');
+      if (incomeResult.status === 'fulfilled' && Array.isArray(incomeResult.value)) {
+        console.log('Loaded incomes:', incomeResult.value);
+        setIncomes(incomeResult.value);
+      } else {
+        console.error('Failed to load incomes', incomeResult);
+        setIncomes([]);
+      }
 
-      // Ensure we're setting arrays
-      const incomesArray = Array.isArray(incomesData) ? incomesData : [];
-      const expensesArray = Array.isArray(expensesData) ? expensesData : [];
-      
-      console.log('Setting incomes array with length:', incomesArray.length);
-      console.log('Setting expenses array with length:', expensesArray.length);
-      
-      setIncomes(incomesArray);
-      setExpenses(expensesArray);
-      setAssessment(assessmentData);
+      if (expenseResult.status === 'fulfilled' && Array.isArray(expenseResult.value)) {
+        console.log('Loaded expenses:', expenseResult.value);
+        setExpenses(expenseResult.value);
+      } else {
+        console.error('Failed to load expenses', expenseResult);
+        setExpenses([]);
+      }
+
+      if (assessmentResult.status === 'fulfilled') {
+        console.log('Loaded assessment:', assessmentResult.value);
+        setAssessment(assessmentResult.value);
+      } else {
+        console.error('Failed to load assessment', assessmentResult);
+        setAssessment(null);
+        setAssessmentError('Unable to calculate affordability right now. Please check your incomes/expenses and try again.');
+      }
     } catch (error) {
       console.error('Failed to load affordability data:', error);
+      setAssessmentError('Unable to load affordability data.');
     }
   };
 
@@ -187,6 +190,12 @@ const Affordability: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Affordability Assessment</h1>
         <p className="text-gray-600">Manage your income, expenses and assess your loan affordability</p>
       </div>
+
+      {assessmentError && (
+        <div className="mb-4 border border-yellow-200 bg-yellow-50 text-yellow-800 px-4 py-3 rounded-lg">
+          {assessmentError}
+        </div>
+      )}
 
       {/* Income and Expenses Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
