@@ -325,6 +325,30 @@ _ = Task.Run(async () =>
             logger.LogInformation("[STARTUP] Running database migrations...");
             context.Database.Migrate();
             logger.LogInformation("[STARTUP] Database migrations completed successfully");
+            
+            // Seed SystemSettings if it doesn't exist
+            logger.LogInformation("[STARTUP] Checking SystemSettings...");
+            if (!await context.SystemSettings.AnyAsync())
+            {
+                logger.LogInformation("[STARTUP] Creating default SystemSettings...");
+                var defaultSettings = new SystemSettings
+                {
+                    InterestRatePercentage = 5.00m,  // 5%
+                    AdminFee = 50.00m,                // R50
+                    MaxLoanPercentage = 50.00m,       // 50% of monthly earnings
+                    MinLoanAmount = 100.00m,          // R100
+                    MaxLoanAmount = 10000.00m,        // R10,000
+                    LastModifiedDate = DateTime.UtcNow,
+                    LastModifiedBy = "system"
+                };
+                context.SystemSettings.Add(defaultSettings);
+                await context.SaveChangesAsync();
+                logger.LogInformation("[STARTUP] Default SystemSettings created successfully");
+            }
+            else
+            {
+                logger.LogInformation("[STARTUP] SystemSettings already exist");
+            }
         }
     }
     catch (Exception ex)
