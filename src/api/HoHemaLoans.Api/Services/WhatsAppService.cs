@@ -17,6 +17,9 @@ public interface IWhatsAppService
     Task<bool> SendMessageAsync(string phoneNumber, string messageText);
     Task<bool> SendTemplateMessageAsync(string phoneNumber, string templateName, List<string>? parameters = null);
     Task<bool> SendMediaMessageAsync(string phoneNumber, string mediaUrl, string mediaType, string? caption = null);
+    Task<bool> SendInteractiveButtonsAsync(string phoneNumber, string bodyText, List<WhatsAppButton> buttons);
+    Task<bool> SendInteractiveListAsync(string phoneNumber, string bodyText, string buttonText, List<WhatsAppListSection> sections);
+    Task<string?> DownloadMediaAsync(string mediaId);
 }
 
 public class WhatsAppService : IWhatsAppService
@@ -234,6 +237,195 @@ public class WhatsAppService : IWhatsAppService
 
         return "+" + digits;
     }
+
+    /// <summary>
+    /// Send interactive buttons message
+    /// </summary>
+    public async Task<bool> SendInteractiveButtonsAsync(string phoneNumber, string bodyText, List<WhatsAppButton> buttons)
+    {
+        try
+        {
+            if (buttons.Count > 3)
+            {
+                _logger.LogWarning("WhatsApp buttons are limited to 3. Truncating list.");
+                buttons = buttons.Take(3).ToList();
+            }
+
+            var cleanPhoneNumber = CleanPhoneNumber(phoneNumber);
+            var url = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+
+            var request = new
+            {
+                messaging_product = "whatsapp",
+                recipient_type = "individual",
+                to = cleanPhoneNumber,
+                type = "interactive",
+                interactive = new
+                {
+                    type = "button",
+                    body = new { text = bodyText },
+                    action = new
+                    {
+                        buttons = buttons.Select(b => new
+                        {
+                            type = "reply",
+                            reply = new
+                            {
+                                id = b.Id,
+                                title = b.Title
+                            }
+                        }).ToList()
+                    }
+                }
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(url, request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Interactive buttons sent to {PhoneNumber}", cleanPhoneNumber);
+                return true;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to send interactive buttons to {PhoneNumber}. Status: {StatusCode}, Error: {Error}",
+                cleanPhoneNumber, response.StatusCode, errorContent);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception sending interactive buttons to {PhoneNumber}", phoneNumber);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Send interactive list message
+    /// </summary>
+    public async Task<bool> SendInteractiveListAsync(string phoneNumber, string bodyText, string buttonText, List<WhatsAppListSection> sections)
+    {
+        try
+        {
+            var cleanPhoneNumber = CleanPhoneNumber(phoneNumber);
+            var url = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+
+            var request = new
+            {
+                messaging_product = "whatsapp",
+                recipient_type = "individual",
+                to = cleanPhoneNumber,
+                type = "interactive",
+                interactive = new
+                {
+                    type = "list",
+                    body = new { text = bodyText },
+                    action = new
+                    {
+                        button = buttonText,
+                        sections = sections.Select(s => new
+                        {
+                            title = s.Title,
+                            rows = s.Rows.Select(r => new
+                            {
+                                id = r.Id,
+                                title = r.Title,
+                                description = r.Description
+                            }).ToList()
+                        }).ToList()
+                    }
+                }
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(url, request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Interactive list sent to {PhoneNumber}", cleanPhoneNumber);
+                return true;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to send interactive list to {PhoneNumber}. Status: {StatusCode}, Error: {Error}",
+                cleanPhoneNumber, response.StatusCode, errorContent);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception sending interactive list to {PhoneNumber}", phoneNumber);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Download media file from WhatsApp
+    /// </summary>
+    public async Task<string?> DownloadMediaAsync(string mediaId)
+    {
+        try
+        {
+            // First, get the media URL
+            var mediaInfoUrl = $"https://graph.facebook.com/{_settings.ApiVersion}/{mediaId}";
+            var mediaInfoResponse = await _httpClient.GetAsync(mediaInfoUrl);
+
+            if (!mediaInfoResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError("Failed to get media info for {MediaId}", mediaId);
+                return null;
+            }
+
+            var mediaInfo = await mediaInfoResponse.Content.ReadFromJsonAsync<MediaInfo>();
+            if (mediaInfo?.Url == null)
+            {
+                _logger.LogError("Media URL not found for {MediaId}", mediaId);
+                return null;
+            }
+
+            _logger.LogInformation("Retrieved media URL for {MediaId}: {Url}", mediaId, mediaInfo.Url);
+            return mediaInfo.Url;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception downloading media {MediaId}", mediaId);
+            return null;
+        }
+    }
+}
+
+/// <summary>
+/// Helper classes for interactive messages
+/// </summary>
+public class WhatsAppButton
+{
+    public string Id { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+}
+
+public class WhatsAppListSection
+{
+    public string Title { get; set; } = string.Empty;
+    public List<WhatsAppListRow> Rows { get; set; } = new();
+}
+
+public class WhatsAppListRow
+{
+    public string Id { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+
+public class MediaInfo
+{
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+
+    [JsonPropertyName("mime_type")]
+    public string? MimeType { get; set; }
+
+    [JsonPropertyName("sha256")]
+    public string? Sha256 { get; set; }
+
+    [JsonPropertyName("file_size")]
+    public long? FileSize { get; set; }
 }
 
 /// <summary>

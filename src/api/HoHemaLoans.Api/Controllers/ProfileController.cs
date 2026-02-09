@@ -3,8 +3,10 @@ using HoHemaLoans.Api.Models;
 using HoHemaLoans.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
 
 namespace HoHemaLoans.Api.Controllers;
 
@@ -16,15 +18,18 @@ public class ProfileController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IAffordabilityService _affordabilityService;
     private readonly ILogger<ProfileController> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public ProfileController(
         ApplicationDbContext context,
         IAffordabilityService affordabilityService,
-        ILogger<ProfileController> logger)
+        ILogger<ProfileController> logger,
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
         _affordabilityService = affordabilityService;
         _logger = logger;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -34,6 +39,130 @@ public class ProfileController : ControllerBase
     {
         return User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
     }
+
+    #region Profile Endpoints
+
+    /// <summary>
+    /// Get the current user's profile
+    /// </summary>
+    [HttpGet]
+    [HttpGet("~/api/users/profile")]
+    public async Task<ActionResult<UserProfileDto>> GetProfile()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                return NotFound("User not found");
+
+            var roles = await _userManager.GetRolesAsync(user);
+            return Ok(MapToUserProfileDto(user, roles));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching user profile");
+            return StatusCode(500, new { message = "Error fetching profile" });
+        }
+    }
+
+    /// <summary>
+    /// Update the current user's profile
+    /// </summary>
+    [HttpPut]
+    [HttpPut("~/api/users/profile")]
+    public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                return NotFound("User not found");
+
+            if (string.IsNullOrWhiteSpace(dto.FirstName) || string.IsNullOrWhiteSpace(dto.LastName))
+                return BadRequest("First name and last name are required");
+
+            user.FirstName = dto.FirstName.Trim();
+            user.LastName = dto.LastName.Trim();
+            user.PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? user.PhoneNumber : dto.PhoneNumber.Trim();
+            user.StreetAddress = dto.StreetAddress ?? string.Empty;
+            user.Suburb = dto.Suburb ?? string.Empty;
+            user.City = dto.City ?? string.Empty;
+            user.Province = dto.Province ?? string.Empty;
+            user.PostalCode = dto.PostalCode ?? string.Empty;
+            user.EmployerName = dto.EmployerName ?? string.Empty;
+            user.EmployeeNumber = dto.EmployeeNumber ?? string.Empty;
+            user.PayrollReference = dto.PayrollReference ?? string.Empty;
+            user.EmploymentType = dto.EmploymentType ?? string.Empty;
+            user.BankName = dto.BankName ?? string.Empty;
+            user.AccountType = dto.AccountType ?? string.Empty;
+            user.AccountNumber = dto.AccountNumber ?? string.Empty;
+            user.BranchCode = dto.BranchCode ?? string.Empty;
+            user.NextOfKinName = dto.NextOfKinName ?? string.Empty;
+            user.NextOfKinRelationship = dto.NextOfKinRelationship ?? string.Empty;
+            user.NextOfKinPhone = dto.NextOfKinPhone ?? string.Empty;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToArray();
+                _logger.LogWarning("Profile update failed for user {UserId}: {Errors}", userId, string.Join(", ", errors));
+                return BadRequest(new { message = "Failed to update profile", errors });
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            return Ok(MapToUserProfileDto(user, roles));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user profile");
+            return StatusCode(500, new { message = "Error updating profile" });
+        }
+    }
+
+    private static UserProfileDto MapToUserProfileDto(ApplicationUser user, IEnumerable<string> roles)
+    {
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email ?? string.Empty,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            IdNumber = user.IdNumber,
+            DateOfBirth = user.DateOfBirth,
+            PhoneNumber = user.PhoneNumber,
+            Address = user.Address,
+            StreetAddress = user.StreetAddress,
+            Suburb = user.Suburb,
+            City = user.City,
+            Province = user.Province,
+            PostalCode = user.PostalCode,
+            EmployerName = user.EmployerName,
+            EmployeeNumber = user.EmployeeNumber,
+            PayrollReference = user.PayrollReference,
+            EmploymentType = user.EmploymentType,
+            BankName = user.BankName,
+            AccountType = user.AccountType,
+            AccountNumber = user.AccountNumber,
+            BranchCode = user.BranchCode,
+            NextOfKinName = user.NextOfKinName,
+            NextOfKinRelationship = user.NextOfKinRelationship,
+            NextOfKinPhone = user.NextOfKinPhone,
+            IsVerified = user.IsVerified,
+            MonthlyIncome = user.MonthlyIncome,
+            Roles = roles
+        };
+    }
+
+    #endregion
 
     #region Income Endpoints
 
@@ -448,4 +577,70 @@ public class ProfileController : ControllerBase
     }
 
     #endregion
+}
+
+public class UpdateProfileDto
+{
+    [Required]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required]
+    public string LastName { get; set; } = string.Empty;
+
+    public string? PhoneNumber { get; set; }
+    public string? StreetAddress { get; set; }
+    public string? Suburb { get; set; }
+    public string? City { get; set; }
+    public string? Province { get; set; }
+    public string? PostalCode { get; set; }
+    public string? EmployerName { get; set; }
+    public string? EmployeeNumber { get; set; }
+    public string? PayrollReference { get; set; }
+    public string? EmploymentType { get; set; }
+    public string? BankName { get; set; }
+    public string? AccountType { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? BranchCode { get; set; }
+    public string? NextOfKinName { get; set; }
+    public string? NextOfKinRelationship { get; set; }
+    public string? NextOfKinPhone { get; set; }
+}
+
+public class UserProfileDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string IdNumber { get; set; } = string.Empty;
+    public DateTime DateOfBirth { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? Address { get; set; }
+    public decimal MonthlyIncome { get; set; }
+    public bool IsVerified { get; set; }
+    public IEnumerable<string>? Roles { get; set; }
+
+    // Address
+    public string StreetAddress { get; set; } = string.Empty;
+    public string Suburb { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Province { get; set; } = string.Empty;
+    public string PostalCode { get; set; } = string.Empty;
+
+    // Employment
+    public string EmployerName { get; set; } = string.Empty;
+    public string EmployeeNumber { get; set; } = string.Empty;
+    public string PayrollReference { get; set; } = string.Empty;
+    public string EmploymentType { get; set; } = string.Empty;
+
+    // Banking
+    public string BankName { get; set; } = string.Empty;
+    public string AccountType { get; set; } = string.Empty;
+    public string AccountNumber { get; set; } = string.Empty;
+    public string BranchCode { get; set; } = string.Empty;
+
+    // Next of kin
+    public string NextOfKinName { get; set; } = string.Empty;
+    public string NextOfKinRelationship { get; set; } = string.Empty;
+    public string NextOfKinPhone { get; set; } = string.Empty;
 }

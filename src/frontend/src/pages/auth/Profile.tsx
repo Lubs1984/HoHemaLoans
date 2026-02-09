@@ -93,8 +93,8 @@ const Profile: React.FC = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const response = await apiService.put('/users/profile', formData);
-      setUser(response.data as any);
+      const response = await apiService.updateProfile(formData);
+      setUser(response as any);
       setIsEditing(false);
       alert('Profile updated successfully!');
     } catch (error: any) {

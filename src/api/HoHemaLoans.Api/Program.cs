@@ -266,6 +266,7 @@ builder.Services.AddScoped<TestDataSeeder>();
 // Add WhatsApp Service
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsApp"));
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<IWhatsAppLoanWizardService, WhatsAppLoanWizardService>();
 
 // Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

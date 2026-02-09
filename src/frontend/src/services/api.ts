@@ -184,11 +184,11 @@ class ApiService {
 
   // User profile endpoints (using auth user data)
   async getProfile(): Promise<any> {
-    return this.request<any>('/users/profile');
+    return this.request<any>('/profile');
   }
 
   async updateProfile(data: any): Promise<any> {
-    return this.request<any>('/users/profile', {
+    return this.request<any>('/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
