@@ -286,6 +286,15 @@ class ApiService {
     return this.request<any>('/profile/affordability/max-loan');
   }
 
+  // Document endpoints
+  async getUserDocuments(): Promise<any[]> {
+    return this.request<any[]>('/documents');
+  }
+
+  async getVerificationStatus(): Promise<any> {
+    return this.request<any>('/documents/verification-status');
+  }
+
   // Generic HTTP methods for flexible API calls
   async get<T>(endpoint: string): Promise<{ data: T }> {
     const data = await this.request<T>(endpoint, {

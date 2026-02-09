@@ -7,24 +7,85 @@ interface LoanApplication {
   status: string;
 }
 
+interface PrerequisiteStatus {
+  profileComplete: boolean;
+  documentsUploaded: boolean;
+  affordabilityComplete: boolean;
+}
+
+interface DocumentStatus {
+  totalDocuments: number;
+  approvedDocuments: number;
+  pendingDocuments: number;
+  missingDocuments: string[];
+}
+
 const Dashboard: React.FC = () => {
   const [draftApplication, setDraftApplication] = useState<LoanApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [prerequisiteStatus, setPrerequisiteStatus] = useState<PrerequisiteStatus>({
+    profileComplete: false,
+    documentsUploaded: false,
+    affordabilityComplete: false,
+  });
+  const [documentStatus, setDocumentStatus] = useState<DocumentStatus | null>(null);
 
   useEffect(() => {
-    loadDraftApplication();
+    loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      await Promise.all([
+        loadDraftApplication(),
+        loadPrerequisiteStatus(),
+      ]);
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadDraftApplication = async () => {
     try {
-      setIsLoading(true);
       const applications = await apiService.getLoanApplications();
       const draft = applications.find((app: LoanApplication) => app.status === 'Draft');
       setDraftApplication(draft || null);
     } catch (err) {
       console.error('Failed to load applications:', err);
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const loadPrerequisiteStatus = async () => {
+    try {
+      // Check profile completion
+      const profile = await apiService.getProfile();
+      const profileComplete = !!(
+        profile.firstName &&
+        profile.lastName &&
+        profile.idNumber &&
+        profile.phoneNumber &&
+        profile.dateOfBirth
+      );
+
+      // Check document status
+      const verificationStatus = await apiService.getVerificationStatus();
+      setDocumentStatus(verificationStatus);
+      const documentsUploaded = verificationStatus.missingDocuments?.length === 0 || false;
+
+      // Check affordability assessment
+      const affordability = await apiService.getAffordability();
+      const affordabilityComplete = affordability && affordability.totalIncome > 0;
+
+      setPrerequisiteStatus({
+        profileComplete,
+        documentsUploaded,
+        affordabilityComplete,
+      });
+    } catch (err) {
+      console.error('Failed to load prerequisite status:', err);
     }
   };
 
@@ -94,6 +155,129 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Loan Application Prerequisites */}
+        <div className="card">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Before You Apply</h2>
+          <p className="text-sm text-gray-600 mb-4">Complete these steps to apply for a loan:</p>
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Profile Completion */}
+              <Link
+                to="/profile"
+                className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                  prerequisiteStatus.profileComplete
+                    ? 'border-success-200 bg-success-50'
+                    : 'border-warning-200 bg-warning-50'
+                }`}
+              >
+                <div className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    prerequisiteStatus.profileComplete
+                      ? 'bg-success-100'
+                      : 'bg-warning-100'
+                  }`}>
+                    {prerequisiteStatus.profileComplete ? (
+                      <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Complete Your Profile</h3>
+                    <p className="text-xs text-gray-600">Personal details & biographical information</p>
+                  </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              {/* Document Upload */}
+              <Link
+                to="/documents"
+                className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                  prerequisiteStatus.documentsUploaded
+                    ? 'border-success-200 bg-success-50'
+                    : 'border-warning-200 bg-warning-50'
+                }`}
+              >
+                <div className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    prerequisiteStatus.documentsUploaded
+                      ? 'bg-success-100'
+                      : 'bg-warning-100'
+                  }`}>
+                    {prerequisiteStatus.documentsUploaded ? (
+                      <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Upload Documents</h3>
+                    <p className="text-xs text-gray-600">
+                      {documentStatus?.missingDocuments && documentStatus.missingDocuments.length > 0
+                        ? `Missing: ${documentStatus.missingDocuments.join(', ')}`
+                        : 'ID document & proof of address'}
+                    </p>
+                  </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              {/* Affordability Assessment */}
+              <Link
+                to="/loans/affordability"
+                className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all hover:shadow-md ${
+                  prerequisiteStatus.affordabilityComplete
+                    ? 'border-success-200 bg-success-50'
+                    : 'border-warning-200 bg-warning-50'
+                }`}
+              >
+                <div className="flex items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    prerequisiteStatus.affordabilityComplete
+                      ? 'bg-success-100'
+                      : 'bg-warning-100'
+                  }`}>
+                    {prerequisiteStatus.affordabilityComplete ? (
+                      <svg className="w-6 h-6 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Complete Affordability Assessment</h3>
+                    <p className="text-xs text-gray-600">Income & expenses verification</p>
+                  </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          )}
+        </div>
+
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
           <div className="space-y-3">

@@ -3,7 +3,7 @@ import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
 import { PlusIcon, TrashIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { DocumentUpload } from '../../components/documents/DocumentUpload';
-import { DocumentList, Document } from '../../components/documents/DocumentList';
+import { DocumentList, type Document } from '../../components/documents/DocumentList';
 
 interface Income {
   id: string;
@@ -273,7 +273,7 @@ const Profile: React.FC = () => {
                 <h3 className="text-md font-medium mb-3">Identity Document</h3>
                 <DocumentUpload
                   documentType="IdDocument"
-                  acceptedTypes={['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']}
+                  acceptedTypes="image/jpeg,image/png,image/jpg,application/pdf"
                   maxSizeMB={10}
                   onUploadSuccess={() => loadDocuments()}
                   onUploadError={(error) => console.error('Upload failed:', error)}
@@ -284,7 +284,7 @@ const Profile: React.FC = () => {
                 <h3 className="text-md font-medium mb-3">Proof of Address</h3>
                 <DocumentUpload
                   documentType="ProofOfAddress"
-                  acceptedTypes={['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']}
+                  acceptedTypes="image/jpeg,image/png,image/jpg,application/pdf"
                   maxSizeMB={10}
                   onUploadSuccess={() => loadDocuments()}
                   onUploadError={(error) => console.error('Upload failed:', error)}
@@ -305,16 +305,7 @@ const Profile: React.FC = () => {
                 documents={documents}
                 onDownload={async (id) => {
                   try {
-                    const response = await apiService.get(`/documents/${id}/download`, {
-                      responseType: 'blob'
-                    });
-                    const url = window.URL.createObjectURL(new Blob([response.data]));
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', `document-${id}.pdf`);
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
+                    window.open(`${import.meta.env.VITE_API_URL}/api/documents/${id}/download`, '_blank');
                   } catch (error) {
                     console.error('Download failed:', error);
                   }
