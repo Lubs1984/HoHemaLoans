@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon, DevicePhoneMobileIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
+import { useToast } from '../../contexts/ToastContext';
 import { apiService } from '../../services/api';
 import HohemaLogo from '../../assets/hohema-logo.png';
 
@@ -10,6 +11,7 @@ type LoginMethod = 'email' | 'mobile';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, setLoading, setError, error, isLoading } = useAuthStore();
+  const { success, error: showError, info } = useToast();
   
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('email');
   const [formData, setFormData] = useState({
@@ -133,8 +135,11 @@ const Login: React.FC = () => {
       setCountdown(300); // 5 minutes countdown
       setError(null);
       setValidationErrors({});
+      success('PIN sent to your WhatsApp! Check your messages.');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to send PIN');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send PIN';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -159,9 +164,11 @@ const Login: React.FC = () => {
         
         if (response && response.token && response.user) {
           login(response.user, response.token);
+          success(`Welcome back, ${response.user.firstName}!`);
           navigate('/');
         } else {
           setError('Login failed - invalid response from server');
+          showError('Login failed - invalid response from server');
         }
       } else {
         // Mobile PIN verification
@@ -172,13 +179,17 @@ const Login: React.FC = () => {
 
         if (response && response.token && response.user) {
           login(response.user, response.token);
+          success(`Welcome, ${response.user.firstName}! Logged in via WhatsApp.`);
           navigate('/');
         } else {
           setError('Verification failed - invalid response from server');
+          showError('PIN verification failed. Please try again.');
         }
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Login failed');
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }

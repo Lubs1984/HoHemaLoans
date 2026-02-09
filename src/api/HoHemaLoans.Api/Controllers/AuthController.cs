@@ -82,7 +82,23 @@ public class AuthController : ControllerBase
                     MonthlyIncome = user.MonthlyIncome,
                     PhoneNumber = user.PhoneNumber,
                     IsVerified = user.IsVerified,
-                    Roles = roles
+                    Roles = roles,
+                    StreetAddress = user.StreetAddress,
+                    Suburb = user.Suburb,
+                    City = user.City,
+                    Province = user.Province,
+                    PostalCode = user.PostalCode,
+                    EmployerName = user.EmployerName,
+                    EmployeeNumber = user.EmployeeNumber,
+                    PayrollReference = user.PayrollReference,
+                    EmploymentType = user.EmploymentType,
+                    BankName = user.BankName,
+                    AccountType = user.AccountType,
+                    AccountNumber = user.AccountNumber,
+                    BranchCode = user.BranchCode,
+                    NextOfKinName = user.NextOfKinName,
+                    NextOfKinRelationship = user.NextOfKinRelationship,
+                    NextOfKinPhone = user.NextOfKinPhone
                 }
             });
         }
@@ -142,7 +158,23 @@ public class AuthController : ControllerBase
                         MonthlyIncome = user.MonthlyIncome,
                         PhoneNumber = user.PhoneNumber,
                         IsVerified = user.IsVerified,
-                        Roles = roles
+                        Roles = roles,
+                        StreetAddress = user.StreetAddress,
+                        Suburb = user.Suburb,
+                        City = user.City,
+                        Province = user.Province,
+                        PostalCode = user.PostalCode,
+                        EmployerName = user.EmployerName,
+                        EmployeeNumber = user.EmployeeNumber,
+                        PayrollReference = user.PayrollReference,
+                        EmploymentType = user.EmploymentType,
+                        BankName = user.BankName,
+                        AccountType = user.AccountType,
+                        AccountNumber = user.AccountNumber,
+                        BranchCode = user.BranchCode,
+                        NextOfKinName = user.NextOfKinName,
+                        NextOfKinRelationship = user.NextOfKinRelationship,
+                        NextOfKinPhone = user.NextOfKinPhone
                     }
                 });
             }
@@ -312,7 +344,23 @@ public class AuthController : ControllerBase
                     MonthlyIncome = user.MonthlyIncome,
                     PhoneNumber = user.PhoneNumber,
                     IsVerified = user.IsVerified,
-                    Roles = roles
+                    Roles = roles,
+                    StreetAddress = user.StreetAddress,
+                    Suburb = user.Suburb,
+                    City = user.City,
+                    Province = user.Province,
+                    PostalCode = user.PostalCode,
+                    EmployerName = user.EmployerName,
+                    EmployeeNumber = user.EmployeeNumber,
+                    PayrollReference = user.PayrollReference,
+                    EmploymentType = user.EmploymentType,
+                    BankName = user.BankName,
+                    AccountType = user.AccountType,
+                    AccountNumber = user.AccountNumber,
+                    BranchCode = user.BranchCode,
+                    NextOfKinName = user.NextOfKinName,
+                    NextOfKinRelationship = user.NextOfKinRelationship,
+                    NextOfKinPhone = user.NextOfKinPhone
                 }
             });
         }
@@ -479,6 +527,30 @@ public class UserDto
     public string? PhoneNumber { get; set; }
     public bool IsVerified { get; set; }
     public IEnumerable<string>? Roles { get; set; }
+
+    // NCR-required Address fields
+    public string StreetAddress { get; set; } = string.Empty;
+    public string Suburb { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Province { get; set; } = string.Empty;
+    public string PostalCode { get; set; } = string.Empty;
+
+    // NCR-required Employment fields
+    public string EmployerName { get; set; } = string.Empty;
+    public string EmployeeNumber { get; set; } = string.Empty;
+    public string PayrollReference { get; set; } = string.Empty;
+    public string EmploymentType { get; set; } = string.Empty;
+
+    // NCR-required Banking fields
+    public string BankName { get; set; } = string.Empty;
+    public string AccountType { get; set; } = string.Empty;
+    public string AccountNumber { get; set; } = string.Empty;
+    public string BranchCode { get; set; } = string.Empty;
+
+    // NCR-required Next of Kin fields
+    public string NextOfKinName { get; set; } = string.Empty;
+    public string NextOfKinRelationship { get; set; } = string.Empty;
+    public string NextOfKinPhone { get; set; } = string.Empty;
 }
 
 public class AuthResponseDto

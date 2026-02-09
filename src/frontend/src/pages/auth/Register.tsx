@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 import HohemaLogo from '../../assets/hohema-logo.png';
 
 interface RegisterFormData {
@@ -21,6 +22,7 @@ interface RegisterFormData {
 const Register = () => {
   const navigate = useNavigate();
   const { login, setLoading, setError, error, isLoading } = useAuthStore();
+  const { success, error: showError } = useToast();
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',

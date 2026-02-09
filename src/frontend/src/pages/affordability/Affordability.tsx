@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, BanknotesIcon, CreditCardIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 import AddIncomeModal from '../../components/modals/AddIncomeModal';
 import AddExpenseModal from '../../components/modals/AddExpenseModal';
 import EditIncomeModal from '../../components/modals/EditIncomeModal';
@@ -49,6 +50,7 @@ const Affordability: React.FC = () => {
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [assessmentError, setAssessmentError] = useState<string | null>(null);
+  const { success, error: showError, warning, info } = useToast();
 
   useEffect(() => {
     loadData();
@@ -99,6 +101,7 @@ const Affordability: React.FC = () => {
     } catch (error) {
       console.error('Failed to load affordability data:', error);
       setAssessmentError('Unable to load affordability data.');
+      showError('Failed to load affordability data');
     }
   };
 
@@ -107,10 +110,11 @@ const Affordability: React.FC = () => {
     
     try {
       await apiService.deleteIncome(id);
+      success('Income source deleted successfully');
       await loadData(); // Reload to get updated assessment
     } catch (error) {
       console.error('Failed to delete income:', error);
-      alert('Failed to delete income source');
+      showError('Failed to delete income source');
     }
   };
 
@@ -119,10 +123,11 @@ const Affordability: React.FC = () => {
     
     try {
       await apiService.deleteExpense(id);
+      success('Expense deleted successfully');
       await loadData(); // Reload to get updated assessment
     } catch (error) {
       console.error('Failed to delete expense:', error);
-      alert('Failed to delete expense');
+      showError('Failed to delete expense');
     }
   };
 
@@ -130,6 +135,7 @@ const Affordability: React.FC = () => {
     try {
       await apiService.addIncome(data);
       setShowIncomeModal(false);
+      success('Income source added successfully');
       await loadData();
     } catch (error) {
       console.error('Failed to add income:', error);
@@ -141,6 +147,7 @@ const Affordability: React.FC = () => {
     try {
       await apiService.addExpense(data);
       setShowExpenseModal(false);
+      success('Expense added successfully');
       await loadData();
     } catch (error) {
       console.error('Failed to add expense:', error);
@@ -150,12 +157,14 @@ const Affordability: React.FC = () => {
 
   const handleEditIncome = async (id: string, data: any) => {
     await apiService.updateIncome(id, data);
+    success('Income source updated successfully');
     await loadData();
     setEditingIncome(null);
   };
 
   const handleEditExpense = async (id: string, data: any) => {
     await apiService.updateExpense(id, data);
+    success('Expense updated successfully');
     await loadData();
     setEditingExpense(null);
   };

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from './components/layout/Layout';
 import { useAuthStore } from './store/authStore';
+import { ToastProvider } from './contexts/ToastContext';
 
 // Page components
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'));
@@ -76,16 +77,17 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <React.Suspense 
-            fallback={
-              <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              </div>
-            }
-          >
-            <Routes>
+      <ToastProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <React.Suspense 
+              fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                </div>
+              }
+            >
+              <Routes>
               {/* Public routes */}
               <Route 
                 path="/login" 
@@ -146,6 +148,7 @@ function App() {
           </React.Suspense>
         </div>
       </Router>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }
