@@ -1,222 +1,349 @@
 # Railway Deployment Guide
 
-## Prerequisites
-- GitHub account with HoHemaLoans repo
-- Railway account (https://railway.app)
-- $200 free credits (lasts ~7-8 months)
+## Overview
+This guide covers deploying the HoHema Loans application to Railway.app with PostgreSQL database.
 
-## Step-by-Step Deployment
+## Prerequisites
+- Railway account (https://railway.app)
+- GitHub repository connected to Railway
+- Railway CLI (optional): `npm install -g @railway/cli`
+
+## Quick Deploy
 
 ### 1. Create Railway Project
-
 ```bash
-# Via Railway Dashboard:
-# 1. Go to https://railway.app/dashboard
-# 2. Click "New Project"
-# 3. Select "Deploy from GitHub repo"
-# 4. Select Lubs1984/HoHemaLoans repo
-# 5. Name project "HoHemaLoans"
+# Option A: Using Railway Dashboard
+1. Go to https://railway.app/new
+2. Select "Deploy from GitHub repo"
+3. Connect your GitHub account and select the HoHemaLoans repository
+4. Railway will detect the configuration automatically
+
+# Option B: Using Railway CLI
+railway login
+railway init
+railway up
 ```
 
-### 2. Create PostgreSQL Database Service
+### 2. Add PostgreSQL Database
+```bash
+# In Railway Dashboard:
+1. Click "New" → "Database" → "Add PostgreSQL"
+2. Railway automatically creates DATABASE_URL variable
 
-In Railway Dashboard:
+# Using CLI:
+railway add --database postgresql
 ```
-1. Click "+ New" → "Database" → "PostgreSQL"
-2. Wait for database to start (2-3 minutes)
-3. Copy CONNECTION_URL from Variables
+
+### 3. Configure Environment Variables
+
+In Railway Dashboard, add these variables to your API service:
+
+#### Required Variables:
 ```
-
-### 3. Add Environment Variables
-
-In Railway project settings → Variables:
-
-```
-# Database
-DATABASE_URL=<PostgreSQL CONNECTION_URL from previous step>
-
-# API (for production)
 ASPNETCORE_ENVIRONMENT=Production
-JwtSettings__SecretKey=YourVeryLongAndComplexSecretKeyThatIsAtLeast32CharactersLong2024!
-JwtSettings__Issuer=HoHemaLoans
-JwtSettings__Audience=HoHemaLoans
-
-# API CORS (update with your Railway domain)
-ALLOWED_ORIGINS=https://hohema-frontend-xyz.railway.app
-
-# WhatsApp (get from Meta Developer)
-WhatsApp__AccessToken=your_access_token
-WhatsApp__PhoneNumberId=your_phone_number_id
-WhatsApp__WebhookVerifyToken=your_webhook_verify_token
-WhatsApp__BusinessAccountId=your_business_account_id
-
-# Connection String for .NET
-ConnectionStrings__DefaultConnection=$DATABASE_URL
+ConnectionStrings__DefaultConnection=${{Postgres.DATABASE_URL}}
+JWT_SECRET=<generate-secure-random-string>
+JWT_ISSUER=https://hohema-api.railway.app
+JWT_AUDIENCE=https://hohema-api.railway.app
 ```
 
-### 4. Deploy API Service
-
-In Railway Dashboard:
+#### Optional Variables:
 ```
-1. Click "+ New Service"
-2. Select "GitHub Repo"
-3. Select your HoHemaLoans repo
-4. DO NOT set Root Directory - leave it blank!
-5. Configure in the next screen:
-   - Build Context: src/api/HoHemaLoans.Api
-   - Dockerfile: Dockerfile (just the filename)
-   - Port: 8080
-6. Click Deploy
+CORS_ORIGINS=https://your-frontend.railway.app
+WHATSAPP_API_URL=<your-whatsapp-api>
+WHATSAPP_API_TOKEN=<your-token>
 ```
 
-**Alternative - Set these correctly:**
-- **Root Directory:** src/api/HoHemaLoans.Api
-- **Dockerfile Name:** Dockerfile (Railway will find it in the root directory)
+### 4. Run Database Migrations
 
-### 5. Deploy Frontend Service
+After first deployment:
 
-In Railway Dashboard:
-```
-1. Click "+ New Service"
-2. Select "GitHub Repo"
-3. Select your HoHemaLoans repo
-4. DO NOT set Root Directory - leave it blank!
-5. Configure in the next screen:
-   - Build Context: src/frontend
-   - Dockerfile: Dockerfile (just the filename)
-   - Port: 3000
-6. Click Deploy
-```
-
-**Alternative - Set these correctly:**
-- **Root Directory:** src/frontend
-- **Dockerfile Name:** Dockerfile (Railway will find it in the root directory)
-
-### 6. Configure Frontend API URL
-
-Add to Railway Variables for Frontend Service:
-```
-VITE_API_URL=https://api-service-name.railway.app/api
-```
-
-(Replace api-service-name with your actual API service URL from Railway)
-
-### 7. Set Up Custom Domain (Optional)
-
-```
-1. Purchase domain from Namecheap, GoDaddy, etc.
-2. In Railway → Project Settings → Domains
-3. Add custom domain
-4. Update DNS records as instructed by Railway
-```
-
-## Verification
-
-### Check API Health
 ```bash
-curl https://api-service-name.railway.app/api/health
+# Using Railway CLI:
+railway run dotnet ef database update
+
+# Or connect to the service and run:
+railway shell
+dotnet ef database update
 ```
 
-### Check Frontend
+## Service Configuration
+
+### API Service (Port 8080)
+- **Build**: Uses Dockerfile.api
+- **Framework**: .NET 8.0
+- **Health Check**: `/health` endpoint
+- **Auto-deploys**: On push to main branch
+
+### Database Service
+- **Type**: PostgreSQL 15+
+- **Automatic backups**: Enabled
+- **Connection**: Automatically injected via DATABASE_URL
+
+## Environment Variable Reference
+
+### Connection Strings
 ```bash
-# Visit in browser
-https://frontend-service-name.railway.app
+# Railway automatically provides DATABASE_URL in this format:
+# postgresql://user:password@host:port/database
+
+# Convert to .NET format in your code or use directly:
+ConnectionStrings__DefaultConnection=${{Postgres.DATABASE_URL}}
 ```
+
+### JWT Configuration
+```bash
+# Generate a secure secret (minimum 32 characters):
+openssl rand -base64 32
+
+JWT_SECRET=<your-generated-secret>
+JWT_ISSUER=https://your-api-domain.railway.app
+JWT_AUDIENCE=https://your-api-domain.railway.app
+JWT_EXPIRATION_HOURS=24
+```
+
+### CORS Configuration
+```bash
+# Allow your frontend domain:
+CORS_ORIGINS=https://your-frontend.railway.app,https://www.yourdomain.com
+```
+
+## Deployment Workflow
+
+### Automatic Deployment
+1. Push code to GitHub main branch
+2. Railway automatically detects changes
+3. Builds Docker image using Dockerfile.api
+4. Runs health checks
+5. Deploys new version with zero downtime
+
+### Manual Deployment
+```bash
+# Using Railway CLI:
+railway up
+
+# Or trigger from dashboard:
+# Project → Deployments → Deploy
+```
+
+## Post-Deployment Tasks
+
+### 1. Verify API Health
+```bash
+curl https://your-api.railway.app/health
+```
+
+### 2. Run Migrations
+```bash
+railway run --service api dotnet ef database update
+```
+
+### 3. Seed Initial Data (Optional)
+```bash
+# For development/testing only:
+curl -X POST https://your-api.railway.app/api/testdata/seed
+```
+
+### 4. Create Admin User
+```bash
+# Use your admin registration endpoint:
+curl -X POST https://your-api.railway.app/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@hohema.com",
+    "password": "SecurePassword123!",
+    "firstName": "Admin",
+    "lastName": "User"
+  }'
+```
+
+## Monitoring & Logs
 
 ### View Logs
+```bash
+# Using CLI:
+railway logs
+
+# Or in dashboard:
+# Project → Service → Logs
 ```
-1. Go to Railway Dashboard
-2. Select Service
-3. Click "Logs" tab
-4. Watch real-time deployment logs
-```
+
+### Monitor Metrics
+- Dashboard shows CPU, Memory, Network usage
+- Set up alerts for high resource usage
+- Monitor deployment success/failure
 
 ## Troubleshooting
 
-### API Container Won't Start
-```
-1. Check Logs tab for error
-2. Verify DATABASE_URL is correct
-3. Ensure connection string format: 
-   postgresql://user:password@host:5432/database
-4. Restart service
-```
+### Common Issues
 
-### Frontend Can't Reach API
-```
-1. Check VITE_API_URL in variables
-2. Verify API service is running
-3. Check CORS settings in API
-4. Update ALLOWED_ORIGINS in API variables
-```
-
-### Database Connection Error
-```
-1. Verify PostgreSQL service is running
-2. Check DATABASE_URL in variables
-3. Run health check on API to test DB connection
-```
-
-## Cost Breakdown
-
-| Service | Cost | Notes |
-|---------|------|-------|
-| PostgreSQL | $5/mo | Managed database |
-| API Service | $5-10/mo | Depends on usage |
-| Frontend Service | $2-5/mo | Static site |
-| **Total** | **$12-20/mo** | Very cheap! |
-
-With $200 free credits, you have ~10 months free!
-
-## Next Steps After Deployment
-
-1. **Configure WhatsApp Webhook**
-   - Get credentials from Meta Developer
-   - Set webhook URL to: `https://api-service-name.railway.app/api/webhooks/whatsapp`
-   - Verify webhook token
-
-2. **Set Up Custom Domain**
-   - Point domain DNS to Railway
-   - Enable HTTPS (automatic)
-
-3. **Enable Monitoring**
-   - Watch real-time logs
-   - Set up alerts for errors
-
-4. **Backup Database**
-   - Railway auto-backups daily
-   - No additional setup needed
-
-## Useful Commands
-
+#### 1. Database Connection Errors
 ```bash
-# SSH into API service
-railway connect api
+# Verify DATABASE_URL is set:
+railway variables
 
-# View environment variables
-railway variables ls
-
-# Update environment variable
-railway variables set KEY=VALUE
-
-# Deploy specific branch
-railway deploy --branch main
-
-# Check deployment status
-railway status
+# Test connection:
+railway run psql $DATABASE_URL
 ```
 
-## Important Notes
+#### 2. Migration Failures
+```bash
+# Check current migration status:
+railway run dotnet ef migrations list
 
-- ⚠️ Railway automatically redeploys on `git push` to main
-- ✅ HTTPS is automatic for all services
-- ✅ Database backups are daily and automatic
-- ✅ Scaling is automatic based on load
-- 💾 You have 10 months with free credits
-- 🔄 After free credits, ~$12-20/month
+# Reset database (WARNING: destroys data):
+railway run dotnet ef database drop
+railway run dotnet ef database update
+```
 
-## Support
+#### 3. .NET Runtime Missing
+- Ensure Dockerfile.api uses `mcr.microsoft.com/dotnet/aspnet:8.0`
+- Verify .csproj has `<TargetFramework>net8.0</TargetFramework>`
+
+#### 4. Port Binding Issues
+```bash
+# Railway provides $PORT variable automatically
+# Ensure appsettings.json or Dockerfile sets:
+ASPNETCORE_URLS=http://+:$PORT
+```
+
+### Health Check Debugging
+```bash
+# Test health endpoint locally:
+curl http://localhost:8080/health
+
+# Check Railway health check logs:
+railway logs --service api | grep health
+```
+
+## Scaling & Performance
+
+### Vertical Scaling
+- Railway automatically allocates resources
+- Upgrade plan for more CPU/Memory
+- Monitor usage in dashboard
+
+### Horizontal Scaling
+```bash
+# Scale to multiple replicas (paid plans):
+railway scale --replicas 2
+```
+
+### Database Optimization
+- Enable connection pooling in appsettings.json
+- Add indexes for frequently queried fields
+- Use Railway's automatic backups
+
+## Security Best Practices
+
+### 1. Environment Variables
+- Never commit secrets to git
+- Use Railway's encrypted variable storage
+- Rotate JWT_SECRET regularly
+
+### 2. Database Security
+- Railway handles PostgreSQL security
+- Use strong passwords
+- Enable SSL connections
+
+### 3. API Security
+- Enable HTTPS only (Railway provides SSL)
+- Configure CORS properly
+- Implement rate limiting
+- Use JWT authentication
+
+### 4. Monitoring
+```bash
+# Set up alerts for:
+- Failed deployments
+- High error rates
+- Database connection issues
+- Memory/CPU spikes
+```
+
+## Cost Optimization
+
+### Free Tier Limits
+- $5 free credit per month
+- Hobby plan: $5/month per service
+- Monitor usage in dashboard
+
+### Tips
+- Use single environment for staging
+- Clean up unused services
+- Optimize Docker image size
+- Enable caching in CI/CD
+
+## CI/CD Integration
+
+Railway automatically deploys on git push. For more control:
+
+### GitHub Actions Example
+```yaml
+name: Deploy to Railway
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Railway
+        uses: railway/cli@v3
+        with:
+          service: api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+```
+
+## Rollback Procedure
+
+### Using Dashboard
+1. Go to Deployments tab
+2. Find previous successful deployment
+3. Click "Redeploy"
+
+### Using CLI
+```bash
+# List deployments:
+railway deployment list
+
+# Rollback to specific deployment:
+railway deployment rollback <deployment-id>
+```
+
+## Backup & Recovery
+
+### Database Backups
+```bash
+# Railway auto-backups on paid plans
+# Manual backup:
+railway run pg_dump $DATABASE_URL > backup.sql
+
+# Restore:
+railway run psql $DATABASE_URL < backup.sql
+```
+
+### Configuration Backup
+- Export environment variables regularly
+- Keep copy of railway.toml in git
+- Document custom configurations
+
+## Support & Resources
 
 - Railway Docs: https://docs.railway.app
 - Railway Discord: https://discord.gg/railway
-- Railway Status: https://status.railway.app
+- Status Page: https://status.railway.app
+- GitHub Issues: https://github.com/railwayapp/railway
+
+## Next Steps
+
+After successful deployment:
+1. Set up custom domain (optional)
+2. Configure monitoring/alerting
+3. Set up staging environment
+4. Implement backup strategy
+5. Document deployment process for team
+6. Set up frontend deployment (separate guide)

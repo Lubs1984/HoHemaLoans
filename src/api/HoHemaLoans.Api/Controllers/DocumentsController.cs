@@ -238,6 +238,8 @@ public class DocumentsController : ControllerBase
 
             // User can only download their own documents (unless admin)
             if (document.UserId != userId && !User.IsInRole("Admin"))
+                return Forbid();
+
             // If document is stored as BASE64, convert back to stream
             if (!string.IsNullOrEmpty(document.FileContentBase64))
             {
@@ -246,8 +248,7 @@ public class DocumentsController : ControllerBase
                 return File(stream, document.ContentType, document.FileName);
             }
 
-                return Forbid();
-
+            // Otherwise, get from file system
             var fileStream = await _storageService.GetDocumentAsync(document.FilePath);
             return File(fileStream, document.ContentType, document.FileName);
         }

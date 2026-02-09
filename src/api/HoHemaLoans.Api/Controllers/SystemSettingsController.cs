@@ -123,6 +123,52 @@ public class SystemSettingsController : ControllerBase
     }
 
     /// <summary>
+    /// Initialize system settings (creates default if missing) - No auth required for setup
+    /// </summary>
+    [HttpPost("initialize")]
+    [AllowAnonymous]
+    public async Task<ActionResult<SystemSettings>> InitializeSettings()
+    {
+        try
+        {
+            var settings = await _context.SystemSettings.FirstOrDefaultAsync();
+            
+            if (settings != null)
+            {
+                return Ok(new { message = "Settings already initialized", settings });
+            }
+
+            // Create default settings
+            settings = new SystemSettings
+            {
+                InterestRatePercentage = 5.0m,
+                AdminFee = 50.0m,
+                MaxLoanPercentage = 50.0m,  // 50% of monthly earnings
+                MinLoanAmount = 100.0m,
+                MaxLoanAmount = 10000.0m,
+                LastModifiedDate = DateTime.UtcNow,
+                LastModifiedBy = "system"
+            };
+            
+            _context.SystemSettings.Add(settings);
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("[SETTINGS] Initialized default system settings");
+            
+            return Ok(new { message = "Settings initialized successfully", settings });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[SETTINGS] Error initializing system settings: {Message}", ex.Message);
+            return StatusCode(500, new { 
+                message = "Error initializing system settings",
+                error = ex.Message,
+                details = ex.InnerException?.Message 
+            });
+        }
+    }
+
+    /// <summary>
     /// Calculate loan details based on earnings
     /// </summary>
     [HttpPost("calculate")]
@@ -168,8 +214,12 @@ public class SystemSettingsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[SETTINGS] Error calculating loan");
-            return StatusCode(500, new { message = "Error calculating loan" });
+            _logger.LogError(ex, "[SETTINGS] Error calculating loan: {Message}", ex.Message);
+            return StatusCode(500, new { 
+                message = "Error calculating loan",
+                error = ex.Message,
+                details = ex.InnerException?.Message 
+            });
         }
     }
 }
