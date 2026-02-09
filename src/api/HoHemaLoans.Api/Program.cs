@@ -322,12 +322,9 @@ _ = Task.Run(async () =>
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
             
-            logger.LogInformation("[STARTUP] Running database migrations...");
-            context.Database.Migrate();
-            logger.LogInformation("[STARTUP] Database migrations completed successfully");
-            
-            // Manually create SystemSettings table if it doesn't exist (migration might fail on existing tables)
-            logger.LogInformation("[STARTUP] Ensuring SystemSettings table exists...");
+            // Manually create SystemSettings and UserDocuments tables FIRST (before migrations)
+            // This ensures they exist even if migrations fail on existing tables
+            logger.LogInformation("[STARTUP] Ensuring required tables exist...");
             try
             {
                 await context.Database.ExecuteSqlRawAsync(@"
@@ -341,12 +338,52 @@ _ = Task.Run(async () =>
                         ""LastModifiedDate"" timestamp with time zone NOT NULL,
                         ""LastModifiedBy"" text
                     );
+                    
+                    CREATE TABLE IF NOT EXISTS ""UserDocuments"" (
+                        ""Id"" uuid NOT NULL PRIMARY KEY,
+                        ""UserId"" text NOT NULL,
+                        ""DocumentType"" integer NOT NULL,
+                        ""FileName"" character varying(255) NOT NULL,
+                        ""FilePath"" character varying(500) NOT NULL,
+                        ""FileSize"" bigint NOT NULL,
+                        ""ContentType"" character varying(100) NOT NULL,
+                        ""FileContentBase64"" text NULL,
+                        ""Status"" integer NOT NULL DEFAULT 0,
+                        ""UploadedAt"" timestamp with time zone NOT NULL,
+                        ""VerifiedAt"" timestamp with time zone NULL,
+                        ""VerifiedByUserId"" text NULL,
+                        ""RejectionReason"" character varying(500) NULL,
+                        ""Notes"" text NULL,
+                        ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                        CONSTRAINT ""FK_UserDocuments_AspNetUsers_UserId"" FOREIGN KEY (""UserId"") 
+                            REFERENCES ""AspNetUsers"" (""Id"") ON DELETE CASCADE,
+                        CONSTRAINT ""FK_UserDocuments_AspNetUsers_VerifiedByUserId"" FOREIGN KEY (""VerifiedByUserId"") 
+                            REFERENCES ""AspNetUsers"" (""Id"") ON DELETE SET NULL
+                    );
+                    
+                    CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_UserId"" ON ""UserDocuments"" (""UserId"");
+                    CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_Status"" ON ""UserDocuments"" (""Status"");
+                    CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_DocumentType"" ON ""UserDocuments"" (""DocumentType"");
+                    CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_UploadedAt"" ON ""UserDocuments"" (""UploadedAt"");
+                    CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_VerifiedByUserId"" ON ""UserDocuments"" (""VerifiedByUserId"");
                 ");
-                logger.LogInformation("[STARTUP] SystemSettings table ensured");
+                logger.LogInformation("[STARTUP] Required tables ensured");
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "[STARTUP] Failed to create SystemSettings table (might already exist)");
+                logger.LogWarning(ex, "[STARTUP] Failed to create tables: {Message}", ex.Message);
+            }
+            
+            // Now run migrations (might fail on existing tables, but that's ok)
+            logger.LogInformation("[STARTUP] Running database migrations...");
+            try
+            {
+                context.Database.Migrate();
+                logger.LogInformation("[STARTUP] Database migrations completed successfully");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "[STARTUP] Migrations failed (expected if tables exist): {Message}", ex.Message);
             }
             
             // Seed SystemSettings if it doesn't exist
