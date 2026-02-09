@@ -398,6 +398,32 @@ _ = Task.Run(async () =>
                 ");
                 logger.LogInformation("[STARTUP] NCR profile fields added successfully");
                 
+                // Add missing columns to LoanApplications table
+                logger.LogInformation("[STARTUP] Adding missing columns to LoanApplications...");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AffordabilityStatus"" character varying(20);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""PassedAffordabilityCheck"" boolean NOT NULL DEFAULT false;
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AffordabilityNotes"" character varying(500);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""BankName"" character varying(20);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AccountNumber"" character varying(50);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AccountHolderName"" character varying(100);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""HoursWorked"" numeric(10,2);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""HourlyRate"" numeric(10,2);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""MonthlyEarnings"" numeric(18,2);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""MaxLoanAmount"" numeric(18,2);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AppliedInterestRate"" numeric(5,2);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AppliedAdminFee"" numeric(18,2);
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""RepaymentDay"" integer;
+                ");
+                logger.LogInformation("[STARTUP] LoanApplications columns added successfully");
+                
+                // Add missing columns to AffordabilityAssessments table
+                logger.LogInformation("[STARTUP] Adding missing columns to AffordabilityAssessments...");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    ALTER TABLE ""AffordabilityAssessments"" ADD COLUMN IF NOT EXISTS ""AffordabilityStatus"" character varying(20);
+                ");
+                logger.LogInformation("[STARTUP] AffordabilityAssessments columns added successfully");
+                
                 // Mark migrations as applied so EF doesn't try to reapply them
                 logger.LogInformation("[STARTUP] Marking migrations as applied...");
                 await context.Database.ExecuteSqlRawAsync(@"
