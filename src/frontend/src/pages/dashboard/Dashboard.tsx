@@ -74,14 +74,32 @@ const Dashboard: React.FC = () => {
 
   const loadPrerequisiteStatus = async () => {
     try {
-      // Check profile completion
+      // Check profile completion - includes NCR-required fields
       const profile = await apiService.getProfile();
       const profileComplete = !!(
+        // Basic info
         profile.firstName &&
         profile.lastName &&
         profile.idNumber &&
         profile.phoneNumber &&
-        profile.dateOfBirth
+        profile.dateOfBirth &&
+        // Address (NCR required)
+        profile.streetAddress &&
+        profile.city &&
+        profile.province &&
+        profile.postalCode &&
+        // Employment (NCR required)
+        profile.employerName &&
+        profile.employmentType &&
+        // Banking (NCR required)
+        profile.bankName &&
+        profile.accountType &&
+        profile.accountNumber &&
+        profile.branchCode &&
+        // Next of Kin (NCR recommended)
+        profile.nextOfKinName &&
+        profile.nextOfKinRelationship &&
+        profile.nextOfKinPhone
       );
 
       // Check document status

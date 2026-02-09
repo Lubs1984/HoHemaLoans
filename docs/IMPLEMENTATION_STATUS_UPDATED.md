@@ -471,22 +471,123 @@
 - [x] Docker Compose for local development
 - [x] Dockerfile for API
 - [x] Dockerfile for Frontend
-- [ ] **Railway Deployment** - Partially configured
+- [x] **Railway Deployment** - Configured (see Railway Services section below)
 - [ ] **Azure Deployment** - Not configured
-- [ ] **Production Database** - Not provisioned
+- [x] **Production Database** - Railway PostgreSQL provisioned
 - [ ] **Redis/Caching Layer** - Not configured
 
+#### Railway Services Configuration
+
+The application is deployed on Railway with 3 services:
+
+**1. API Service (Backend)**
+- **Service Name:** `hohemaapi-development`
+- **URL:** `https://hohemaapi-development.up.railway.app`
+- **Dockerfile:** `Dockerfile.api`
+- **Port:** `8080` (Railway sets PORT env var)
+- **Health Check:** `/health`
+- **Environment Variables:**
+  ```
+  ASPNETCORE_ENVIRONMENT=Production
+  ASPNETCORE_URLS=http://0.0.0.0:$PORT
+  DATABASE_URL=[auto-injected from PostgreSQL service]
+  CORS_ORIGINS=https://hohemaweb-development.up.railway.app
+  JwtSettings__SecretKey=[your-secret-key]
+  JwtSettings__Issuer=HoHemaLoans
+  JwtSettings__Audience=HoHemaLoans
+  WhatsApp__PhoneNumberId=[your-whatsapp-phone-id]
+  WhatsApp__AccessToken=[your-whatsapp-access-token]
+  WhatsApp__BusinessAccountId=[your-whatsapp-business-id]
+  WhatsApp__WebhookVerifyToken=[your-webhook-token]
+  ```
+
+**2. Frontend Service (Web)**
+- **Service Name:** `hohemaweb-development`
+- **URL:** `https://hohemaweb-development.up.railway.app`
+- **Dockerfile:** `Dockerfile.frontend`
+- **Port:** `80`
+- **Build-time Variables:**
+  ```
+  VITE_API_URL=https://hohemaapi-development.up.railway.app
+  ```
+- **Runtime Configuration:** `window.__API_URL__` injected via docker-entrypoint.sh
+
+**3. Database Service (PostgreSQL)**
+- **Service Name:** `HohemaDB`
+- **Type:** PostgreSQL 16
+- **Connection:** Automatically injected as `DATABASE_URL` to API service
+- **Format:** `postgresql://user:password@host:port/database`
+
+**Deployment Instructions:**
+
+1. **Prerequisites:**
+   - Railway account
+   - Railway CLI installed: `npm install -g @railway/cli`
+   - Git repository connected to Railway
+
+2. **Initial Setup:**
+   ```bash
+   # Login to Railway
+   railway login
+   
+   # Link to existing project or create new
+   railway link
+   
+   # Create PostgreSQL service
+   railway add --postgres
+   ```
+
+3. **Deploy Services:**
+   ```bash
+   # Deploy API
+   railway up --service hohemaapi-development
+   
+   # Deploy Frontend
+   railway up --service hohemaweb-development
+   ```
+
+4. **Environment Variable Setup:**
+   - Go to Railway dashboard: https://railway.app/dashboard
+   - Select your project
+   - Configure environment variables for each service as listed above
+   - DATABASE_URL is auto-injected by Railway when you link the PostgreSQL service
+
+5. **Verify Deployment:**
+   - API Health Check: `https://hohemaapi-development.up.railway.app/health`
+   - Frontend: `https://hohemaweb-development.up.railway.app`
+   - Swagger Docs: `https://hohemaapi-development.up.railway.app/swagger`
+
+6. **Database Migrations:**
+   ```bash
+   # Connect to Railway database
+   railway connect HohemaDB
+   
+   # Or run migrations via API startup (automatic via Program.cs)
+   ```
+
+**Quick Deploy:**
+```bash
+# Deploy all services at once
+git push origin main
+
+# Railway auto-deploys from main branch
+# Monitor at: https://railway.app/dashboard
+```
+
 #### CI/CD
+- [x] **Git-based Deployment** - Railway auto-deploys on push to main
 - [ ] **GitHub Actions Pipeline** - Not implemented
 - [ ] **Automated Testing in CI** - Not implemented
-- [ ] **Automated Deployment** - Not implemented
+- [ ] **Pre-deployment Health Checks** - Not implemented
 
 #### Monitoring
 - [x] Health check endpoints
+- [x] **Railway Logs** - Available in Railway dashboard
+- [x] **Railway Metrics** - CPU, Memory, Network usage
 - [ ] **Application Insights** - Not configured
 - [ ] **Error Tracking (Sentry)** - Not configured
 - [ ] **Performance Monitoring** - Not configured
-- [ ] **Alerting** - Not configured
+- [ ] **Custom Alerting** - Not configured
 
 ---
 

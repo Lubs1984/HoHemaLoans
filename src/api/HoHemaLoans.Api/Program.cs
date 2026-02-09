@@ -367,6 +367,32 @@ _ = Task.Run(async () =>
                     CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_DocumentType"" ON ""UserDocuments"" (""DocumentType"");
                     CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_UploadedAt"" ON ""UserDocuments"" (""UploadedAt"");
                     CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_VerifiedByUserId"" ON ""UserDocuments"" (""VerifiedByUserId"");
+                    
+                    -- Create AffordabilityAssessments table
+                    CREATE TABLE IF NOT EXISTS ""AffordabilityAssessments"" (
+                        ""Id"" uuid NOT NULL PRIMARY KEY,
+                        ""UserId"" text NOT NULL,
+                        ""GrossMonthlyIncome"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""NetMonthlyIncome"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""TotalMonthlyExpenses"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""EssentialExpenses"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""NonEssentialExpenses"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""ExistingDebtPayments"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""DebtToIncomeRatio"" numeric(5,2) NOT NULL DEFAULT 0,
+                        ""AvailableFunds"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""ExpenseToIncomeRatio"" numeric(5,4) NOT NULL DEFAULT 0,
+                        ""AffordabilityStatus"" character varying(50) NOT NULL DEFAULT '',
+                        ""AssessmentNotes"" character varying(500) NOT NULL DEFAULT '',
+                        ""MaxRecommendedLoanAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""AssessmentMethod"" character varying(50) NOT NULL DEFAULT 'NCR_Compliant',
+                        ""AssessmentDate"" timestamp with time zone NOT NULL DEFAULT NOW(),
+                        ""ExpiryDate"" timestamp with time zone NOT NULL DEFAULT NOW() + INTERVAL '30 days',
+                        CONSTRAINT ""FK_AffordabilityAssessments_AspNetUsers_UserId"" FOREIGN KEY (""UserId"") 
+                            REFERENCES ""AspNetUsers"" (""Id"") ON DELETE CASCADE
+                    );
+                    
+                    CREATE INDEX IF NOT EXISTS ""IX_AffordabilityAssessments_UserId"" ON ""AffordabilityAssessments"" (""UserId"");
+                    CREATE INDEX IF NOT EXISTS ""IX_AffordabilityAssessments_AssessmentDate"" ON ""AffordabilityAssessments"" (""AssessmentDate"");
                 ");
                 logger.LogInformation("[STARTUP] Required tables ensured");
                 
