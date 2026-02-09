@@ -36,7 +36,6 @@ interface PayoutResponse {
 }
 
 const AdminPayouts: React.FC = () => {
-  const { success, error: showError, warning } = useToast();
   const [loans, setLoans] = useState<LoanApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
