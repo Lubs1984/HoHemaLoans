@@ -137,6 +137,7 @@ function App() {
                 <Route path="loans/:id" element={<LoanApplicationDetail />} />
                 <Route path="affordability" element={<Affordability />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="documents" element={<Profile />} />
               </Route>
               
               {/* Catch all route */}
