@@ -304,7 +304,7 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
-          {/* Next of Kin */}
+  
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">Next of Kin / Emergency Contact</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -328,77 +328,54 @@ const Profile: React.FC = () => {
       {/* Documents Tab */}
       {activeTab === 'documents' && (
         <div className="space-y-6">
+          {/* Document Upload */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Document Verification</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Upload your identity document and proof of address to complete your profile verification.
-            </p>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-md font-medium mb-3">Identity Document</h3>
-                <DocumentUpload
-                  documentType="IdDocument"
-                  acceptedTypes="image/jpeg,image/png,image/jpg,application/pdf"
-                  maxSizeMB={10}
-                  onUploadSuccess={() => {
-                    loadDocuments();
-                    success('Identity document uploaded successfully!');
-                  }}
-                  onUploadError={(error) => showError('Failed to upload identity document: ' + error)}
-                />
-              </div>
-
-              <div>
-                <h3 className="text-md font-medium mb-3">Proof of Address</h3>
-                <DocumentUpload
-                  documentType="ProofOfAddress"
-                  acceptedTypes="image/jpeg,image/png,image/jpg,application/pdf"
-                  maxSizeMB={10}
-                  onUploadSuccess={() => {
-                    loadDocuments();
-                    success('Proof of address uploaded successfully!');
-                  }}
-                  onUploadError={(error) => showError('Failed to upload proof of address: ' + error)}
-                />
-              </div>
+            <h2 className="text-lg font-semibold mb-4">Upload Documents</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <DocumentUpload
+                documentType="IdDocument"
+                onUploadSuccess={(_document) => {
+                  success('ID Document uploaded successfully');
+                  loadDocuments();
+                }}
+                onUploadError={(error) => {
+                  showError(`Failed to upload ID document: ${error}`);
+                }}
+                acceptedTypes=".jpg,.jpeg,.png,.pdf"
+                maxSizeMB={5}
+              />
+              <DocumentUpload
+                documentType="ProofOfIncome"
+                onUploadSuccess={(_document) => {
+                  success('Proof of Income uploaded successfully');
+                  loadDocuments();
+                }}
+                onUploadError={(error) => {
+                  showError(`Failed to upload proof of income: ${error}`);
+                }}
+                acceptedTypes=".jpg,.jpeg,.png,.pdf"
+                maxSizeMB={5}
+              />
             </div>
           </div>
 
+          {/* Document List */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Uploaded Documents</h2>
+            <h2 className="text-lg font-semibold mb-4">Your Documents</h2>
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4">Loading documents...</p>
+              <div className="text-center py-4">
+                <p className="text-gray-500">Loading documents...</p>
               </div>
             ) : (
-              <DocumentList
+              <DocumentList 
                 documents={documents}
-                onDownload={async (id) => {
-                  try {
-                    window.open(`${import.meta.env.VITE_API_URL}/api/documents/${id}/download`, '_blank');
-                  } catch (error) {
-                    showError('Failed to download document. Please try again.');
-                  }
-                }}
-                onDelete={async (id) => {
-                  if (window.confirm('Are you sure you want to delete this document?')) {
-                    try {
-                      await apiService.delete(`/documents/${id}`);
-                      await loadDocuments();
-                      success('Document deleted successfully!');
-                    } catch (error) {
-                      showError('Failed to delete document. Please try again.');
-                    }
-                  }
-                }}
-                showActions={true}
               />
             )}
           </div>
         </div>
       )}
+           
+
     </div>
   );
 };

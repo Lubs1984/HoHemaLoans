@@ -10,7 +10,8 @@ import {
   Cog6ToothIcon,
   ChartBarIcon,
   BanknotesIcon,
-  FolderIcon
+  FolderIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import HohemaLogo from '../../assets/hohema-logo.png';
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Documents', href: '/documents', icon: FolderIcon },
   { name: 'Affordability', href: '/affordability', icon: ChartBarIcon },
   { name: 'Loan Applications', href: '/loans', icon: DocumentTextIcon },
+  { name: 'Contracts', href: '/contracts', icon: DocumentDuplicateIcon },
 ];
 
 const adminNavigation = [

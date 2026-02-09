@@ -21,6 +21,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<AffordabilityAssessment> AffordabilityAssessments { get; set; }
     public DbSet<UserDocument> UserDocuments { get; set; }
+    public DbSet<Contract> Contracts { get; set; }
+    public DbSet<DigitalSignature> DigitalSignatures { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -378,7 +380,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .IsRequired();
 
             entity.Property(e => e.DocumentType)
-                .HasConversion<string>()
                 .IsRequired();
 
             entity.Property(e => e.FileName)
@@ -397,7 +398,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasColumnType("text");
 
             entity.Property(e => e.Status)
-                .HasConversion<string>()
                 .IsRequired();
 
             entity.Property(e => e.RejectionReason)
@@ -420,6 +420,99 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.DocumentType);
             entity.HasIndex(e => e.UploadedAt);
+        });
+
+        // Configure Contract
+        builder.Entity<Contract>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.ContractType)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.ContractContent)
+                .IsRequired();
+
+            entity.Property(e => e.DocumentPath)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(e => e.Metadata)
+                .HasColumnType("jsonb");
+
+            entity.HasOne(e => e.LoanApplication)
+                .WithMany()
+                .HasForeignKey(e => e.LoanApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.LoanApplicationId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Configure DigitalSignature
+        builder.Entity<DigitalSignature>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.SignatureMethod)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.SignatureHash)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(e => e.Salt)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.UserAgent)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.GeoLocation)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.AuditMetadata)
+                .HasColumnType("jsonb");
+
+            entity.Property(e => e.SignerName)
+                .HasMaxLength(200);
+
+            entity.Property(e => e.SignerIdNumber)
+                .HasMaxLength(50);
+
+            entity.HasOne(e => e.Contract)
+                .WithOne(c => c.DigitalSignature)
+                .HasForeignKey<DigitalSignature>(e => e.ContractId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.ContractId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.IsValid);
+            entity.HasIndex(e => e.SignedAt);
         });
     }
 }

@@ -21,7 +21,7 @@ function getApiUrl(): string {
     
     // Check if we're on Railway
     if (hostname.includes('hohemaweb-development.up.railway.app')) {
-      const apiUrl = 'https://hohemaapi-development.up.railway.app';
+      const apiUrl = 'https://hohemaapi-development.up.railway.app/api';
       console.log('[API] Detected Railway environment, using:', apiUrl);
       return apiUrl;
     }
@@ -43,14 +43,14 @@ function getApiUrl(): string {
   // 5. Smart local development fallback
   // If accessed via localhost, try different API ports
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    console.log('[API] Using localhost: http://localhost:5214');
-    return 'http://localhost:5214';
+    console.log('[API] Using localhost: http://localhost:5214/api');
+    return 'http://localhost:5214/api';
   }
   
   // 6. Docker localhost detection - if port is 5174 (frontend port)
   if (typeof window !== 'undefined' && window.location.port === '5174') {
-    console.log('[API] Using localhost (port 5174): http://localhost:5214');
-    return 'http://localhost:5214';
+    console.log('[API] Using localhost (port 5174): http://localhost:5214/api');
+    return 'http://localhost:5214/api';
   }
   
   // 7. Default fallback for production
@@ -299,7 +299,10 @@ class ApiService {
       formData.append('notes', notes);
     }
 
-    const token = localStorage.getItem('token');
+    // Get token from auth store (same method as main request function)
+    const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
+    const token = authStore.state?.token;
+
     const response = await fetch(`${this.baseUrl}/documents/upload`, {
       method: 'POST',
       headers: {
@@ -309,11 +312,30 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Upload failed');
+      let errorMessage = 'Upload failed';
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } else {
+          errorMessage = await response.text() || errorMessage;
+        }
+      } catch (e) {
+        // Fallback to status text if parsing fails
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    // Check if response has content and is JSON
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
+    } else {
+      // Return a default success response if no JSON content
+      return { success: true, message: 'Document uploaded successfully' };
+    }
   }
 
   async getVerificationStatus(): Promise<any> {

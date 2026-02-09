@@ -18,17 +18,20 @@ public class AdminController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<AdminController> _logger;
     private readonly IProfileVerificationService _verificationService;
+    private readonly ContractService _contractService;
 
     public AdminController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
         ILogger<AdminController> logger,
-        IProfileVerificationService verificationService)
+        IProfileVerificationService verificationService,
+        ContractService contractService)
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
         _verificationService = verificationService;
+        _contractService = contractService;
     }
 
     // ============= DASHBOARD STATS =============
@@ -197,7 +200,9 @@ public class AdminController : ControllerBase
     [HttpPost("loans/{id}/approve")]
     public async Task<ActionResult> ApproveLoan(Guid id, [FromBody] ApproveLoanDto dto)
     {
-        var loan = await _context.LoanApplications.FirstOrDefaultAsync(l => l.Id == id);
+        var loan = await _context.LoanApplications
+            .Include(l => l.User)
+            .FirstOrDefaultAsync(l => l.Id == id);
         if (loan == null)
             return NotFound("Loan application not found");
 
@@ -229,7 +234,29 @@ public class AdminController : ControllerBase
         _context.LoanApplications.Update(loan);
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Loan approved successfully", loan.Id });
+        // Automatically generate contract for approved loan
+        try
+        {
+            var adminUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "system";
+            var contract = await _contractService.GenerateCreditAgreementAsync(loan.Id, adminUserId);
+            
+            _logger.LogInformation("Contract {ContractId} automatically generated for approved loan {LoanId}", 
+                contract.Id, loan.Id);
+            
+            return Ok(new { 
+                message = "Loan approved successfully and contract generated", 
+                loanId = loan.Id,
+                contractId = contract.Id
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate contract for approved loan {LoanId}", loan.Id);
+            return Ok(new { 
+                message = "Loan approved successfully, but contract generation failed. Contract can be generated later.", 
+                loanId = loan.Id 
+            });
+        }
     }
 
     /// <summary>

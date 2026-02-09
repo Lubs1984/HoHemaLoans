@@ -15,6 +15,8 @@ const NewLoanWizard = React.lazy(() => import('./pages/loans/NewLoanWizard'));
 const LoanApplicationDetail = React.lazy(() => import('./pages/loans/LoanApplicationDetail'));
 const Affordability = React.lazy(() => import('./pages/affordability/Affordability'));
 const Profile = React.lazy(() => import('./pages/auth/Profile'));
+const ContractsList = React.lazy(() => import('./pages/contracts/ContractsList'));
+const ContractView = React.lazy(() => import('./pages/contracts/ContractView'));
 
 // Admin components
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
@@ -140,6 +142,8 @@ function App() {
                 <Route path="affordability" element={<Affordability />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="documents" element={<Profile />} />
+                <Route path="contracts" element={<ContractsList />} />
+                <Route path="contracts/:contractId" element={<ContractView />} />
               </Route>
               
               {/* Catch all route */}
