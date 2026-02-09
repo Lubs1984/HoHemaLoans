@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 import { DocumentUpload } from '../../components/documents/DocumentUpload';
 import { DocumentList, type Document } from '../../components/documents/DocumentList';
 
 const Profile: React.FC = () => {
   const { user, setUser } = useAuthStore();
+  const { success, error: showError } = useToast();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'personal' | 'documents'>(() => {
     // Set initial tab based on route
@@ -55,7 +57,7 @@ const Profile: React.FC = () => {
       const response = await apiService.get('/documents');
       setDocuments(response.data as Document[]);
     } catch (error) {
-      console.error('Failed to load documents:', error);
+      showError('Failed to load documents. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -96,10 +98,10 @@ const Profile: React.FC = () => {
       const response = await apiService.updateProfile(formData);
       setUser(response as any);
       setIsEditing(false);
-      alert('Profile updated successfully!');
+      success('Profile updated successfully!');
     } catch (error: any) {
-      console.error('Failed to update profile:', error);
-      alert(error.message || 'Failed to update profile');
+      const errorMessage = error.message || 'Failed to update profile';
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -339,8 +341,11 @@ const Profile: React.FC = () => {
                   documentType="IdDocument"
                   acceptedTypes="image/jpeg,image/png,image/jpg,application/pdf"
                   maxSizeMB={10}
-                  onUploadSuccess={() => loadDocuments()}
-                  onUploadError={(error) => console.error('Upload failed:', error)}
+                  onUploadSuccess={() => {
+                    loadDocuments();
+                    success('Identity document uploaded successfully!');
+                  }}
+                  onUploadError={(error) => showError('Failed to upload identity document: ' + error)}
                 />
               </div>
 
@@ -350,8 +355,11 @@ const Profile: React.FC = () => {
                   documentType="ProofOfAddress"
                   acceptedTypes="image/jpeg,image/png,image/jpg,application/pdf"
                   maxSizeMB={10}
-                  onUploadSuccess={() => loadDocuments()}
-                  onUploadError={(error) => console.error('Upload failed:', error)}
+                  onUploadSuccess={() => {
+                    loadDocuments();
+                    success('Proof of address uploaded successfully!');
+                  }}
+                  onUploadError={(error) => showError('Failed to upload proof of address: ' + error)}
                 />
               </div>
             </div>
@@ -371,7 +379,7 @@ const Profile: React.FC = () => {
                   try {
                     window.open(`${import.meta.env.VITE_API_URL}/api/documents/${id}/download`, '_blank');
                   } catch (error) {
-                    console.error('Download failed:', error);
+                    showError('Failed to download document. Please try again.');
                   }
                 }}
                 onDelete={async (id) => {
@@ -379,8 +387,9 @@ const Profile: React.FC = () => {
                     try {
                       await apiService.delete(`/documents/${id}`);
                       await loadDocuments();
+                      success('Document deleted successfully!');
                     } catch (error) {
-                      console.error('Delete failed:', error);
+                      showError('Failed to delete document. Please try again.');
                     }
                   }
                 }}

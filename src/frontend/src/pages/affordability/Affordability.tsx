@@ -50,7 +50,7 @@ const Affordability: React.FC = () => {
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [assessmentError, setAssessmentError] = useState<string | null>(null);
-  const { success, error: showError, warning, info } = useToast();
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     loadData();

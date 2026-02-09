@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { CloudArrowUpIcon, XMarkIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { apiService } from '../../services/api';
 
 export interface DocumentUploadProps {
   onUploadSuccess?: (document: any) => void;
@@ -100,25 +101,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('documentType', documentType);
-
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5149/api/documents/upload', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Upload failed');
-      }
-
-      const document = await response.json();
+      const document = await apiService.uploadDocument(selectedFile, documentType);
       setProgress(100);
       setSelectedFile(null);
       onUploadSuccess?.(document);

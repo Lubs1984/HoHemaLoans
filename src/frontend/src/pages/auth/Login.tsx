@@ -11,7 +11,7 @@ type LoginMethod = 'email' | 'mobile';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, setLoading, setError, error, isLoading } = useAuthStore();
-  const { success, error: showError, info } = useToast();
+  const { success, error: showError } = useToast();
   
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('email');
   const [formData, setFormData] = useState({

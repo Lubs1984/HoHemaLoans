@@ -41,16 +41,16 @@ function getApiUrl(): string {
   }
   
   // 5. Smart local development fallback
-  // If accessed via localhost, use localhost:5001
+  // If accessed via localhost, try different API ports
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    console.log('[API] Using localhost: http://localhost:5001');
-    return 'http://localhost:5001';
+    console.log('[API] Using localhost: http://localhost:5214');
+    return 'http://localhost:5214';
   }
   
   // 6. Docker localhost detection - if port is 5174 (frontend port)
   if (typeof window !== 'undefined' && window.location.port === '5174') {
-    console.log('[API] Using localhost (port 5174): http://localhost:5001');
-    return 'http://localhost:5001';
+    console.log('[API] Using localhost (port 5174): http://localhost:5214');
+    return 'http://localhost:5214';
   }
   
   // 7. Default fallback for production
@@ -289,6 +289,31 @@ class ApiService {
   // Document endpoints
   async getUserDocuments(): Promise<any[]> {
     return this.request<any[]>('/documents');
+  }
+
+  async uploadDocument(file: File, documentType: string, notes?: string): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('documentType', documentType);
+    if (notes) {
+      formData.append('notes', notes);
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${this.baseUrl}/documents/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Upload failed');
+    }
+
+    return response.json();
   }
 
   async getVerificationStatus(): Promise<any> {
