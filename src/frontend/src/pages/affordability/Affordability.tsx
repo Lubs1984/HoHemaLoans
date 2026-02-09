@@ -53,6 +53,14 @@ const Affordability: React.FC = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    console.log('Income state updated, count:', incomes.length, incomes);
+  }, [incomes]);
+
+  useEffect(() => {
+    console.log('Expense state updated, count:', expenses.length, expenses);
+  }, [expenses]);
+
   const loadData = async () => {
     try {
       // Load incomes, expenses, and affordability assessment from API
@@ -61,6 +69,10 @@ const Affordability: React.FC = () => {
         apiService.getExpenses(),
         apiService.getAffordability(),
       ]);
+
+      console.log('Loaded incomes:', incomesData);
+      console.log('Loaded expenses:', expensesData);
+      console.log('Loaded assessment:', assessmentData);
 
       setIncomes(incomesData);
       setExpenses(expensesData);
@@ -95,13 +107,25 @@ const Affordability: React.FC = () => {
   };
 
   const handleAddIncome = async (data: any) => {
-    await apiService.addIncome(data);
-    await loadData();
+    try {
+      await apiService.addIncome(data);
+      setShowIncomeModal(false);
+      await loadData();
+    } catch (error) {
+      console.error('Failed to add income:', error);
+      throw error; // Re-throw so modal can show error
+    }
   };
 
   const handleAddExpense = async (data: any) => {
-    await apiService.addExpense(data);
-    await loadData();
+    try {
+      await apiService.addExpense(data);
+      setShowExpenseModal(false);
+      await loadData();
+    } catch (error) {
+      console.error('Failed to add expense:', error);
+      throw error; // Re-throw so modal can show error
+    }
   };
 
   const handleEditIncome = async (id: string, data: any) => {

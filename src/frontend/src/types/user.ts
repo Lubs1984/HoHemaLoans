@@ -7,7 +7,7 @@ export interface User {
   phoneNumber?: string;
   idNumber?: string;
   dateOfBirth?: Date;
-  address?: string;
+  address?: string; // Legacy field - kept for backward compatibility
   monthlyIncome?: number;
   isVerified?: boolean;
   role?: UserRole;
@@ -16,6 +16,30 @@ export interface User {
   lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  
+  // NCR-required South African Address fields
+  streetAddress?: string;
+  suburb?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  
+  // NCR-required Employment fields
+  employerName?: string;
+  employeeNumber?: string;
+  payrollReference?: string;
+  employmentType?: string;
+  
+  // NCR-required Banking fields
+  bankName?: string;
+  accountType?: string;
+  accountNumber?: string;
+  branchCode?: string;
+  
+  // NCR-required Next of Kin fields
+  nextOfKinName?: string;
+  nextOfKinRelationship?: string;
+  nextOfKinPhone?: string;
 }
 
 export interface Employee extends User {
