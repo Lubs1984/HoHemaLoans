@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface Step2Props {
   data: any;
@@ -17,12 +18,13 @@ const PURPOSE_OPTIONS = [
 ];
 
 const Step2_Purpose: React.FC<Step2Props> = ({ data, onNext, onPrev, loading }) => {
+  const { warning } = useToast();
   const [purpose, setPurpose] = useState(data.purpose || '');
   const [purposeDescription, setPurposeDescription] = useState(data.purposeDescription || '');
 
   const handleNext = () => {
     if (!purpose) {
-      alert('Please select a loan purpose');
+      warning('Please select a loan purpose');
       return;
     }
     onNext({ purpose, purposeDescription });

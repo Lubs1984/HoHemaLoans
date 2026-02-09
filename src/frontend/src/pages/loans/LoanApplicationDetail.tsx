@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
+import { useToast } from '../../contexts/ToastContext';
 
 interface LoanApplication {
   id: string;
@@ -27,6 +28,7 @@ const LoanApplicationDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { success, error: showError } = useToast();
   const [application, setApplication] = useState<LoanApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +57,9 @@ const LoanApplicationDetail: React.FC = () => {
       const data = await apiService.getLoanApplication(applicationId);
       setApplication(data);
     } catch (err) {
-      console.error('Failed to load loan application:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load application');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load application';
+      showError(errorMessage);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -100,9 +103,10 @@ const LoanApplicationDetail: React.FC = () => {
       });
       setShowApproveModal(false);
       await loadApplication(id);
-      alert('Loan approved successfully!');
+      success('Loan approved successfully!');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to approve loan');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to approve loan';
+      showError(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -119,9 +123,10 @@ const LoanApplicationDetail: React.FC = () => {
       });
       setShowRejectModal(false);
       await loadApplication(id);
-      alert('Loan rejected successfully!');
+      success('Loan rejected successfully!');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to reject loan');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reject loan';
+      showError(errorMessage);
     } finally {
       setActionLoading(false);
     }

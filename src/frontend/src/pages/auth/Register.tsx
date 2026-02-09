@@ -123,13 +123,16 @@ const Register = () => {
       if (response && response.token && response.user) {
         const refreshToken = (response as any).refreshToken || '';
         login(response.user, response.token, refreshToken);
+        success(`Welcome to HoHema, ${response.user.firstName}! Your account has been created successfully.`);
         navigate('/dashboard', { replace: true });
       } else {
         setError('Invalid response from server');
+        showError('Registration failed - invalid response from server');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to register. Please try again.';
       setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }

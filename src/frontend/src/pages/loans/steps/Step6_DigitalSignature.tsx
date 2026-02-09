@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface Step6Props {
   data: any;
@@ -9,6 +10,7 @@ interface Step6Props {
 }
 
 const Step6_DigitalSignature: React.FC<Step6Props> = ({ data, onPrev, onSubmit, loading }) => {
+  const { success, error: showError, warning } = useToast();
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -21,9 +23,9 @@ const Step6_DigitalSignature: React.FC<Step6Props> = ({ data, onPrev, onSubmit, 
       // For now, we'll simulate it
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setOtpSent(true);
-      alert('OTP sent to your registered phone number');
+      success('OTP sent to your registered phone number');
     } catch (err) {
-      alert('Failed to send OTP. Please try again.');
+      showError('Failed to send OTP. Please try again.');
     } finally {
       setSendingOtp(false);
     }
@@ -31,14 +33,14 @@ const Step6_DigitalSignature: React.FC<Step6Props> = ({ data, onPrev, onSubmit, 
 
   const handleSubmit = () => {
     if (!agreedToTerms) {
-      alert('Please accept the terms and conditions to continue');
+      warning('Please accept the terms and conditions to continue');
       return;
     }
     
     // For demo purposes, allow submission without OTP
     // In production, OTP would be mandatory
     if (otpSent && !otp) {
-      alert('Please enter the OTP sent to your phone');
+      warning('Please enter the OTP sent to your phone');
       return;
     }
 

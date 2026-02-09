@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface Step5Props {
   data: any;
@@ -23,21 +24,22 @@ const SOUTH_AFRICAN_BANKS = [
 ];
 
 const Step5_BankDetails: React.FC<Step5Props> = ({ data, onNext, onPrev, loading }) => {
+  const { warning } = useToast();
   const [bankName, setBankName] = useState(data.bankName || '');
   const [accountNumber, setAccountNumber] = useState(data.accountNumber || '');
   const [accountHolderName, setAccountHolderName] = useState(data.accountHolderName || '');
 
   const handleNext = () => {
     if (!bankName) {
-      alert('Please select your bank');
+      warning('Please select your bank');
       return;
     }
     if (!accountNumber || accountNumber.length < 8) {
-      alert('Please enter a valid account number (minimum 8 digits)');
+      warning('Please enter a valid account number (minimum 8 digits)');
       return;
     }
     if (!accountHolderName || accountHolderName.trim().length < 3) {
-      alert('Please enter the account holder name');
+      warning('Please enter the account holder name');
       return;
     }
 

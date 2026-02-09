@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface Step0Props {
   data: any;
@@ -8,6 +9,7 @@ interface Step0Props {
 }
 
 const Step0_LoanAmount: React.FC<Step0Props> = ({ data, onNext, loading }) => {
+  const { warning } = useToast();
   const [amount, setAmount] = useState(data.amount || 5000);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
 
@@ -24,7 +26,7 @@ const Step0_LoanAmount: React.FC<Step0Props> = ({ data, onNext, loading }) => {
 
   const handleNext = () => {
     if (amount < 500 || amount > 50000) {
-      alert('Loan amount must be between R500 and R50,000');
+      warning('Loan amount must be between R500 and R50,000');
       return;
     }
     onNext({ amount });

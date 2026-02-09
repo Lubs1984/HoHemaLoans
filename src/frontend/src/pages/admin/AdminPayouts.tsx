@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiService } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 import { BanknotesIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 interface LoanApplication {
@@ -35,6 +36,7 @@ interface PayoutResponse {
 }
 
 const AdminPayouts: React.FC = () => {
+  const { success, error: showError, warning } = useToast();
   const [loans, setLoans] = useState<LoanApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -273,13 +275,14 @@ interface DisbursementModalProps {
 }
 
 const DisbursementModal: React.FC<DisbursementModalProps> = ({ loan, onClose, onSuccess }) => {
+  const { success, error: showError, warning } = useToast();
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
   const handleDisburse = async () => {
     if (!confirmed) {
-      alert('Please confirm the bank details before disbursing');
+      warning('Please confirm the bank details before disbursing');
       return;
     }
 
@@ -289,10 +292,11 @@ const DisbursementModal: React.FC<DisbursementModalProps> = ({ loan, onClose, on
         method: 'POST',
         body: JSON.stringify({ notes }),
       });
-      alert('Loan disbursed successfully!');
+      success('Loan disbursed successfully!');
       onSuccess();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to disburse loan');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to disburse loan';
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
