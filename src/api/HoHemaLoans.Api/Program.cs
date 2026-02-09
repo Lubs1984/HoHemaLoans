@@ -368,6 +368,48 @@ _ = Task.Run(async () =>
                     CREATE INDEX IF NOT EXISTS ""IX_UserDocuments_VerifiedByUserId"" ON ""UserDocuments"" (""VerifiedByUserId"");
                 ");
                 logger.LogInformation("[STARTUP] Required tables ensured");
+                
+                // Add NCR-required profile fields to AspNetUsers table
+                logger.LogInformation("[STARTUP] Adding NCR profile fields to AspNetUsers...");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    -- South African Address fields
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""StreetAddress"" character varying(200) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""Suburb"" character varying(100) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""City"" character varying(100) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""Province"" character varying(50) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""PostalCode"" character varying(10) DEFAULT '';
+                    
+                    -- Employment fields
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""EmployerName"" character varying(200) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""EmployeeNumber"" character varying(50) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""PayrollReference"" character varying(50) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""EmploymentType"" character varying(50) DEFAULT '';
+                    
+                    -- Banking fields
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""BankName"" character varying(100) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""AccountType"" character varying(50) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""AccountNumber"" character varying(50) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""BranchCode"" character varying(10) DEFAULT '';
+                    
+                    -- Next of Kin fields
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""NextOfKinName"" character varying(100) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""NextOfKinRelationship"" character varying(50) DEFAULT '';
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""NextOfKinPhone"" character varying(20) DEFAULT '';
+                ");
+                logger.LogInformation("[STARTUP] NCR profile fields added successfully");
+                
+                // Mark migrations as applied so EF doesn't try to reapply them
+                logger.LogInformation("[STARTUP] Marking migrations as applied...");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    INSERT INTO ""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"")
+                    VALUES ('20260209201138_AddUserDocuments', '8.0.0')
+                    ON CONFLICT DO NOTHING;
+                    
+                    INSERT INTO ""__EFMigrationsHistory"" (""MigrationId"", ""ProductVersion"")
+                    VALUES ('20260209211231_EnhanceUserProfileWithNCRFields', '8.0.0')
+                    ON CONFLICT DO NOTHING;
+                ");
+                logger.LogInformation("[STARTUP] Migrations marked as applied");
             }
             catch (Exception ex)
             {
