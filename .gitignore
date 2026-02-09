@@ -42,7 +42,7 @@ obj/
 *.exe
 
 # Entity Framework
-Migrations/
+# Migrations/ -- COMMENTED OUT: We need to track migrations for Railway deployment
 
 # Logs
 logs/

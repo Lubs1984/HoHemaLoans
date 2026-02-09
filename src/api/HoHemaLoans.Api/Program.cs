@@ -256,6 +256,10 @@ builder.Services.AddScoped<IAffordabilityService, AffordabilityService>();
 // Add Omnichannel Loan Service
 builder.Services.AddScoped<IOmnichannelLoanService, OmnichannelLoanService>();
 
+// Add Document Storage and Verification Services
+builder.Services.AddScoped<IDocumentStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<IProfileVerificationService, ProfileVerificationService>();
+
 // Add Test Data Seeder (for development)
 builder.Services.AddScoped<TestDataSeeder>();
 

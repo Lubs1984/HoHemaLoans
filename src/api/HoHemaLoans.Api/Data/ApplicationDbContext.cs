@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Income> Incomes { get; set; }
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<AffordabilityAssessment> AffordabilityAssessments { get; set; }
+    public DbSet<UserDocument> UserDocuments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -366,6 +367,59 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.AssessmentDate);
+        });
+
+        // Configure UserDocument
+        builder.Entity<UserDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.UserId)
+                .IsRequired();
+
+            entity.Property(e => e.DocumentType)
+                .HasConversion<string>()
+                .IsRequired();
+
+            entity.Property(e => e.FileName)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(e => e.FilePath)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(e => e.ContentType)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(e => e.FileContentBase64)
+                .HasColumnType("text");
+
+            entity.Property(e => e.Status)
+                .HasConversion<string>()
+                .IsRequired();
+
+            entity.Property(e => e.RejectionReason)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.Notes)
+                .HasMaxLength(1000);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.VerifiedBy)
+                .WithMany()
+                .HasForeignKey(e => e.VerifiedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.DocumentType);
+            entity.HasIndex(e => e.UploadedAt);
         });
     }
 }

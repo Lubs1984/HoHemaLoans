@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
+using HoHemaLoans.Api.Services;
 using System.Security.Claims;
 
 namespace HoHemaLoans.Api.Controllers;
@@ -16,15 +17,18 @@ public class AdminController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<AdminController> _logger;
+    private readonly IProfileVerificationService _verificationService;
 
     public AdminController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        ILogger<AdminController> logger)
+        ILogger<AdminController> logger,
+        IProfileVerificationService verificationService)
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
+        _verificationService = verificationService;
     }
 
     // ============= DASHBOARD STATS =============
@@ -251,41 +255,186 @@ public class AdminController : ControllerBase
         return Ok(new { message = "Loan rejected successfully", loan.Id });
     }
 
+    // ============= DOCUMENT VERIFICATION =============
+
     /// <summary>
-    /// Disburse (payout) an approved loan
+    /// Get all documents pending verification
+    /// </summary>
+    [HttpGet("documents/pending")]
+    public async Task<ActionResult<List<DocumentDto>>> GetPendingDocuments()
+    {
+        try
+        {
+            var documents = await _context.UserDocuments
+                .Include(d => d.User)
+                .Where(d => d.Status == DocumentStatus.Pending && !d.IsDeleted)
+                .OrderBy(d => d.UploadedAt)
+                .Select(d => new DocumentDto
+                {
+                    Id = d.Id,
+                    UserId = d.UserId,
+                    UserName = d.User != null ? $"{d.User.FirstName} {d.User.LastName}" : "",
+                    DocumentType = d.DocumentType,
+                    DocumentTypeName = d.DocumentType.ToString(),
+                    FileName = d.FileName,
+                    FileSize = d.FileSize,
+                    ContentType = d.ContentType,
+                    FileContentBase64 = d.FileContentBase64,
+                    Status = d.Status,
+                    StatusName = d.Status.ToString(),
+                    UploadedAt = d.UploadedAt,
+                    Notes = d.Notes
+                })
+                .ToListAsync();
+
+            return Ok(documents);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving pending documents");
+            return StatusCode(500, "Error retrieving pending documents");
+        }
+    }
+
+    /// <summary>
+    /// Get all documents for a specific user
+    /// </summary>
+    [HttpGet("documents/user/{userId}")]
+    public async Task<ActionResult<List<DocumentDto>>> GetUserDocuments(string userId)
+    {
+        try
+        {
+            var documents = await _context.UserDocuments
+                .Include(d => d.User)
+                .Include(d => d.VerifiedBy)
+                .Where(d => d.UserId == userId && !d.IsDeleted)
+                .OrderByDescending(d => d.UploadedAt)
+                .Select(d => new DocumentDto
+                {
+                    Id = d.Id,
+                    UserId = d.UserId,
+                    UserName = d.User != null ? $"{d.User.FirstName} {d.User.LastName}" : "",
+                    DocumentType = d.DocumentType,
+                    DocumentTypeName = d.DocumentType.ToString(),
+                    FileName = d.FileName,
+                    FileSize = d.FileSize,
+                    FileContentBase64 = d.FileContentBase64,
+                    ContentType = d.ContentType,
+                    Status = d.Status,
+                    StatusName = d.Status.ToString(),
+                    RejectionReason = d.RejectionReason,
+                    VerifiedByUserId = d.VerifiedByUserId,
+                    VerifiedByUserName = d.VerifiedBy != null ? $"{d.VerifiedBy.FirstName} {d.VerifiedBy.LastName}" : null,
+                    UploadedAt = d.UploadedAt,
+                    VerifiedAt = d.VerifiedAt,
+                    Notes = d.Notes
+                })
+                .ToListAsync();
+
+            return Ok(documents);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving user documents for user {UserId}", userId);
+            return StatusCode(500, "Error retrieving user documents");
+        }
+    }
+
+    /// <summary>
+    /// Approve or reject a document
+    /// </summary>
+    [HttpPost("documents/{id}/verify")]
+    public async Task<ActionResult> VerifyDocument(Guid id, [FromBody] VerifyDocumentAdminDto dto)
+    {
+        try
+        {
+            var adminUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(adminUserId))
+                return Unauthorized();
+
+            var document = await _context.UserDocuments
+                .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
+
+            if (document == null)
+                return NotFound("Document not found");
+
+            if (dto.Status == DocumentStatus.Rejected && string.IsNullOrWhiteSpace(dto.RejectionReason))
+                return BadRequest("Rejection reason is required when rejecting a document");
+
+            document.Status = dto.Status;
+            document.RejectionReason = dto.RejectionReason;
+            document.VerifiedByUserId = adminUserId;
+            document.VerifiedAt = DateTime.UtcNow;
+            if (!string.IsNullOrWhiteSpace(dto.Notes))
+            {
+                document.Notes = dto.Notes;
+            }
+
+            _context.UserDocuments.Update(document);
+            await _context.SaveChangesAsync();
+
+            // Update user verification status
+            await _verificationService.UpdateUserVerificationStatusAsync(document.UserId);
+
+            _logger.LogInformation("Document {DocumentId} {Status} by admin {AdminId}", 
+                id, dto.Status, adminUserId);
+
+            return Ok(new { message = $"Document {dto.Status.ToString().ToLower()} successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error verifying document {DocumentId}", id);
+            return StatusCode(500, "Error verifying document");
+        }
+    }
+
+    /// <summary>
+    /// Get user verification status (admin view)
+    /// </summary>
+    [HttpGet("users/{userId}/verification-status")]
+    public async Task<ActionResult<UserVerificationStatusDto>> GetUserVerificationStatus(string userId)
+    {
+        try
+        {
+            var status = await _verificationService.GetVerificationStatusAsync(userId);
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving verification status for user {UserId}", userId);
+            return StatusCode(500, "Error retrieving verification status");
+        }
+    }
+
+    // ============= DISBURSEMENT =============
+
+    /// <summary>
+    /// Mark a loan as disbursed
     /// </summary>
     [HttpPost("loans/{id}/disburse")]
     public async Task<ActionResult> DisburseLoan(Guid id, [FromBody] DisburseLoanDto dto)
     {
-        var loan = await _context.LoanApplications
-            .Include(l => l.User)
-            .FirstOrDefaultAsync(l => l.Id == id);
-        
+        var loan = await _context.LoanApplications.FirstOrDefaultAsync(l => l.Id == id);
         if (loan == null)
             return NotFound("Loan application not found");
 
         if (loan.Status != LoanStatus.Approved)
             return BadRequest("Only approved loans can be disbursed");
 
-        if (string.IsNullOrEmpty(loan.BankName) || string.IsNullOrEmpty(loan.AccountNumber))
-            return BadRequest("Bank details are required for disbursement");
-
         loan.Status = LoanStatus.Disbursed;
-        loan.Notes = (loan.Notes ?? "") + $"\n\nDisbursed on {DateTime.UtcNow:yyyy-MM-dd HH:mm}: {dto.Notes}";
+        // Note: Add DisbursementDate field to LoanApplication model if needed
+        if (!string.IsNullOrWhiteSpace(dto.Notes))
+        {
+            loan.Notes += $"\nDisbursement: {dto.Notes}";
+        }
 
         _context.LoanApplications.Update(loan);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation($"Loan {id} disbursed to {loan.User.FirstName} {loan.User.LastName}");
-
-        return Ok(new { 
-            message = "Loan disbursed successfully", 
-            loan.Id,
-            amount = loan.Amount,
-            bankName = loan.BankName,
-            accountNumber = loan.AccountNumber
-        });
+        return Ok(new { message = "Loan disbursed successfully", loan.Id });
     }
+
+    // ============= WHATSAPP MANAGEMENT (existing code continues below) =============
 
     /// <summary>
     /// Get loans ready for disbursement (approved but not yet disbursed)
@@ -612,4 +761,11 @@ public class SendWhatsAppMessageDto
 {
     public string ConversationId { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
+}
+
+public class VerifyDocumentAdminDto
+{
+    public DocumentStatus Status { get; set; }
+    public string? RejectionReason { get; set; }
+    public string? Notes { get; set; }
 }
