@@ -70,12 +70,29 @@ const Affordability: React.FC = () => {
         apiService.getAffordability(),
       ]);
 
-      console.log('Loaded incomes:', incomesData);
-      console.log('Loaded expenses:', expensesData);
-      console.log('Loaded assessment:', assessmentData);
+      console.log('=== AFFORDABILITY DATA LOADED ===');
+      console.log('Incomes raw response:', incomesData);
+      console.log('Incomes type:', typeof incomesData);
+      console.log('Incomes is array?', Array.isArray(incomesData));
+      console.log('Incomes length:', Array.isArray(incomesData) ? incomesData.length : 'N/A');
+      
+      console.log('Expenses raw response:', expensesData);
+      console.log('Expenses type:', typeof expensesData);
+      console.log('Expenses is array?', Array.isArray(expensesData));
+      console.log('Expenses length:', Array.isArray(expensesData) ? expensesData.length : 'N/A');
+      
+      console.log('Assessment:', assessmentData);
+      console.log('===================================');
 
-      setIncomes(incomesData);
-      setExpenses(expensesData);
+      // Ensure we're setting arrays
+      const incomesArray = Array.isArray(incomesData) ? incomesData : [];
+      const expensesArray = Array.isArray(expensesData) ? expensesData : [];
+      
+      console.log('Setting incomes array with length:', incomesArray.length);
+      console.log('Setting expenses array with length:', expensesArray.length);
+      
+      setIncomes(incomesArray);
+      setExpenses(expensesArray);
       setAssessment(assessmentData);
     } catch (error) {
       console.error('Failed to load affordability data:', error);
