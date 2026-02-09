@@ -28,11 +28,21 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       return `File size exceeds ${maxSizeMB}MB limit`;
     }
 
-    // Check file type
-    const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-    const allowedExtensions = acceptedTypes.split(',');
-    if (!allowedExtensions.includes(extension)) {
-      return `File type not allowed. Accepted types: ${acceptedTypes}`;
+    // Check file type - handle both MIME types and extensions
+    const allowedTypes = acceptedTypes.split(',').map(t => t.trim());
+    
+    // Check if acceptedTypes contains MIME types (has /)
+    if (allowedTypes[0]?.includes('/')) {
+      // Validate against MIME types
+      if (!allowedTypes.includes(file.type)) {
+        return `File type not allowed. Accepted types: ${allowedTypes.join(', ')}`;
+      }
+    } else {
+      // Validate against extensions
+      const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+      if (!allowedTypes.includes(extension)) {
+        return `File type not allowed. Accepted types: ${allowedTypes.join(', ')}`;
+      }
     }
 
     return null;
