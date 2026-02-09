@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
 import { PlusIcon, TrashIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { DocumentUpload } from '../../components/documents/DocumentUpload';
+import { DocumentList, Document } from '../../components/documents/DocumentList';
 
 interface Income {
   id: string;
@@ -64,10 +66,11 @@ const EXPENSE_CATEGORIES = [
 
 const Profile: React.FC = () => {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<'personal' | 'income' | 'expenses' | 'affordability'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'documents' | 'income' | 'expenses' | 'affordability'>('personal');
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [affordability, setAffordability] = useState<Affordability | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Income form state
@@ -79,10 +82,23 @@ const Profile: React.FC = () => {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   useEffect(() => {
+    if (activeTab === 'documents') loadDocuments();
     if (activeTab === 'income') loadIncomes();
     if (activeTab === 'expenses') loadExpenses();
     if (activeTab === 'affordability') loadAffordability();
   }, [activeTab]);
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.get('/documents');
+      setDocuments(response.data as Document[]);
+    } catch (error) {
+      console.error('Failed to load documents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadIncomes = async () => {
     try {
@@ -194,7 +210,7 @@ const Profile: React.FC = () => {
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-8">
         <div className="flex space-x-8">
-          {(['personal', 'income', 'expenses', 'affordability'] as const).map((tab) => (
+          {(['personal', 'documents', 'income', 'expenses', 'affordability'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -239,6 +255,83 @@ const Profile: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">Address</label>
               <input type="text" value={user?.address || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Documents Tab */}
+      {activeTab === 'documents' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">Document Verification</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Upload your identity document and proof of address to complete your profile verification.
+            </p>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-md font-medium mb-3">Identity Document</h3>
+                <DocumentUpload
+                  documentType="IdDocument"
+                  acceptedTypes={['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']}
+                  maxSizeMB={10}
+                  onUploadSuccess={() => loadDocuments()}
+                  onUploadError={(error) => console.error('Upload failed:', error)}
+                />
+              </div>
+
+              <div>
+                <h3 className="text-md font-medium mb-3">Proof of Address</h3>
+                <DocumentUpload
+                  documentType="ProofOfAddress"
+                  acceptedTypes={['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']}
+                  maxSizeMB={10}
+                  onUploadSuccess={() => loadDocuments()}
+                  onUploadError={(error) => console.error('Upload failed:', error)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">Uploaded Documents</h2>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+                <p className="text-gray-600 mt-4">Loading documents...</p>
+              </div>
+            ) : (
+              <DocumentList
+                documents={documents}
+                onDownload={async (id) => {
+                  try {
+                    const response = await apiService.get(`/documents/${id}/download`, {
+                      responseType: 'blob'
+                    });
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `document-${id}.pdf`);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                  } catch (error) {
+                    console.error('Download failed:', error);
+                  }
+                }}
+                onDelete={async (id) => {
+                  if (window.confirm('Are you sure you want to delete this document?')) {
+                    try {
+                      await apiService.delete(`/documents/${id}`);
+                      await loadDocuments();
+                    } catch (error) {
+                      console.error('Delete failed:', error);
+                    }
+                  }
+                }}
+                showActions={true}
+              />
+            )}
           </div>
         </div>
       )}
