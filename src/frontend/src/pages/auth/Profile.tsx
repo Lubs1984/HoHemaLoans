@@ -6,7 +6,7 @@ import { DocumentUpload } from '../../components/documents/DocumentUpload';
 import { DocumentList, type Document } from '../../components/documents/DocumentList';
 
 const Profile: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'personal' | 'documents'>(() => {
     // Set initial tab based on route
@@ -14,6 +14,29 @@ const Profile: React.FC = () => {
   });
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    phoneNumber: user?.phoneNumber || '',
+    streetAddress: user?.streetAddress || '',
+    suburb: user?.suburb || '',
+    city: user?.city || '',
+    province: user?.province || '',
+    postalCode: user?.postalCode || '',
+    employerName: user?.employerName || '',
+    employmentType: user?.employmentType || '',
+    employeeNumber: user?.employeeNumber || '',
+    payrollReference: user?.payrollReference || '',
+    bankName: user?.bankName || '',
+    accountType: user?.accountType || '',
+    accountNumber: user?.accountNumber || '',
+    branchCode: user?.branchCode || '',
+    nextOfKinName: user?.nextOfKinName || '',
+    nextOfKinRelationship: user?.nextOfKinRelationship || '',
+    nextOfKinPhone: user?.nextOfKinPhone || '',
+  });
+  const [saving, setSaving] = useState(false);
 
   // Update tab when route changes
   useEffect(() => {
@@ -38,11 +61,87 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleEdit = () => {
+    setFormData({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      phoneNumber: user?.phoneNumber || '',
+      streetAddress: user?.streetAddress || '',
+      suburb: user?.suburb || '',
+      city: user?.city || '',
+      province: user?.province || '',
+      postalCode: user?.postalCode || '',
+      employerName: user?.employerName || '',
+      employmentType: user?.employmentType || '',
+      employeeNumber: user?.employeeNumber || '',
+      payrollReference: user?.payrollReference || '',
+      bankName: user?.bankName || '',
+      accountType: user?.accountType || '',
+      accountNumber: user?.accountNumber || '',
+      branchCode: user?.branchCode || '',
+      nextOfKinName: user?.nextOfKinName || '',
+      nextOfKinRelationship: user?.nextOfKinRelationship || '',
+      nextOfKinPhone: user?.nextOfKinPhone || '',
+    });
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const response = await apiService.put('/users/profile', formData);
+      setUser(response.data as any);
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+      alert(error.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-600">Manage your profile information and documents</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
+          <p className="text-gray-600">Manage your profile information and documents</p>
+        </div>
+        {activeTab === 'personal' && !isEditing && (
+          <button
+            onClick={handleEdit}
+            className="btn btn-primary"
+          >
+            Edit Profile
+          </button>
+        )}
+        {activeTab === 'personal' && isEditing && (
+          <div className="flex gap-2">
+            <button
+              onClick={handleCancel}
+              className="btn btn-secondary"
+              disabled={saving}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="btn btn-primary"
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -73,19 +172,33 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">First Name</label>
-                <input type="text" value={user?.firstName || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <input 
+                  type="text" 
+                  value={isEditing ? formData.firstName : (user?.firstName || '')} 
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  disabled={!isEditing} 
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                <input type="text" value={user?.lastName || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <input 
+                  type="text" 
+                  value={isEditing ? formData.lastName : (user?.lastName || '')} 
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  disabled={!isEditing} 
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">ID Number</label>
                 <input type="text" value={user?.idNumber || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <p className="text-xs text-gray-500 mt-1">ID number cannot be changed</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
                 <input type="text" value={user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <p className="text-xs text-gray-500 mt-1">Date of birth cannot be changed</p>
               </div>
             </div>
           </div>
@@ -97,10 +210,17 @@ const Profile: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700">Email Address</label>
                 <input type="email" value={user?.email || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                <input type="tel" value={user?.phoneNumber || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <input 
+                  type="tel" 
+                  value={isEditing ? formData.phoneNumber : (user?.phoneNumber || '')} 
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                  disabled={!isEditing} 
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" 
+                />
               </div>
             </div>
           </div>
@@ -111,26 +231,26 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Street Address</label>
-                <input type="text" value={user?.streetAddress || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., 123 Main Street" />
+                <input type="text" value={isEditing ? formData.streetAddress : (user?.streetAddress || '')} onChange={(e) => handleInputChange('streetAddress', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., 123 Main Street" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Suburb</label>
-                  <input type="text" value={user?.suburb || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., Sandton" />
+                  <input type="text" value={isEditing ? formData.suburb : (user?.suburb || '')} onChange={(e) => handleInputChange('suburb', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Sandton" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">City</label>
-                  <input type="text" value={user?.city || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., Johannesburg" />
+                  <input type="text" value={isEditing ? formData.city : (user?.city || '')} onChange={(e) => handleInputChange('city', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Johannesburg" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Province</label>
-                  <input type="text" value={user?.province || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., Gauteng" />
+                  <input type="text" value={isEditing ? formData.province : (user?.province || '')} onChange={(e) => handleInputChange('province', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Gauteng" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Postal Code</label>
-                  <input type="text" value={user?.postalCode || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., 2196" />
+                  <input type="text" value={isEditing ? formData.postalCode : (user?.postalCode || '')} onChange={(e) => handleInputChange('postalCode', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., 2196" />
                 </div>
               </div>
             </div>
@@ -142,19 +262,19 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Company/Employer Name</label>
-                <input type="text" value={user?.employerName || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., ABC Company (Pty) Ltd" />
+                <input type="text" value={isEditing ? formData.employerName : (user?.employerName || '')} onChange={(e) => handleInputChange('employerName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., ABC Company (Pty) Ltd" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Employment Type</label>
-                <input type="text" value={user?.employmentType || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="Permanent/Contract/Self-Employed" />
+                <input type="text" value={isEditing ? formData.employmentType : (user?.employmentType || '')} onChange={(e) => handleInputChange('employmentType', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Permanent/Contract/Self-Employed" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Employee Number</label>
-                <input type="text" value={user?.employeeNumber || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="Your employee ID" />
+                <input type="text" value={isEditing ? formData.employeeNumber : (user?.employeeNumber || '')} onChange={(e) => handleInputChange('employeeNumber', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Your employee ID" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Payroll Reference</label>
-                <input type="text" value={user?.payrollReference || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="Payroll reference number" />
+                <input type="text" value={isEditing ? formData.payrollReference : (user?.payrollReference || '')} onChange={(e) => handleInputChange('payrollReference', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Payroll reference number" />
               </div>
             </div>
           </div>
@@ -165,19 +285,19 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-                <input type="text" value={user?.bankName || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., Standard Bank" />
+                <input type="text" value={isEditing ? formData.bankName : (user?.bankName || '')} onChange={(e) => handleInputChange('bankName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Standard Bank" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Account Type</label>
-                <input type="text" value={user?.accountType || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="Cheque/Savings" />
+                <input type="text" value={isEditing ? formData.accountType : (user?.accountType || '')} onChange={(e) => handleInputChange('accountType', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Cheque/Savings" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Account Number</label>
-                <input type="text" value={user?.accountNumber ? '****' + user.accountNumber.slice(-4) : ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <input type="text" value={isEditing ? formData.accountNumber : (user?.accountNumber ? '****' + user.accountNumber.slice(-4) : '')} onChange={(e) => handleInputChange('accountNumber', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Full account number" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Branch Code</label>
-                <input type="text" value={user?.branchCode || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., 051001" />
+                <input type="text" value={isEditing ? formData.branchCode : (user?.branchCode || '')} onChange={(e) => handleInputChange('branchCode', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., 051001" />
               </div>
             </div>
           </div>
@@ -188,15 +308,15 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input type="text" value={user?.nextOfKinName || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <input type="text" value={isEditing ? formData.nextOfKinName : (user?.nextOfKinName || '')} onChange={(e) => handleInputChange('nextOfKinName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Relationship</label>
-                <input type="text" value={user?.nextOfKinRelationship || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="e.g., Spouse, Parent, Sibling" />
+                <input type="text" value={isEditing ? formData.nextOfKinRelationship : (user?.nextOfKinRelationship || '')} onChange={(e) => handleInputChange('nextOfKinRelationship', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Spouse, Parent, Sibling" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Contact Number</label>
-                <input type="tel" value={user?.nextOfKinPhone || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                <input type="tel" value={isEditing ? formData.nextOfKinPhone : (user?.nextOfKinPhone || '')} onChange={(e) => handleInputChange('nextOfKinPhone', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" />
               </div>
             </div>
           </div>

@@ -206,7 +206,7 @@ const Login: React.FC = () => {
               <img src={HohemaLogo} alt="Ho Hema Loans" className="h-24 w-auto" />
             </div>
             <h2 className="mt-4 text-3xl font-bold text-gray-900">
-              Employee Login
+              Login
             </h2>
             <p className="mt-2 text-sm text-gray-600">
               Access your loan application account
