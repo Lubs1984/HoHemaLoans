@@ -1,0 +1,571 @@
+{
+    "version": "7.3",
+    "data_api_version": "3.0",
+    "routing_model": {
+        "PERSONAL_INFO": [
+            "ADDRESS_INFO"
+        ],
+        "ADDRESS_INFO": [
+            "EMPLOYMENT_INFO"
+        ],
+        "EMPLOYMENT_INFO": [
+            "BANKING_INFO"
+        ],
+        "BANKING_INFO": [
+            "NEXT_OF_KIN"
+        ],
+        "NEXT_OF_KIN": [
+            "PROFILE_SUMMARY"
+        ],
+        "PROFILE_SUMMARY": []
+    },
+    "screens": [
+        {
+            "id": "PERSONAL_INFO",
+            "title": "Personal Information",
+            "data": {
+                "first_name": {
+                    "type": "string",
+                    "__example__": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "__example__": "Doe"
+                },
+                "id_number": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "date_of_birth": {
+                    "type": "string",
+                    "__example__": ""
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "personal_info_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Complete Your Profile"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "We need your personal details to proceed"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "🔒 Your information is secure and protected under POPIA"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "first_name",
+                                "label": "First Name",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.first_name}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "last_name",
+                                "label": "Last Name",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.last_name}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "id_number",
+                                "label": "SA ID Number",
+                                "input-type": "text",
+                                "required": true,
+                                "min-chars": 13,
+                                "max-chars": 13,
+                                "helper-text": "13-digit South African ID number",
+                                "init-value": "${data.id_number}"
+                            },
+                            {
+                                "type": "DatePicker",
+                                "name": "date_of_birth",
+                                "label": "Date of Birth",
+                                "required": true,
+                                "helper-text": "You must be 18 or older to apply"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "first_name": "${form.first_name}",
+                                        "last_name": "${form.last_name}",
+                                        "id_number": "${form.id_number}",
+                                        "date_of_birth": "${form.date_of_birth}",
+                                        "screen": "PERSONAL_INFO"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "ADDRESS_INFO",
+            "title": "Address Details",
+            "data": {
+                "street_address": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "suburb": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "city": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "province_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "title": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "gauteng", "title": "Gauteng" },
+                        { "id": "western_cape", "title": "Western Cape" },
+                        { "id": "kwazulu_natal", "title": "KwaZulu-Natal" },
+                        { "id": "eastern_cape", "title": "Eastern Cape" },
+                        { "id": "free_state", "title": "Free State" },
+                        { "id": "limpopo", "title": "Limpopo" },
+                        { "id": "mpumalanga", "title": "Mpumalanga" },
+                        { "id": "north_west", "title": "North West" },
+                        { "id": "northern_cape", "title": "Northern Cape" }
+                    ]
+                },
+                "postal_code": {
+                    "type": "string",
+                    "__example__": ""
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "address_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Residential Address"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Where do you currently live?"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "street_address",
+                                "label": "Street Address",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.street_address}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "suburb",
+                                "label": "Suburb / Area",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.suburb}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "city",
+                                "label": "City / Town",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.city}"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "province",
+                                "label": "Province",
+                                "required": true,
+                                "data-source": "${data.province_options}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "postal_code",
+                                "label": "Postal Code",
+                                "input-type": "text",
+                                "required": true,
+                                "min-chars": 4,
+                                "max-chars": 4,
+                                "init-value": "${data.postal_code}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "street_address": "${form.street_address}",
+                                        "suburb": "${form.suburb}",
+                                        "city": "${form.city}",
+                                        "province": "${form.province}",
+                                        "postal_code": "${form.postal_code}",
+                                        "screen": "ADDRESS_INFO"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "EMPLOYMENT_INFO",
+            "title": "Employment Details",
+            "data": {
+                "employer_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "1", "title": "Company A" },
+                        { "id": "2", "title": "Company B" }
+                    ]
+                },
+                "employee_number": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "job_title": {
+                    "type": "string",
+                    "__example__": ""
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "employment_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Employment Information"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Tell us about your employer"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "employer",
+                                "label": "Select Employer",
+                                "required": true,
+                                "data-source": "${data.employer_options}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "employee_number",
+                                "label": "Employee / Staff Number",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.employee_number}",
+                                "helper-text": "Your company employee number"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "job_title",
+                                "label": "Job Title / Position",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.job_title}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "employer": "${form.employer}",
+                                        "employee_number": "${form.employee_number}",
+                                        "job_title": "${form.job_title}",
+                                        "screen": "EMPLOYMENT_INFO"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "BANKING_INFO",
+            "title": "Bank Details",
+            "data": {
+                "bank_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "fnb", "title": "FNB" },
+                        { "id": "standard_bank", "title": "Standard Bank" },
+                        { "id": "absa", "title": "ABSA" },
+                        { "id": "nedbank", "title": "Nedbank" },
+                        { "id": "capitec", "title": "Capitec" },
+                        { "id": "african_bank", "title": "African Bank" }
+                    ]
+                },
+                "account_holder": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "account_number": {
+                    "type": "string",
+                    "__example__": ""
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "banking_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Banking Details"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Where should we deposit your loan?"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "🔐 Bank details are encrypted and stored securely"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "account_holder",
+                                "label": "Account Holder Name",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.account_holder}",
+                                "helper-text": "Name as it appears on your bank account"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "bank_name",
+                                "label": "Bank",
+                                "required": true,
+                                "data-source": "${data.bank_options}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "account_number",
+                                "label": "Account Number",
+                                "input-type": "number",
+                                "required": true,
+                                "init-value": "${data.account_number}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "account_holder": "${form.account_holder}",
+                                        "bank_name": "${form.bank_name}",
+                                        "account_number": "${form.account_number}",
+                                        "screen": "BANKING_INFO"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NEXT_OF_KIN",
+            "title": "Next of Kin",
+            "data": {},
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "nok_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Next of Kin"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Emergency contact details"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "nok_name",
+                                "label": "Full Name",
+                                "input-type": "text",
+                                "required": true
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "nok_relationship",
+                                "label": "Relationship",
+                                "input-type": "text",
+                                "required": true,
+                                "helper-text": "e.g. Spouse, Parent, Sibling"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "nok_phone",
+                                "label": "Phone Number",
+                                "input-type": "phone",
+                                "required": true
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Save Profile",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "nok_name": "${form.nok_name}",
+                                        "nok_relationship": "${form.nok_relationship}",
+                                        "nok_phone": "${form.nok_phone}",
+                                        "screen": "NEXT_OF_KIN"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "PROFILE_SUMMARY",
+            "title": "Profile Complete",
+            "terminal": true,
+            "data": {
+                "full_name": {
+                    "type": "string",
+                    "__example__": "John Doe"
+                },
+                "id_number_masked": {
+                    "type": "string",
+                    "__example__": "****0123456**"
+                },
+                "address_summary": {
+                    "type": "string",
+                    "__example__": "32 Main Street, Johannesburg, Gauteng"
+                },
+                "employer_name": {
+                    "type": "string",
+                    "__example__": "Company A"
+                },
+                "bank_summary": {
+                    "type": "string",
+                    "__example__": "Capitec - ****5678"
+                },
+                "profile_url": {
+                    "type": "string",
+                    "__example__": "https://hohemaweb-development.up.railway.app/profile"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "summary_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "✅ Profile Complete!"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Your profile has been saved"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "👤 Name: ${data.full_name}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "🆔 ID: ${data.id_number_masked}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📍 Address: ${data.address_summary}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "🏢 Employer: ${data.employer_name}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "🏦 Bank: ${data.bank_summary}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "You can update your profile anytime on the web portal"
+                            },
+                            {
+                                "type": "EmbeddedLink",
+                                "text": "View full profile on web",
+                                "on-click-action": {
+                                    "name": "navigate",
+                                    "next": {
+                                        "name": "external_link",
+                                        "type": "external_link",
+                                        "url": "${data.profile_url}"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Done",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "profile_completed": true,
+                                        "screen": "PROFILE_SUMMARY"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

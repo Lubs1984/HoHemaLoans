@@ -22,19 +22,22 @@ public class WhatsAppWebhookController : ControllerBase
     private readonly ILogger<WhatsAppWebhookController> _logger;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IWhatsAppLoanWizardService _wizardService;
+    private readonly IWhatsAppFlowOrchestrationService _flowOrchestrationService;
 
     public WhatsAppWebhookController(
         IWhatsAppService whatsAppService,
         ApplicationDbContext context,
         ILogger<WhatsAppWebhookController> logger,
         UserManager<ApplicationUser> userManager,
-        IWhatsAppLoanWizardService wizardService)
+        IWhatsAppLoanWizardService wizardService,
+        IWhatsAppFlowOrchestrationService flowOrchestrationService)
     {
         _whatsAppService = whatsAppService;
         _context = context;
         _logger = logger;
         _userManager = userManager;
         _wizardService = wizardService;
+        _flowOrchestrationService = flowOrchestrationService;
     }
 
     /// <summary>
@@ -474,83 +477,14 @@ public class WhatsAppWebhookController : ControllerBase
     {
         try
         {
-            // ============================================================
-            // DEVELOPMENT MODE: Send a simple "in development" message
-            // Remove this block when ready to go live with full loan flows
-            // ============================================================
-            _logger.LogInformation("📱 Development mode: Sending auto-reply to {PhoneNumber}. Message received: \"{MessageText}\"", 
+            _logger.LogInformation("📱 Processing message from {PhoneNumber} via Flow Orchestration: \"{MessageText}\"", 
                 phoneNumber, messageText);
 
-            await _whatsAppService.SendMessageAsync(
-                phoneNumber,
-                "Hi, we are currently in development. 🚧\n\n" +
-                "Thank you for your interest in Ho Hema Loans! We're working hard to bring you a seamless lending experience.\n\n" +
-                "We'll notify you when our services are live. Stay tuned! 🙏"
-            );
+            // Delegate to the WhatsApp Flow Orchestration Service
+            // This handles: registration check → profile → documents → affordability → loan application
+            await _flowOrchestrationService.HandleIncomingMessageAsync(phoneNumber, messageText, contact);
 
-            _logger.LogInformation("✅ Development auto-reply sent to {PhoneNumber}", phoneNumber);
-            // ============================================================
-            // END DEVELOPMENT MODE
-            // ============================================================
-            
-            _logger.LogInformation("Checking for registered user with phone number: {PhoneNumber}", phoneNumber);
-
-            // Clean phone number for comparison
-            var cleanPhoneNumber = phoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "");
-
-            // Check if the phone number matches any registered user
-            var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.PhoneNumber != null && 
-                    u.PhoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "") == cleanPhoneNumber);
-
-            if (user == null)
-            {
-                _logger.LogInformation("No registered user found for phone number: {PhoneNumber}", phoneNumber);
-                
-                // Send welcome message for unregistered users
-                await _whatsAppService.SendMessageAsync(
-                    phoneNumber,
-                    "Welcome to Ho Hema Loans! 👋\n\n" +
-                    "To apply for a loan, please register on our website first: https://hohemaloans.com\n\n" +
-                    "Or reply with REGISTER to start the registration process via WhatsApp."
-                );
-                return;
-            }
-
-            _logger.LogInformation("✅ Found registered user: {FirstName} {LastName} (ID: {UserId})", 
-                user.FirstName, user.LastName, user.Id);
-
-            // Get or create active WhatsApp session
-            var session = await _context.WhatsAppSessions
-                .FirstOrDefaultAsync(s => s.UserId == user.Id && s.SessionStatus == "Active");
-
-            if (session == null)
-            {
-                session = new WhatsAppSession
-                {
-                    PhoneNumber = phoneNumber,
-                    UserId = user.Id,
-                    SessionStatus = "Active",
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.WhatsAppSessions.Add(session);
-                await _context.SaveChangesAsync();
-
-                // Send personalized greeting on first message
-                await _whatsAppService.SendMessageAsync(phoneNumber, $"Hi {user.FirstName}! 👋");
-
-                // Check for existing loan applications
-                await CheckExistingApplicationsAsync(phoneNumber, user.Id, session);
-            }
-            else
-            {
-                // Existing session - process the message through wizard
-                session.LastUpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                // Process user response through the wizard
-                await _wizardService.ProcessUserResponseAsync(phoneNumber, user.Id, messageText, session);
-            }
+            _logger.LogInformation("✅ Flow orchestration completed for {PhoneNumber}", phoneNumber);
         }
         catch (Exception ex)
         {

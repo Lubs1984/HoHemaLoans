@@ -1,0 +1,491 @@
+{
+    "version": "7.3",
+    "data_api_version": "3.0",
+    "routing_model": {
+        "INCOME_OVERVIEW": [
+            "ADD_INCOME",
+            "EXPENSES_OVERVIEW"
+        ],
+        "ADD_INCOME": [
+            "EXPENSES_OVERVIEW"
+        ],
+        "EXPENSES_OVERVIEW": [
+            "ADD_EXPENSE",
+            "AFFORDABILITY_RESULT"
+        ],
+        "ADD_EXPENSE": [
+            "EXPENSES_OVERVIEW",
+            "AFFORDABILITY_RESULT"
+        ],
+        "AFFORDABILITY_RESULT": []
+    },
+    "screens": [
+        {
+            "id": "INCOME_OVERVIEW",
+            "title": "Your Income",
+            "data": {
+                "has_existing_income": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "existing_income_summary": {
+                    "type": "string",
+                    "__example__": "💰 Current income on file:\n• Salary: R8,500\n• Part-time: R2,000\nTotal: R10,500"
+                },
+                "total_income": {
+                    "type": "string",
+                    "__example__": "R10,500"
+                },
+                "income_action_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "keep", "title": "✅ Information is correct" },
+                        { "id": "update", "title": "✏️ I want to update it" },
+                        { "id": "add_new", "title": "➕ Add a new income source" }
+                    ]
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "income_overview_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Affordability Assessment"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 1: Review Your Income"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "📊 NCR requires us to assess your ability to repay the loan"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.existing_income_summary}"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "income_action",
+                                "label": "What would you like to do?",
+                                "required": true,
+                                "data-source": "${data.income_action_options}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "income_action": "${form.income_action}",
+                                        "screen": "INCOME_OVERVIEW"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "ADD_INCOME",
+            "title": "Add/Update Income",
+            "data": {
+                "income_type_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "salary", "title": "💼 Salary / Wages" },
+                        { "id": "part_time", "title": "🕐 Part-time / Casual Work" },
+                        { "id": "self_employed", "title": "🏪 Self-employed / Business" },
+                        { "id": "grant", "title": "🏛️ Government Grant (SASSA)" },
+                        { "id": "pension", "title": "👴 Pension / Retirement" },
+                        { "id": "other", "title": "📋 Other Income" }
+                    ]
+                },
+                "frequency_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "monthly", "title": "Monthly" },
+                        { "id": "weekly", "title": "Weekly" },
+                        { "id": "fortnightly", "title": "Fortnightly" },
+                        { "id": "annually", "title": "Annually" }
+                    ]
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "add_income_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Income Details"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "income_type",
+                                "label": "Income Type",
+                                "required": true,
+                                "data-source": "${data.income_type_options}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "income_source",
+                                "label": "Source / Description",
+                                "input-type": "text",
+                                "required": true,
+                                "helper-text": "e.g. Company name, grant type"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "income_amount",
+                                "label": "Amount (R)",
+                                "input-type": "number",
+                                "required": true,
+                                "helper-text": "Gross amount before deductions"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "income_frequency",
+                                "label": "How often?",
+                                "required": true,
+                                "data-source": "${data.frequency_options}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Save Income",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "income_type": "${form.income_type}",
+                                        "income_source": "${form.income_source}",
+                                        "income_amount": "${form.income_amount}",
+                                        "income_frequency": "${form.income_frequency}",
+                                        "screen": "ADD_INCOME"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "EXPENSES_OVERVIEW",
+            "title": "Your Expenses",
+            "data": {
+                "has_existing_expenses": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "existing_expenses_summary": {
+                    "type": "string",
+                    "__example__": "💳 Current expenses on file:\n• Rent: R3,500\n• Transport: R800\n• Groceries: R1,500\nTotal: R5,800"
+                },
+                "total_expenses": {
+                    "type": "string",
+                    "__example__": "R5,800"
+                },
+                "total_income": {
+                    "type": "string",
+                    "__example__": "R10,500"
+                },
+                "expense_action_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "keep", "title": "✅ Expenses are correct" },
+                        { "id": "update", "title": "✏️ I want to update them" },
+                        { "id": "add_new", "title": "➕ Add a new expense" }
+                    ]
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "expenses_overview_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Your Monthly Expenses"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 2: Review Your Expenses"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.existing_expenses_summary}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📊 Monthly Income: ${data.total_income}"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "expense_action",
+                                "label": "What would you like to do?",
+                                "required": true,
+                                "data-source": "${data.expense_action_options}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "expense_action": "${form.expense_action}",
+                                        "screen": "EXPENSES_OVERVIEW"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "ADD_EXPENSE",
+            "title": "Add/Update Expense",
+            "data": {
+                "expense_type_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "rent", "title": "🏠 Rent / Bond" },
+                        { "id": "transport", "title": "🚌 Transport / Fuel" },
+                        { "id": "groceries", "title": "🛒 Groceries / Food" },
+                        { "id": "utilities", "title": "⚡ Electricity / Water" },
+                        { "id": "insurance", "title": "🛡️ Insurance" },
+                        { "id": "debt_repayment", "title": "💳 Existing Debt Repayments" }
+                    ]
+                },
+                "frequency_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "monthly", "title": "Monthly" },
+                        { "id": "weekly", "title": "Weekly" },
+                        { "id": "fortnightly", "title": "Fortnightly" },
+                        { "id": "annually", "title": "Annually" }
+                    ]
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "add_expense_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Expense Details"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "expense_type",
+                                "label": "Expense Category",
+                                "required": true,
+                                "data-source": "${data.expense_type_options}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "expense_description",
+                                "label": "Description",
+                                "input-type": "text",
+                                "required": true,
+                                "helper-text": "e.g. Monthly rent, car payment"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "expense_amount",
+                                "label": "Amount (R)",
+                                "input-type": "number",
+                                "required": true
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "expense_frequency",
+                                "label": "How often?",
+                                "required": true,
+                                "data-source": "${data.frequency_options}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Save Expense",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "expense_type": "${form.expense_type}",
+                                        "expense_description": "${form.expense_description}",
+                                        "expense_amount": "${form.expense_amount}",
+                                        "expense_frequency": "${form.expense_frequency}",
+                                        "screen": "ADD_EXPENSE"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "AFFORDABILITY_RESULT",
+            "title": "Affordability Result",
+            "terminal": true,
+            "data": {
+                "total_income": {
+                    "type": "string",
+                    "__example__": "R10,500"
+                },
+                "total_expenses": {
+                    "type": "string",
+                    "__example__": "R5,800"
+                },
+                "disposable_income": {
+                    "type": "string",
+                    "__example__": "R4,700"
+                },
+                "max_repayment": {
+                    "type": "string",
+                    "__example__": "R2,350"
+                },
+                "affordability_status": {
+                    "type": "string",
+                    "__example__": "✅ You qualify for a loan"
+                },
+                "status_detail": {
+                    "type": "string",
+                    "__example__": "Based on your disposable income of R4,700, you can afford monthly repayments up to R2,350"
+                },
+                "affordability_passed": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "web_url": {
+                    "type": "string",
+                    "__example__": "https://hohemaweb-development.up.railway.app/affordability"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "result_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Affordability Assessment"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📊 Financial Summary:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Income: ${data.total_income}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Expenses: ${data.total_expenses}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Disposable Income: ${data.disposable_income}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Max Monthly Repayment: ${data.max_repayment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.affordability_status}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "${data.status_detail}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "⚖️ Assessment as per NCR responsible lending guidelines"
+                            },
+                            {
+                                "type": "EmbeddedLink",
+                                "text": "View full details on web",
+                                "on-click-action": {
+                                    "name": "navigate",
+                                    "next": {
+                                        "name": "external_link",
+                                        "type": "external_link",
+                                        "url": "${data.web_url}"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Done",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "affordability_completed": true,
+                                        "affordability_passed": "${data.affordability_passed}",
+                                        "screen": "AFFORDABILITY_RESULT"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

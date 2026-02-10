@@ -1,0 +1,828 @@
+{
+    "version": "7.3",
+    "data_api_version": "3.0",
+    "routing_model": {
+        "LOAN_AMOUNT": [
+            "TERM_SELECTION"
+        ],
+        "TERM_SELECTION": [
+            "LOAN_PURPOSE"
+        ],
+        "LOAN_PURPOSE": [
+            "AFFORDABILITY_REVIEW"
+        ],
+        "AFFORDABILITY_REVIEW": [
+            "TERMS_PREVIEW"
+        ],
+        "TERMS_PREVIEW": [
+            "BANK_DETAILS"
+        ],
+        "BANK_DETAILS": [
+            "REVIEW_SIGN"
+        ],
+        "REVIEW_SIGN": [
+            "APPLICATION_SUCCESS"
+        ],
+        "APPLICATION_SUCCESS": []
+    },
+    "screens": [
+        {
+            "id": "LOAN_AMOUNT",
+            "title": "Loan Amount",
+            "data": {
+                "min_amount": {
+                    "type": "string",
+                    "__example__": "R500"
+                },
+                "max_amount": {
+                    "type": "string",
+                    "__example__": "R50,000"
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "existing_amount": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "is_resume": {
+                    "type": "boolean",
+                    "__example__": false
+                },
+                "resume_message": {
+                    "type": "string",
+                    "__example__": ""
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "loan_amount_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "💰 Apply for a Loan"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 1 of 6: How much do you need?"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "${data.resume_message}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Loan range: ${data.min_amount} – ${data.max_amount}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "loan_amount",
+                                "label": "Loan Amount (R)",
+                                "input-type": "number",
+                                "required": true,
+                                "init-value": "${data.existing_amount}",
+                                "helper-text": "Enter amount between ${data.min_amount} and ${data.max_amount}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "⚖️ NCR Registered Lender | Responsible Lending\n📱 You can continue this application on the web anytime"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "loan_amount": "${form.loan_amount}",
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "LOAN_AMOUNT"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "TERM_SELECTION",
+            "title": "Loan Term",
+            "data": {
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R10,000"
+                },
+                "term_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "6", "title": "6 months – ~R1,867/mo" },
+                        { "id": "12", "title": "12 months – ~R983/mo" },
+                        { "id": "24", "title": "24 months – ~R542/mo" },
+                        { "id": "36", "title": "36 months – ~R394/mo" }
+                    ]
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": "abc-123"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "term_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "📅 Repayment Term"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 2 of 6: Choose your repayment period"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Loan Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "Estimated monthly payments shown below (includes interest)"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "term_months",
+                                "label": "Select Term",
+                                "required": true,
+                                "data-source": "${data.term_options}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "term_months": "${form.term_months}",
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "TERM_SELECTION"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "LOAN_PURPOSE",
+            "title": "Loan Purpose",
+            "data": {
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R10,000"
+                },
+                "term_months": {
+                    "type": "string",
+                    "__example__": "12 months"
+                },
+                "purposes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "transport", "title": "🚌 Transport" },
+                        { "id": "groceries", "title": "🛒 Groceries" },
+                        { "id": "expenses", "title": "💳 Day-to-day expenses" },
+                        { "id": "airtime", "title": "📱 Airtime & data" },
+                        { "id": "utilities", "title": "⚡ Utilities" },
+                        { "id": "medical", "title": "🏥 Medical expenses" }
+                    ]
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": "abc-123"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "purpose_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "🎯 Loan Purpose"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 3 of 6: What is the loan for?"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Amount: ${data.loan_amount} • Term: ${data.term_months}"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "purpose",
+                                "label": "Select Purpose",
+                                "required": true,
+                                "data-source": "${data.purposes}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "purpose_description",
+                                "label": "Additional Details (Optional)",
+                                "input-type": "text",
+                                "required": false,
+                                "helper-text": "Any extra info about how you'll use the loan"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "purpose": "${form.purpose}",
+                                        "purpose_description": "${form.purpose_description}",
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "LOAN_PURPOSE"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "AFFORDABILITY_REVIEW",
+            "title": "Affordability Check",
+            "data": {
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R10,000"
+                },
+                "monthly_payment": {
+                    "type": "string",
+                    "__example__": "R983"
+                },
+                "total_income": {
+                    "type": "string",
+                    "__example__": "R10,500"
+                },
+                "total_expenses": {
+                    "type": "string",
+                    "__example__": "R5,800"
+                },
+                "disposable_income": {
+                    "type": "string",
+                    "__example__": "R4,700"
+                },
+                "affordability_status": {
+                    "type": "string",
+                    "__example__": "✅ Affordability check passed"
+                },
+                "can_afford": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": "abc-123"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "affordability_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "📊 Affordability Review"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 4 of 6: Can you afford this loan?"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💰 Your Financial Summary:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Income: ${data.total_income}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Expenses: ${data.total_expenses}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Disposable Income: ${data.disposable_income}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Proposed Monthly Payment: ${data.monthly_payment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.affordability_status}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "⚖️ This assessment is required by the NCR to ensure responsible lending"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "affordability_confirmed": true,
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "AFFORDABILITY_REVIEW"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "TERMS_PREVIEW",
+            "title": "Loan Terms",
+            "data": {
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R10,000"
+                },
+                "interest_rate": {
+                    "type": "string",
+                    "__example__": "5% per month"
+                },
+                "term_months": {
+                    "type": "string",
+                    "__example__": "12 months"
+                },
+                "monthly_payment": {
+                    "type": "string",
+                    "__example__": "R983.33"
+                },
+                "total_interest": {
+                    "type": "string",
+                    "__example__": "R1,800"
+                },
+                "total_repayment": {
+                    "type": "string",
+                    "__example__": "R11,800"
+                },
+                "initiation_fee": {
+                    "type": "string",
+                    "__example__": "R0"
+                },
+                "service_fee": {
+                    "type": "string",
+                    "__example__": "R0"
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": "abc-123"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "terms_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "📋 Loan Terms"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 5 of 6: Review your loan details"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Loan Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Interest Rate: ${data.interest_rate}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Term: ${data.term_months}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Monthly Payment: ${data.monthly_payment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Total Interest: ${data.total_interest}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Initiation Fee: ${data.initiation_fee}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Service Fee: ${data.service_fee}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💰 Total Repayment: ${data.total_repayment}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "⚖️ All fees comply with NCA (National Credit Act) regulations"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Accept & Continue",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "terms_accepted": true,
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "TERMS_PREVIEW"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "BANK_DETAILS",
+            "title": "Bank Details",
+            "data": {
+                "bank_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "fnb", "title": "FNB" },
+                        { "id": "standard_bank", "title": "Standard Bank" },
+                        { "id": "absa", "title": "ABSA" },
+                        { "id": "nedbank", "title": "Nedbank" },
+                        { "id": "capitec", "title": "Capitec" },
+                        { "id": "african_bank", "title": "African Bank" }
+                    ]
+                },
+                "existing_bank": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "existing_account": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "existing_holder": {
+                    "type": "string",
+                    "__example__": ""
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": "abc-123"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "bank_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "🏦 Bank Details"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Step 6 of 6: Where should we deposit?"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "🔐 Bank details are encrypted and stored securely"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "account_holder",
+                                "label": "Account Holder Name",
+                                "input-type": "text",
+                                "required": true,
+                                "init-value": "${data.existing_holder}",
+                                "helper-text": "Name as it appears on your bank account"
+                            },
+                            {
+                                "type": "Dropdown",
+                                "name": "bank_name",
+                                "label": "Bank",
+                                "required": true,
+                                "data-source": "${data.bank_options}"
+                            },
+                            {
+                                "type": "TextInput",
+                                "name": "account_number",
+                                "label": "Account Number",
+                                "input-type": "number",
+                                "required": true,
+                                "init-value": "${data.existing_account}"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Continue to Review",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "account_holder": "${form.account_holder}",
+                                        "bank_name": "${form.bank_name}",
+                                        "account_number": "${form.account_number}",
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "BANK_DETAILS"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "REVIEW_SIGN",
+            "title": "Review & Submit",
+            "data": {
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R10,000"
+                },
+                "term_months": {
+                    "type": "string",
+                    "__example__": "12 months"
+                },
+                "purpose": {
+                    "type": "string",
+                    "__example__": "Transport"
+                },
+                "monthly_payment": {
+                    "type": "string",
+                    "__example__": "R983.33"
+                },
+                "total_repayment": {
+                    "type": "string",
+                    "__example__": "R11,800"
+                },
+                "bank_name": {
+                    "type": "string",
+                    "__example__": "Capitec"
+                },
+                "account_masked": {
+                    "type": "string",
+                    "__example__": "****5678"
+                },
+                "affordability_status": {
+                    "type": "string",
+                    "__example__": "✅ Passed"
+                },
+                "draft_id": {
+                    "type": "string",
+                    "__example__": "abc-123"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "review_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "📝 Review & Submit"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Please confirm your application details"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💰 Loan Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📅 Term: ${data.term_months}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "🎯 Purpose: ${data.purpose}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💳 Monthly Payment: ${data.monthly_payment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💰 Total Repayment: ${data.total_repayment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "🏦 Bank: ${data.bank_name} (${data.account_masked})"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📊 Affordability: ${data.affordability_status}"
+                            },
+                            {
+                                "type": "OptIn",
+                                "name": "terms_accepted",
+                                "label": "I accept the terms and conditions and confirm all information is correct",
+                                "required": true,
+                                "on-select-action": {
+                                    "name": "update_data",
+                                    "payload": {}
+                                }
+                            },
+                            {
+                                "type": "OptIn",
+                                "name": "debit_consent",
+                                "label": "I authorize Ho Hema Loans to debit my account for repayments",
+                                "required": true,
+                                "on-select-action": {
+                                    "name": "update_data",
+                                    "payload": {}
+                                }
+                            },
+                            {
+                                "type": "OptIn",
+                                "name": "popia_consent",
+                                "label": "I consent to the processing of my personal information (POPIA)",
+                                "required": true,
+                                "on-select-action": {
+                                    "name": "update_data",
+                                    "payload": {}
+                                }
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "⚖️ By submitting, you agree to be bound by the National Credit Act. This is a legally binding application."
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Submit Application ✅",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "terms_accepted": "${form.terms_accepted}",
+                                        "debit_consent": "${form.debit_consent}",
+                                        "popia_consent": "${form.popia_consent}",
+                                        "draft_id": "${data.draft_id}",
+                                        "screen": "REVIEW_SIGN"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "APPLICATION_SUCCESS",
+            "title": "Application Submitted!",
+            "terminal": true,
+            "data": {
+                "application_id": {
+                    "type": "string",
+                    "__example__": "LA-2026-0001"
+                },
+                "loan_amount": {
+                    "type": "string",
+                    "__example__": "R10,000"
+                },
+                "monthly_payment": {
+                    "type": "string",
+                    "__example__": "R983.33"
+                },
+                "term_months": {
+                    "type": "string",
+                    "__example__": "12 months"
+                },
+                "tracking_url": {
+                    "type": "string",
+                    "__example__": "https://hohemaweb-development.up.railway.app/loans"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "success_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "✅ Application Submitted!"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Your loan application is under review"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📄 Application: ${data.application_id}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💰 Amount: ${data.loan_amount}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "💳 Monthly: ${data.monthly_payment}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📅 Term: ${data.term_months}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📱 What happens next:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "1️⃣ Admin reviews your application"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "2️⃣ NCR compliance check"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "3️⃣ You'll get a WhatsApp notification"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "4️⃣ If approved, funds sent to your bank account"
+                            },
+                            {
+                                "type": "EmbeddedLink",
+                                "text": "Track your application online",
+                                "on-click-action": {
+                                    "name": "navigate",
+                                    "next": {
+                                        "name": "external_link",
+                                        "type": "external_link",
+                                        "url": "${data.tracking_url}"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "💬 Reply anytime for help or to check your application status"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Done",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "flow_completed": true,
+                                        "screen": "APPLICATION_SUCCESS"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

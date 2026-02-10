@@ -1,0 +1,338 @@
+{
+    "version": "7.3",
+    "data_api_version": "3.0",
+    "routing_model": {
+        "DOCUMENT_CHECKLIST": [
+            "UPLOAD_ID",
+            "UPLOAD_PROOF_OF_ADDRESS"
+        ],
+        "UPLOAD_ID": [
+            "UPLOAD_PROOF_OF_ADDRESS",
+            "DOCUMENT_STATUS"
+        ],
+        "UPLOAD_PROOF_OF_ADDRESS": [
+            "DOCUMENT_STATUS"
+        ],
+        "DOCUMENT_STATUS": []
+    },
+    "screens": [
+        {
+            "id": "DOCUMENT_CHECKLIST",
+            "title": "Required Documents",
+            "data": {
+                "id_status": {
+                    "type": "string",
+                    "__example__": "❌ Not uploaded"
+                },
+                "poa_status": {
+                    "type": "string",
+                    "__example__": "❌ Not uploaded"
+                },
+                "id_uploaded": {
+                    "type": "boolean",
+                    "__example__": false
+                },
+                "poa_uploaded": {
+                    "type": "boolean",
+                    "__example__": false
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "checklist_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Document Verification"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "We need to verify your identity"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "📋 Required documents for loan applications (NCR regulations)"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "1️⃣ SA ID Document or Passport"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.id_status}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "2️⃣ Proof of Address"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.poa_status}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "📸 You can photograph your documents – make sure all details are clearly visible"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "📄 Accepted proof of address: utility bill, bank statement, or lease agreement (less than 3 months old)"
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Upload Documents",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "action": "start_upload",
+                                        "id_uploaded": "${data.id_uploaded}",
+                                        "poa_uploaded": "${data.poa_uploaded}",
+                                        "screen": "DOCUMENT_CHECKLIST"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "UPLOAD_ID",
+            "title": "ID / Passport",
+            "data": {
+                "id_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "sa_id", "title": "🇿🇦 South African ID Book" },
+                        { "id": "sa_id_card", "title": "🪪 SA Smart ID Card" },
+                        { "id": "passport", "title": "📘 Passport" },
+                        { "id": "asylum_permit", "title": "📄 Asylum Seeker Permit" }
+                    ]
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "id_upload_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Upload ID / Passport"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Select the type of document you'll upload"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "id_document_type",
+                                "label": "Document Type",
+                                "required": true,
+                                "data-source": "${data.id_types}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "📸 Tips for a clear photo:\n• Place document on a flat surface\n• Ensure all text is readable\n• Avoid shadows or glare\n• Include all 4 corners"
+                            },
+                            {
+                                "type": "PhotoPicker",
+                                "name": "id_photo",
+                                "label": "Take Photo or Select from Gallery",
+                                "description": "Upload a clear photo of your ID",
+                                "photo-source": "camera_gallery",
+                                "max-file-size-kb": 10240,
+                                "min-file-size-kb": 10
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Upload ID",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "id_document_type": "${form.id_document_type}",
+                                        "id_photo": "${form.id_photo}",
+                                        "screen": "UPLOAD_ID"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "UPLOAD_PROOF_OF_ADDRESS",
+            "title": "Proof of Address",
+            "data": {
+                "poa_types": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "title": { "type": "string" }
+                        }
+                    },
+                    "__example__": [
+                        { "id": "utility_bill", "title": "⚡ Utility Bill (water/electricity)" },
+                        { "id": "bank_statement", "title": "🏦 Bank Statement" },
+                        { "id": "lease_agreement", "title": "📝 Lease / Rental Agreement" },
+                        { "id": "municipal_account", "title": "🏛️ Municipal Account" },
+                        { "id": "phone_bill", "title": "📱 Phone / Internet Bill" }
+                    ]
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "poa_upload_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "Upload Proof of Address"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Document must be less than 3 months old"
+                            },
+                            {
+                                "type": "RadioButtonsGroup",
+                                "name": "poa_document_type",
+                                "label": "Document Type",
+                                "required": true,
+                                "data-source": "${data.poa_types}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "⚠️ The document must show:\n• Your full name\n• Your residential address\n• A date within the last 3 months"
+                            },
+                            {
+                                "type": "PhotoPicker",
+                                "name": "poa_photo",
+                                "label": "Take Photo or Select from Gallery",
+                                "description": "Upload proof of your residential address",
+                                "photo-source": "camera_gallery",
+                                "max-file-size-kb": 10240,
+                                "min-file-size-kb": 10
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Upload Document",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "poa_document_type": "${form.poa_document_type}",
+                                        "poa_photo": "${form.poa_photo}",
+                                        "screen": "UPLOAD_PROOF_OF_ADDRESS"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "DOCUMENT_STATUS",
+            "title": "Documents Received",
+            "terminal": true,
+            "data": {
+                "id_doc_status": {
+                    "type": "string",
+                    "__example__": "✅ SA Smart ID Card – Uploaded"
+                },
+                "poa_doc_status": {
+                    "type": "string",
+                    "__example__": "✅ Utility Bill – Uploaded"
+                },
+                "verification_note": {
+                    "type": "string",
+                    "__example__": "Documents will be verified within 24 hours"
+                },
+                "portal_url": {
+                    "type": "string",
+                    "__example__": "https://hohemaweb-development.up.railway.app/profile"
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "status_form",
+                        "children": [
+                            {
+                                "type": "TextHeading",
+                                "text": "📄 Documents Received"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.id_doc_status}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.poa_doc_status}"
+                            },
+                            {
+                                "type": "TextCaption",
+                                "text": "${data.verification_note}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "📱 What happens next:"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "1️⃣ Documents are verified by our team"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "2️⃣ You'll receive a WhatsApp confirmation"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "3️⃣ You can then proceed with your loan application"
+                            },
+                            {
+                                "type": "EmbeddedLink",
+                                "text": "View documents on web portal",
+                                "on-click-action": {
+                                    "name": "navigate",
+                                    "next": {
+                                        "name": "external_link",
+                                        "type": "external_link",
+                                        "url": "${data.portal_url}"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Done",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "documents_submitted": true,
+                                        "screen": "DOCUMENT_STATUS"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

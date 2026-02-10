@@ -20,6 +20,10 @@ public interface IWhatsAppService
     Task<bool> SendInteractiveButtonsAsync(string phoneNumber, string bodyText, List<WhatsAppButton> buttons);
     Task<bool> SendInteractiveListAsync(string phoneNumber, string bodyText, string buttonText, List<WhatsAppListSection> sections);
     Task<string?> DownloadMediaAsync(string mediaId);
+    /// <summary>
+    /// Sends a WhatsApp Flow message to the user, launching a Meta WhatsApp Flow.
+    /// </summary>
+    Task<bool> SendFlowMessageAsync(string phoneNumber, string flowId, string? initialScreen = null, Dictionary<string, object>? initialData = null);
 }
 
 public class WhatsAppService : IWhatsAppService
@@ -387,6 +391,74 @@ public class WhatsAppService : IWhatsAppService
         {
             _logger.LogError(ex, "Exception downloading media {MediaId}", mediaId);
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Sends a WhatsApp Flow message to launch a Meta WhatsApp Flow for the user.
+    /// Uses the interactive flow message type from the WhatsApp Business API.
+    /// </summary>
+    public async Task<bool> SendFlowMessageAsync(string phoneNumber, string flowId, string? initialScreen = null, Dictionary<string, object>? initialData = null)
+    {
+        try
+        {
+            var cleanPhoneNumber = CleanPhoneNumber(phoneNumber);
+            var url = $"https://graph.facebook.com/{_settings.ApiVersion}/{_settings.PhoneNumberId}/messages";
+
+            var flowAction = new Dictionary<string, object>
+            {
+                ["name"] = "flow",
+                ["parameters"] = new Dictionary<string, object>
+                {
+                    ["flow_message_version"] = "3",
+                    ["flow_id"] = flowId,
+                    ["flow_cta"] = "Start",
+                    ["mode"] = "published",
+                    ["flow_action"] = "navigate",
+                    ["flow_action_payload"] = new Dictionary<string, object>
+                    {
+                        ["screen"] = initialScreen ?? "SCREEN_0",
+                        ["data"] = initialData ?? new Dictionary<string, object>()
+                    }
+                }
+            };
+
+            var request = new
+            {
+                messaging_product = "whatsapp",
+                to = cleanPhoneNumber,
+                type = "interactive",
+                interactive = new
+                {
+                    type = "flow",
+                    body = new { text = "Tap the button below to continue." },
+                    action = flowAction
+                }
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(url, request, jsonOptions);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Flow message sent successfully to {PhoneNumber}. FlowId: {FlowId}", cleanPhoneNumber, flowId);
+                return true;
+            }
+
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to send flow message to {PhoneNumber}. Status: {StatusCode}, Error: {Error}",
+                cleanPhoneNumber, response.StatusCode, errorContent);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception sending flow message to {PhoneNumber}", phoneNumber);
+            return false;
         }
     }
 }
