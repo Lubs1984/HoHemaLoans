@@ -433,13 +433,13 @@ const Register = () => {
               />
               <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-700">
                 I agree to the{' '}
-                <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                <Link to="/terms" className="text-indigo-600 hover:text-indigo-700 font-medium">
                   Terms of Service
-                </a>{' '}
+                </Link>{' '}
                 and{' '}
-                <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                <Link to="/privacy" className="text-indigo-600 hover:text-indigo-700 font-medium">
                   Privacy Policy
-                </a>
+                </Link>
               </label>
             </div>
             {validationErrors.agreeToTerms && (

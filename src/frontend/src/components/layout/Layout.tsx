@@ -291,6 +291,19 @@ export const Layout: React.FC = () => {
             <Outlet />
           </div>
         </main>
+
+        {/* Footer */}
+        <footer className="border-t border-gray-200 bg-white mt-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500">
+              <p>&copy; {new Date().getFullYear()} Ho Hema Loans (Pty) Ltd. All rights reserved.</p>
+              <div className="flex items-center gap-4">
+                <Link to="/privacy" className="hover:text-primary-600 transition-colors">Privacy Policy</Link>
+                <Link to="/terms" className="hover:text-primary-600 transition-colors">Terms of Service</Link>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

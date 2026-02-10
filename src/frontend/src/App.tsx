@@ -18,6 +18,10 @@ const Profile = React.lazy(() => import('./pages/auth/Profile'));
 const ContractsList = React.lazy(() => import('./pages/contracts/ContractsList'));
 const ContractView = React.lazy(() => import('./pages/contracts/ContractView'));
 
+// Legal pages
+const PrivacyPolicy = React.lazy(() => import('./pages/legal/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('./pages/legal/TermsOfService'));
+
 // Admin components
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
@@ -109,6 +113,8 @@ function App() {
                   </PublicRoute>
                 } 
               />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
               
               {/* Admin routes */}
               <Route
