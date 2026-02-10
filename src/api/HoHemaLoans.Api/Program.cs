@@ -471,6 +471,71 @@ _ = Task.Run(async () =>
                 ");
                 logger.LogInformation("[STARTUP] AffordabilityAssessments columns added successfully");
                 
+                // Create DeductionScheduleEntries table
+                logger.LogInformation("[STARTUP] Creating DeductionScheduleEntries table...");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    CREATE TABLE IF NOT EXISTS ""DeductionScheduleEntries"" (
+                        ""Id"" uuid NOT NULL PRIMARY KEY,
+                        ""LoanApplicationId"" uuid NOT NULL,
+                        ""UserId"" text NOT NULL,
+                        ""InstallmentNumber"" integer NOT NULL,
+                        ""DueDate"" timestamp with time zone NOT NULL,
+                        ""PrincipalAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""InterestAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""AdminFeeAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""TotalAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                        ""Status"" character varying(20) NOT NULL DEFAULT 'Scheduled',
+                        ""PaidDate"" timestamp with time zone NULL,
+                        ""PaidAmount"" numeric(18,2) NULL,
+                        ""PaymentReference"" character varying(100) NULL,
+                        ""BankTransactionId"" uuid NULL,
+                        ""Notes"" text NULL,
+                        ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT NOW(),
+                        ""UpdatedAt"" timestamp with time zone NOT NULL DEFAULT NOW(),
+                        CONSTRAINT ""FK_DeductionSchedule_LoanApplications"" FOREIGN KEY (""LoanApplicationId"") 
+                            REFERENCES ""LoanApplications"" (""Id"") ON DELETE CASCADE,
+                        CONSTRAINT ""FK_DeductionSchedule_AspNetUsers"" FOREIGN KEY (""UserId"") 
+                            REFERENCES ""AspNetUsers"" (""Id"") ON DELETE CASCADE
+                    );
+                    
+                    CREATE INDEX IF NOT EXISTS ""IX_DeductionSchedule_LoanApplicationId"" ON ""DeductionScheduleEntries"" (""LoanApplicationId"");
+                    CREATE INDEX IF NOT EXISTS ""IX_DeductionSchedule_UserId"" ON ""DeductionScheduleEntries"" (""UserId"");
+                    CREATE INDEX IF NOT EXISTS ""IX_DeductionSchedule_DueDate"" ON ""DeductionScheduleEntries"" (""DueDate"");
+                    CREATE INDEX IF NOT EXISTS ""IX_DeductionSchedule_Status"" ON ""DeductionScheduleEntries"" (""Status"");
+                    
+                    -- Create BankTransactions table
+                    CREATE TABLE IF NOT EXISTS ""BankTransactions"" (
+                        ""Id"" uuid NOT NULL PRIMARY KEY,
+                        ""TransactionDate"" timestamp with time zone NOT NULL,
+                        ""Amount"" numeric(18,2) NOT NULL,
+                        ""Balance"" numeric(18,2) NULL,
+                        ""Description"" text NOT NULL DEFAULT '',
+                        ""Reference"" character varying(200) NULL,
+                        ""Type"" character varying(10) NOT NULL DEFAULT 'Credit',
+                        ""Category"" character varying(30) NOT NULL DEFAULT 'Unknown',
+                        ""MatchStatus"" character varying(20) NOT NULL DEFAULT 'Unmatched',
+                        ""MatchedDeductionId"" uuid NULL,
+                        ""MatchedLoanId"" uuid NULL,
+                        ""MatchedByUserId"" text NULL,
+                        ""MatchedAt"" timestamp with time zone NULL,
+                        ""ImportBatchId"" character varying(50) NULL,
+                        ""SourceFileName"" character varying(255) NULL,
+                        ""AccountNumber"" character varying(50) NULL,
+                        ""Notes"" text NULL,
+                        ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT NOW(),
+                        CONSTRAINT ""FK_BankTransactions_DeductionSchedule"" FOREIGN KEY (""MatchedDeductionId"") 
+                            REFERENCES ""DeductionScheduleEntries"" (""Id"") ON DELETE SET NULL,
+                        CONSTRAINT ""FK_BankTransactions_LoanApplications"" FOREIGN KEY (""MatchedLoanId"") 
+                            REFERENCES ""LoanApplications"" (""Id"") ON DELETE SET NULL
+                    );
+                    
+                    CREATE INDEX IF NOT EXISTS ""IX_BankTransactions_TransactionDate"" ON ""BankTransactions"" (""TransactionDate"");
+                    CREATE INDEX IF NOT EXISTS ""IX_BankTransactions_MatchStatus"" ON ""BankTransactions"" (""MatchStatus"");
+                    CREATE INDEX IF NOT EXISTS ""IX_BankTransactions_ImportBatchId"" ON ""BankTransactions"" (""ImportBatchId"");
+                    CREATE INDEX IF NOT EXISTS ""IX_BankTransactions_MatchedDeductionId"" ON ""BankTransactions"" (""MatchedDeductionId"");
+                ");
+                logger.LogInformation("[STARTUP] DeductionScheduleEntries and BankTransactions tables created successfully");
+                
                 // Mark migrations as applied so EF doesn't try to reapply them
                 logger.LogInformation("[STARTUP] Marking migrations as applied...");
                 await context.Database.ExecuteSqlRawAsync(@"

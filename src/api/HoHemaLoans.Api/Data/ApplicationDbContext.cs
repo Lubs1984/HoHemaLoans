@@ -33,6 +33,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<LoanCalculation> LoanCalculations { get; set; }
     public DbSet<PersonalInformation> PersonalInformation { get; set; }
     public DbSet<FinancialInformation> FinancialInformation { get; set; }
+    
+    // Deduction Schedule & Bank Reconciliation
+    public DbSet<DeductionScheduleEntry> DeductionScheduleEntries { get; set; }
+    public DbSet<BankTransaction> BankTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

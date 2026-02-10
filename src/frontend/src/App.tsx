@@ -32,6 +32,8 @@ const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'));
 const AdminBulkImport = React.lazy(() => import('./pages/admin/AdminBulkImport'));
 const AdminNCRCompliance = React.lazy(() => import('./pages/admin/AdminNCRCompliance'));
 const AdminDocuments = React.lazy(() => import('./pages/admin/AdminDocuments'));
+const AdminDeductionSchedule = React.lazy(() => import('./pages/admin/AdminDeductionSchedule'));
+const AdminBankRecon = React.lazy(() => import('./pages/admin/AdminBankRecon'));
 
 // Create a client
 const queryClient = new QueryClient({
@@ -135,6 +137,8 @@ function App() {
                 <Route path="bulk-import" element={<AdminBulkImport />} />
                 <Route path="ncr-compliance" element={<AdminNCRCompliance />} />
                 <Route path="documents" element={<AdminDocuments />} />
+                <Route path="deductions" element={<AdminDeductionSchedule />} />
+                <Route path="bank-recon" element={<AdminBankRecon />} />
               </Route>
               
               {/* Protected routes */}
