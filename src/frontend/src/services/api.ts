@@ -97,16 +97,18 @@ class ApiService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = 'An error occurred';
+        let errorMessage = `Request failed (${response.status})`;
         
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || errorData.title || errorMessage;
+          errorMessage = errorData.message || errorData.title || errorData.detail || errorMessage;
         } catch {
-          errorMessage = errorText || errorMessage;
+          if (errorText && errorText.length > 0 && errorText.length < 500) {
+            errorMessage = errorText;
+          }
         }
         
-        console.error(`[API] Error response:`, errorMessage);
+        console.error(`[API] Error response (${response.status}):`, errorMessage, errorText?.substring(0, 200));
         throw new Error(errorMessage);
       }
 

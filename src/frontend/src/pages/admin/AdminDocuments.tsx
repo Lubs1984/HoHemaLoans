@@ -81,7 +81,7 @@ export default function AdminDocuments() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiService.request<DocumentDto[]>('/api/admin/documents/pending');
+      const data = await apiService.request<DocumentDto[]>('/admin/documents/pending');
       setDocuments(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load documents');
@@ -96,7 +96,7 @@ export default function AdminDocuments() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiService.request<DocumentDto[]>('/api/admin/documents/pending');
+      const data = await apiService.request<DocumentDto[]>('/admin/documents/pending');
       setDocuments(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load documents');
@@ -116,7 +116,7 @@ export default function AdminDocuments() {
   const handleApprove = async (docId: string) => {
     try {
       setActionLoading(docId);
-      await apiService.request(`/api/admin/documents/${docId}/verify`, {
+      await apiService.request(`/admin/documents/${docId}/verify`, {
         method: 'POST',
         body: JSON.stringify({ status: 2, notes: '' }), // 2 = Approved
       });
@@ -146,7 +146,7 @@ export default function AdminDocuments() {
     if (!rejectDocId || !rejectionReason.trim()) return;
     try {
       setActionLoading(rejectDocId);
-      await apiService.request(`/api/admin/documents/${rejectDocId}/verify`, {
+      await apiService.request(`/admin/documents/${rejectDocId}/verify`, {
         method: 'POST',
         body: JSON.stringify({
           status: 3, // 3 = Rejected
