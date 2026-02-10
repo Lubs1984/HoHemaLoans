@@ -831,6 +831,19 @@ public class AdminController : ControllerBase
                 return BadRequest(new { message = "Failed to update user", errors });
             }
 
+            // Reset password if provided
+            if (!string.IsNullOrWhiteSpace(dto.NewPassword))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var passwordResult = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
+                if (!passwordResult.Succeeded)
+                {
+                    var pwErrors = passwordResult.Errors.Select(e => e.Description).ToArray();
+                    return BadRequest(new { message = "Failed to set password: " + string.Join(", ", pwErrors), errors = pwErrors });
+                }
+                _logger.LogInformation("[ADMIN] Password reset for user {UserId} by admin", id);
+            }
+
             // Update roles if provided
             if (dto.Roles != null)
             {
@@ -1002,4 +1015,5 @@ public class AdminUpdateUserDto
     public string? EmployerName { get; set; }
     public string? EmploymentType { get; set; }
     public List<string>? Roles { get; set; }
+    public string? NewPassword { get; set; }
 }

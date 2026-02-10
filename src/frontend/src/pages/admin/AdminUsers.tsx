@@ -493,7 +493,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
     employerName: user.employerName || '',
     employmentType: user.employmentType || '',
     roles: user.roles || ['User'],
+    newPassword: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -517,9 +519,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
     try {
       setSaving(true);
       setError(null);
+      const { newPassword, ...updateData } = formData;
+      const payload = newPassword ? { ...updateData, newPassword } : updateData;
       const response = await apiService.request<UserProfile>(`/admin/users/${user.id}`, {
         method: 'PUT',
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       onSaved(response);
     } catch (err) {
@@ -712,6 +716,33 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
                   <option value="Self-Employed">Self-Employed</option>
                   <option value="Unemployed">Unemployed</option>
                 </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Password Reset */}
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3">Set Password</h3>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+              <p className="text-sm text-yellow-700">Leave blank to keep the current password. Minimum 6 characters with uppercase, lowercase, digit, and special character.</p>
+            </div>
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <div className="flex gap-2">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.newPassword}
+                  onChange={(e) => handleChange('newPassword', e.target.value)}
+                  placeholder="Enter new password..."
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
               </div>
             </div>
           </div>
