@@ -14,15 +14,21 @@ public class ContractService
 {
     private readonly ApplicationDbContext _context;
     private readonly IWhatsAppService _whatsAppService;
+    private readonly IPdfGenerationService _pdfService;
+    private readonly INCRComplianceService _ncrComplianceService;
     private readonly ILogger<ContractService> _logger;
 
     public ContractService(
         ApplicationDbContext context,
         IWhatsAppService whatsAppService,
+        IPdfGenerationService pdfService,
+        INCRComplianceService ncrComplianceService,
         ILogger<ContractService> logger)
     {
         _context = context;
         _whatsAppService = whatsAppService;
+        _pdfService = pdfService;
+        _ncrComplianceService = ncrComplianceService;
         _logger = logger;
     }
 
@@ -59,12 +65,34 @@ public class ContractService
         // Generate contract content (Form 39)
         var contractContent = GenerateForm39Content(loanApplication);
 
+        // Generate PDF via NCR compliance data + QuestPDF
+        string? documentPath = null;
+        try
+        {
+            var form39Data = await _ncrComplianceService.GenerateForm39DataAsync(loanApplicationId);
+            var pdfBytes = _pdfService.GenerateForm39Pdf(form39Data);
+
+            // Store PDF on disk (contracts directory)
+            var contractsDir = Path.Combine(Directory.GetCurrentDirectory(), "contracts");
+            Directory.CreateDirectory(contractsDir);
+            var fileName = $"Form39_{loanApplicationId}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
+            documentPath = Path.Combine(contractsDir, fileName);
+            await File.WriteAllBytesAsync(documentPath, pdfBytes);
+
+            _logger.LogInformation("Form 39 PDF generated at {Path} for loan {LoanId}", documentPath, loanApplicationId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to generate PDF for loan {LoanId}. Contract will be created without PDF.", loanApplicationId);
+        }
+
         var contract = new Contract
         {
             LoanApplicationId = loanApplicationId,
             UserId = userId,
             ContractType = ContractTypes.CreditAgreement,
             ContractContent = contractContent,
+            DocumentPath = documentPath,
             Status = ContractStatus.Draft,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(30), // Contract valid for 30 days

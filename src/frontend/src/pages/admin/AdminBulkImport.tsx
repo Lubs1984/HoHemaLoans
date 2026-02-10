@@ -2,23 +2,6 @@ import { useState, useRef } from 'react';
 import { Upload, Download, Check, X, AlertCircle, Users, FileText } from 'lucide-react';
 import { apiService } from '../../services/api';
 
-// Helper function to get API base URL (same logic as in api.ts)
-function getApiBaseUrl(): string {
-  if ((window as any).__API_URL__) {
-    return (window as any).__API_URL__;
-  }
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname.includes('hohemaweb-development.up.railway.app')) {
-      return 'https://hohemaapi-development.up.railway.app';
-    }
-  }
-  return 'http://localhost:5050';
-}
-
 interface BulkUserImportDto {
   rowNumber: number;
   email: string;
@@ -100,32 +83,17 @@ export default function AdminBulkImport() {
       const formData = new FormData();
       formData.append('file', file);
 
-      // Get token from auth store for manual fetch
-      const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
-      const token = authStore.state?.token;
-
-      const response = await fetch(`${getApiBaseUrl()}/api/admin/users/bulk-import/validate`, {
+      const result = await apiService.request<any>('/admin/users/bulk-import/validate', {
         method: 'POST',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        credentials: 'include',
-        mode: 'cors',
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
       if (result) {
         setValidationResult(result);
         setStep('validate');
       }
     } catch (error: any) {
       console.error('Validation failed:', error);
-      // Handle error
     } finally {
       setLoading(false);
     }
@@ -150,37 +118,21 @@ export default function AdminBulkImport() {
     }
   };
 
-  const downloadTemplate = async () => {
-    try {
-      // Get token from auth store for manual fetch
-      const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
-      const token = authStore.state?.token;
+  const downloadTemplate = () => {
+    const csvContent =
+      'Email,FirstName,LastName,IdNumber,DateOfBirth,Address,PhoneNumber,MonthlyIncome\n' +
+      'john.doe@example.com,John,Doe,8001015009087,1980-01-01,"123 Main St, Johannesburg",+27821234567,15000\n' +
+      'jane.smith@example.com,Jane,Smith,8505205009088,1985-05-20,"456 Oak Ave, Cape Town",+27829876543,18000';
 
-      const response = await fetch(`${getApiBaseUrl()}/api/admin/users/bulk-import/template`, {
-        method: 'GET',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        credentials: 'include',
-        mode: 'cors',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'bulk_import_template.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'bulk_import_template.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   };
 
   const resetImport = () => {

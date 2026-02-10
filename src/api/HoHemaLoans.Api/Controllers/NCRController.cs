@@ -85,7 +85,7 @@ public class NCRController : ControllerBase
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
             await _ncrComplianceService.LogNCRActionAsync("NCRConfiguration", config.Id.ToString(),
-                NCRAuditAction.ConfigurationChanged, userId, "NCR configuration updated by admin");
+                NCRAuditAction.SettingsChanged, userId, "NCR configuration updated by admin");
 
             return Ok(config);
         }

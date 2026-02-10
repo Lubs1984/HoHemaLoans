@@ -76,10 +76,13 @@ class ApiService {
     const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
     const token = authStore.state?.token;
 
-    const headers = {
-      'Content-Type': 'application/json',
+    // Don't set Content-Type for FormData — browser sets it with boundary automatically
+    const isFormData = options.body instanceof FormData;
+
+    const headers: Record<string, string> = {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     try {

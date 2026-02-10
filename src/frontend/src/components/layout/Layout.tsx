@@ -36,6 +36,7 @@ const adminNavigation = [
   { name: 'User Management', href: '/admin/users', icon: UserCircleIcon },
   { name: 'Bulk User Import', href: '/admin/bulk-import', icon: CloudArrowUpIcon },
   { name: 'NCR Compliance', href: '/admin/ncr-compliance', icon: ShieldCheckIcon },
+  { name: 'Document Verification', href: '/admin/documents', icon: FolderIcon },
 ];
 
 export const Layout: React.FC = () => {

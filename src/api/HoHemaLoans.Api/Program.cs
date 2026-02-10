@@ -7,6 +7,10 @@ using System.Text;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
 using HoHemaLoans.Api.Services;
+using QuestPDF.Infrastructure;
+
+// Configure QuestPDF license (Community license for small businesses)
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Helper function to convert PostgreSQL URI to connection string
 string ConvertPostgresUriToConnectionString(string uri)
@@ -262,6 +266,9 @@ builder.Services.AddScoped<IProfileVerificationService, ProfileVerificationServi
 
 // Add Contract Service
 builder.Services.AddScoped<ContractService>();
+
+// Add PDF Generation Service
+builder.Services.AddScoped<IPdfGenerationService, PdfGenerationService>();
 
 // Add Bulk User Import Service
 builder.Services.AddScoped<IBulkUserImportService, BulkUserImportService>();

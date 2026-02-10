@@ -31,6 +31,7 @@ const AdminWhatsApp = React.lazy(() => import('./pages/admin/AdminWhatsApp'));
 const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'));
 const AdminBulkImport = React.lazy(() => import('./pages/admin/AdminBulkImport'));
 const AdminNCRCompliance = React.lazy(() => import('./pages/admin/AdminNCRCompliance'));
+const AdminDocuments = React.lazy(() => import('./pages/admin/AdminDocuments'));
 
 // Create a client
 const queryClient = new QueryClient({
@@ -133,6 +134,7 @@ function App() {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="bulk-import" element={<AdminBulkImport />} />
                 <Route path="ncr-compliance" element={<AdminNCRCompliance />} />
+                <Route path="documents" element={<AdminDocuments />} />
               </Route>
               
               {/* Protected routes */}

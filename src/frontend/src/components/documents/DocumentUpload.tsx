@@ -8,6 +8,7 @@ export interface DocumentUploadProps {
   acceptedTypes?: string;
   maxSizeMB?: number;
   documentType: string;
+  label?: string;
 }
 
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
@@ -16,6 +17,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   acceptedTypes = '.jpg,.jpeg,.png,.pdf,.doc,.docx',
   maxSizeMB = 10,
   documentType,
+  label,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -121,6 +123,9 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   return (
     <div className="w-full">
+      {label && (
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">{label}</h3>
+      )}
       {!selectedFile ? (
         <div
           onDrop={handleDrop}

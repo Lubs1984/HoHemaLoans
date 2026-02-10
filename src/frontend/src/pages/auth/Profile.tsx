@@ -331,9 +331,11 @@ const Profile: React.FC = () => {
           {/* Document Upload */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">Upload Documents</h2>
+            <p className="text-sm text-gray-500 mb-4">Upload your ID document and proof of residence to verify your account. You can also upload payslips and bank statements for affordability assessment.</p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <DocumentUpload
                 documentType="IdDocument"
+                label="ID Document (Required)"
                 onUploadSuccess={(_document) => {
                   success('ID Document uploaded successfully');
                   loadDocuments();
@@ -345,13 +347,40 @@ const Profile: React.FC = () => {
                 maxSizeMB={5}
               />
               <DocumentUpload
-                documentType="ProofOfIncome"
+                documentType="ProofOfAddress"
+                label="Proof of Residence (Required)"
                 onUploadSuccess={(_document) => {
-                  success('Proof of Income uploaded successfully');
+                  success('Proof of Residence uploaded successfully');
                   loadDocuments();
                 }}
                 onUploadError={(error) => {
-                  showError(`Failed to upload proof of income: ${error}`);
+                  showError(`Failed to upload proof of residence: ${error}`);
+                }}
+                acceptedTypes=".jpg,.jpeg,.png,.pdf"
+                maxSizeMB={5}
+              />
+              <DocumentUpload
+                documentType="Payslip"
+                label="Latest Payslip"
+                onUploadSuccess={(_document) => {
+                  success('Payslip uploaded successfully');
+                  loadDocuments();
+                }}
+                onUploadError={(error) => {
+                  showError(`Failed to upload payslip: ${error}`);
+                }}
+                acceptedTypes=".jpg,.jpeg,.png,.pdf"
+                maxSizeMB={5}
+              />
+              <DocumentUpload
+                documentType="BankStatement"
+                label="Bank Statement (3 months)"
+                onUploadSuccess={(_document) => {
+                  success('Bank statement uploaded successfully');
+                  loadDocuments();
+                }}
+                onUploadError={(error) => {
+                  showError(`Failed to upload bank statement: ${error}`);
                 }}
                 acceptedTypes=".jpg,.jpeg,.png,.pdf"
                 maxSizeMB={5}

@@ -496,6 +496,9 @@ public class WhatsAppWebhookController : ControllerBase
             
             _logger.LogInformation("Checking for registered user with phone number: {PhoneNumber}", phoneNumber);
 
+            // Clean phone number for comparison
+            var cleanPhoneNumber = phoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "");
+
             // Check if the phone number matches any registered user
             var user = await _userManager.Users
                 .FirstOrDefaultAsync(u => u.PhoneNumber != null && 

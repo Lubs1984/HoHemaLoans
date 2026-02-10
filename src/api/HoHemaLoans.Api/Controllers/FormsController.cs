@@ -14,15 +14,18 @@ public class FormsController : ControllerBase
 {
     private readonly INCRComplianceService _ncrComplianceService;
     private readonly IOmnichannelLoanService _loanService;
+    private readonly IPdfGenerationService _pdfService;
     private readonly ILogger<FormsController> _logger;
 
     public FormsController(
         INCRComplianceService ncrComplianceService,
         IOmnichannelLoanService loanService,
+        IPdfGenerationService pdfService,
         ILogger<FormsController> logger)
     {
         _ncrComplianceService = ncrComplianceService;
         _loanService = loanService;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -55,16 +58,58 @@ public class FormsController : ControllerBase
         try
         {
             var form39Data = await _ncrComplianceService.GenerateForm39DataAsync(applicationId);
-            var html = GenerateForm39Html(form39Data);
+            var pdfBytes = _pdfService.GenerateForm39Pdf(form39Data);
             
-            // For now, return HTML content. In production, convert to PDF using a library like DinkToPdf
-            var htmlBytes = Encoding.UTF8.GetBytes(html);
-            
-            return File(htmlBytes, "text/html", $"Form39_LoanApplication_{applicationId}.html");
+            return File(pdfBytes, "application/pdf", $"Form39_LoanApplication_{applicationId}.pdf");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating Form 39 PDF for application {ApplicationId}", applicationId);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Download Pre-Agreement Statement as PDF
+    /// </summary>
+    [HttpPost("pre-agreement-statement/pdf")]
+    public async Task<IActionResult> DownloadPreAgreementPdf([FromBody] PreAgreementRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = new ApplicationUser
+            {
+                Id = userId,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email
+            };
+
+            var calculation = new LoanCalculation
+            {
+                LoanAmount = request.LoanAmount,
+                InterestRate = request.InterestRate,
+                TermInMonths = request.TermInMonths,
+                InitiationFee = request.InitiationFee,
+                MonthlyServiceFee = request.MonthlyServiceFee,
+                MonthlyInstallment = request.MonthlyInstallment,
+                TotalAmountPayable = request.TotalAmountPayable
+            };
+
+            var preAgreementData = await _ncrComplianceService.GeneratePreAgreementStatementAsync(calculation, user);
+            var pdfBytes = _pdfService.GeneratePreAgreementPdf(preAgreementData);
+
+            return File(pdfBytes, "application/pdf", $"PreAgreement_{request.FirstName}_{request.LastName}.pdf");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating pre-agreement statement PDF");
             return StatusCode(500, "Internal server error");
         }
     }

@@ -221,6 +221,52 @@ public class ContractsController : ControllerBase
     }
 
     /// <summary>
+    /// Download contract as PDF
+    /// </summary>
+    [HttpGet("{contractId}/pdf")]
+    public async Task<IActionResult> DownloadContractPdf(int contractId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var contract = await _contractService.GetContractAsync(contractId, userId);
+            if (contract == null)
+            {
+                return NotFound(new { success = false, message = "Contract not found" });
+            }
+
+            // If PDF already exists on disk, serve it
+            if (!string.IsNullOrEmpty(contract.DocumentPath) && System.IO.File.Exists(contract.DocumentPath))
+            {
+                var pdfBytes = await System.IO.File.ReadAllBytesAsync(contract.DocumentPath);
+                return File(pdfBytes, "application/pdf", $"Contract_{contractId}.pdf");
+            }
+
+            // Otherwise, regenerate from Form 39 data
+            if (contract.LoanApplicationId != Guid.Empty)
+            {
+                var ncrService = HttpContext.RequestServices.GetRequiredService<INCRComplianceService>();
+                var pdfService = HttpContext.RequestServices.GetRequiredService<IPdfGenerationService>();
+                var form39Data = await ncrService.GenerateForm39DataAsync(contract.LoanApplicationId);
+                var pdfBytes = pdfService.GenerateForm39Pdf(form39Data);
+                return File(pdfBytes, "application/pdf", $"Contract_{contractId}.pdf");
+            }
+
+            return BadRequest(new { success = false, message = "Unable to generate PDF for this contract" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading contract PDF {ContractId}", contractId);
+            return StatusCode(500, new { success = false, message = "An error occurred while downloading the contract" });
+        }
+    }
+
+    /// <summary>
     /// Send contract for signing via WhatsApp PIN
     /// </summary>
     [HttpPost("{contractId}/send-pin")]
