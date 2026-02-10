@@ -63,9 +63,9 @@ export default function AdminBankRecon() {
       if (typeFilter) params.set('type', typeFilter);
       params.set('page', page.toString());
       params.set('pageSize', '50');
-      const data = await apiService.get(`/admin/bank-recon/transactions?${params}`);
-      setTransactions(data.transactions);
-      setTotalCount(data.totalCount);
+      const resp = await apiService.get<any>(`/admin/bank-recon/transactions?${params}`);
+      setTransactions(resp.data.transactions);
+      setTotalCount(resp.data.totalCount);
     } catch (err: any) {
       setError(err.message || 'Failed to load transactions');
     } finally {
@@ -75,8 +75,8 @@ export default function AdminBankRecon() {
 
   const fetchDailySummary = useCallback(async () => {
     try {
-      const data = await apiService.get(`/admin/bank-recon/daily-summary?date=${summaryDate}`);
-      setDailySummary(data);
+      const resp = await apiService.get<any>(`/admin/bank-recon/daily-summary?date=${summaryDate}`);
+      setDailySummary(resp.data);
     } catch (err: any) {
       console.error('Failed to load daily summary', err);
     }
@@ -93,8 +93,8 @@ export default function AdminBankRecon() {
       setError('');
       const formData = new FormData();
       formData.append('file', file);
-      const result = await apiService.post('/admin/bank-recon/upload', formData);
-      setSuccess(`${result.message} (${result.credits} credits, ${result.debits} debits)`);
+      const result = await apiService.post<any>('/admin/bank-recon/upload', formData);
+      setSuccess(`${result.data.message} (${result.data.credits} credits, ${result.data.debits} debits)`);
       fetchTransactions();
       fetchDailySummary();
     } catch (err: any) {
@@ -108,8 +108,8 @@ export default function AdminBankRecon() {
   const autoMatch = async () => {
     try {
       setError('');
-      const result = await apiService.post('/admin/bank-recon/auto-match', {});
-      setSuccess(result.message);
+      const result = await apiService.post<any>('/admin/bank-recon/auto-match', {});
+      setSuccess(result.data.message);
       fetchTransactions();
       fetchDailySummary();
     } catch (err: any) {

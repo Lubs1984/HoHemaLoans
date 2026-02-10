@@ -489,7 +489,6 @@ public class WhatsAppWebhookController : ControllerBase
             );
 
             _logger.LogInformation("✅ Development auto-reply sent to {PhoneNumber}", phoneNumber);
-            return;
             // ============================================================
             // END DEVELOPMENT MODE
             // ============================================================

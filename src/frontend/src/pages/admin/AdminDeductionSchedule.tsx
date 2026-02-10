@@ -64,10 +64,10 @@ export default function AdminDeductionSchedule() {
       if (statusFilter) params.set('status', statusFilter);
       params.set('page', page.toString());
       params.set('pageSize', '50');
-      const data = await apiService.get(`/admin/deductions?${params}`);
-      setEntries(data.entries);
-      setSummary(data.summary);
-      setTotalCount(data.totalCount);
+      const resp = await apiService.get<any>(`/admin/deductions?${params}`);
+      setEntries(resp.data.entries);
+      setSummary(resp.data.summary);
+      setTotalCount(resp.data.totalCount);
     } catch (err: any) {
       setError(err.message || 'Failed to load deductions');
     } finally {
@@ -77,8 +77,8 @@ export default function AdminDeductionSchedule() {
 
   const fetchUnscheduled = useCallback(async () => {
     try {
-      const data = await apiService.get('/admin/deductions/unscheduled-loans');
-      setUnscheduledLoans(data);
+      const resp = await apiService.get<any>('/admin/deductions/unscheduled-loans');
+      setUnscheduledLoans(resp.data);
     } catch (err: any) {
       console.error('Failed to load unscheduled loans', err);
     }
@@ -92,8 +92,8 @@ export default function AdminDeductionSchedule() {
   const generateSchedule = async (loanId: string) => {
     try {
       setError('');
-      const result = await apiService.post(`/admin/deductions/generate/${loanId}`, {});
-      setSuccess(result.message);
+      const result = await apiService.post<any>(`/admin/deductions/generate/${loanId}`, {});
+      setSuccess(result.data.message);
       fetchDeductions();
       fetchUnscheduled();
     } catch (err: any) {

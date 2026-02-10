@@ -509,10 +509,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const token = localStorage.getItem('auth-store');
-        const parsed = token ? JSON.parse(token) : null;
-        const authToken = parsed?.state?.token || '';
-        const data = await apiService.request('/admin/businesses?activeOnly=true', { token: authToken });
+        const data = await apiService.request<any[]>('/admin/businesses?activeOnly=true');
         setBusinesses(data.map((b: any) => ({ id: b.id, name: b.name })));
       } catch (err) {
         console.error('Failed to fetch businesses', err);

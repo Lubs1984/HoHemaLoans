@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuthStore } from '../../store/authStore';
-import apiService from '../../services/api';
+import { apiService } from '../../services/api';
 
 interface Business {
   id: string;
@@ -80,7 +79,6 @@ const emptyForm: BusinessFormData = {
 };
 
 const AdminBusinesses: React.FC = () => {
-  const { token } = useAuthStore();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -106,14 +104,14 @@ const AdminBusinesses: React.FC = () => {
       if (search) params.append('search', search);
       if (showActiveOnly) params.append('activeOnly', 'true');
       const url = `/admin/businesses${params.toString() ? '?' + params.toString() : ''}`;
-      const data = await apiService.request(url, { token: token || '' });
+      const data = await apiService.request<any>(url);
       setBusinesses(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load businesses');
     } finally {
       setLoading(false);
     }
-  }, [token, search, showActiveOnly]);
+  }, [search, showActiveOnly]);
 
   useEffect(() => {
     fetchBusinesses();
@@ -122,7 +120,7 @@ const AdminBusinesses: React.FC = () => {
   const fetchEmployees = async (businessId: string) => {
     try {
       setLoadingEmployees(true);
-      const data = await apiService.request(`/admin/businesses/${businessId}/employees`, { token: token || '' });
+      const data = await apiService.request<any>(`/admin/businesses/${businessId}/employees`);
       setEmployees(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load employees');
@@ -184,14 +182,12 @@ const AdminBusinesses: React.FC = () => {
       if (editingBusiness) {
         await apiService.request(`/admin/businesses/${editingBusiness.id}`, {
           method: 'PUT',
-          body: payload,
-          token: token || '',
+          body: JSON.stringify(payload),
         });
       } else {
         await apiService.request('/admin/businesses', {
           method: 'POST',
-          body: payload,
-          token: token || '',
+          body: JSON.stringify(payload),
         });
       }
 
@@ -208,8 +204,7 @@ const AdminBusinesses: React.FC = () => {
     try {
       await apiService.request(`/admin/businesses/${business.id}`, {
         method: 'PUT',
-        body: { isActive: !business.isActive },
-        token: token || '',
+        body: JSON.stringify({ isActive: !business.isActive }),
       });
       await fetchBusinesses();
     } catch (err: any) {
@@ -224,7 +219,6 @@ const AdminBusinesses: React.FC = () => {
     try {
       await apiService.request(`/admin/businesses/${selectedBusiness.id}/employees/${userId}`, {
         method: 'DELETE',
-        token: token || '',
       });
       await fetchEmployees(selectedBusiness.id);
       await fetchBusinesses(); // refresh employee count
