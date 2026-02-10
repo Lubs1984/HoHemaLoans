@@ -17,6 +17,8 @@ interface UserProfile {
   postalCode?: string;
   employerName?: string;
   employmentType?: string;
+  businessId?: string;
+  businessName?: string;
   roles?: string[];
   createdAt: string;
   loanApplications?: Array<{
@@ -412,7 +414,10 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose }) => {
                 {user.employerName && (
                   <div>
                     <p className="text-sm text-gray-600">Employer</p>
-                    <p className="font-medium">{user.employerName}</p>
+                    <p className="font-medium">
+                      {user.businessName || user.employerName}
+                      {user.businessName && <span className="ml-1 text-xs text-indigo-500">(linked)</span>}
+                    </p>
                   </div>
                 )}
                 {user.employmentType && (
@@ -492,12 +497,29 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
     postalCode: user.postalCode || '',
     employerName: user.employerName || '',
     employmentType: user.employmentType || '',
+    businessId: user.businessId || '',
     roles: user.roles || ['User'],
     newPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [businesses, setBusinesses] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        const token = localStorage.getItem('auth-store');
+        const parsed = token ? JSON.parse(token) : null;
+        const authToken = parsed?.state?.token || '';
+        const data = await apiService.request('/admin/businesses?activeOnly=true', { token: authToken });
+        setBusinesses(data.map((b: any) => ({ id: b.id, name: b.name })));
+      } catch (err) {
+        console.error('Failed to fetch businesses', err);
+      }
+    };
+    fetchBusinesses();
+  }, []);
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -519,8 +541,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
     try {
       setSaving(true);
       setError(null);
-      const { newPassword, ...updateData } = formData;
-      const payload = newPassword ? { ...updateData, newPassword } : updateData;
+      const { newPassword, businessId, ...updateData } = formData;
+      const payload: any = { ...updateData };
+      if (newPassword) payload.newPassword = newPassword;
+      
+      // Handle business assignment
+      if (businessId) {
+        payload.businessId = businessId;
+      } else {
+        // If clearing business assignment
+        payload.businessId = null;
+        payload.clearBusiness = true;
+      }
+
       const response = await apiService.request<UserProfile>(`/admin/users/${user.id}`, {
         method: 'PUT',
         body: JSON.stringify(payload),
@@ -695,13 +728,25 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSaved })
             <h3 className="font-semibold text-gray-900 mb-3">Employment</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Employer Name</label>
-                <input
-                  type="text"
-                  value={formData.employerName}
-                  onChange={(e) => handleChange('employerName', e.target.value)}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Business / Employer</label>
+                <select
+                  value={formData.businessId}
+                  onChange={(e) => {
+                    handleChange('businessId', e.target.value);
+                    // Auto-set employer name from business selection
+                    const biz = businesses.find(b => b.id === e.target.value);
+                    if (biz) handleChange('employerName', biz.name);
+                  }}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                >
+                  <option value="">-- No Business --</option>
+                  {businesses.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+                {!formData.businessId && formData.employerName && (
+                  <p className="text-xs text-amber-600 mt-1">Legacy: "{formData.employerName}" (not linked)</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>

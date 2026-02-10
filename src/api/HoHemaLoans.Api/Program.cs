@@ -536,6 +536,50 @@ _ = Task.Run(async () =>
                 ");
                 logger.LogInformation("[STARTUP] DeductionScheduleEntries and BankTransactions tables created successfully");
                 
+                // Create Businesses table
+                logger.LogInformation("[STARTUP] Creating Businesses table...");
+                await context.Database.ExecuteSqlRawAsync(@"
+                    CREATE TABLE IF NOT EXISTS ""Businesses"" (
+                        ""Id"" uuid NOT NULL PRIMARY KEY,
+                        ""Name"" character varying(200) NOT NULL,
+                        ""RegistrationNumber"" character varying(50) NOT NULL DEFAULT '',
+                        ""ContactPerson"" character varying(100) NOT NULL DEFAULT '',
+                        ""ContactEmail"" character varying(100) NOT NULL DEFAULT '',
+                        ""ContactPhone"" character varying(20) NOT NULL DEFAULT '',
+                        ""Address"" character varying(200) NOT NULL DEFAULT '',
+                        ""City"" character varying(100) NOT NULL DEFAULT '',
+                        ""Province"" character varying(50) NOT NULL DEFAULT '',
+                        ""PostalCode"" character varying(10) NOT NULL DEFAULT '',
+                        ""PayrollContactName"" character varying(100) NOT NULL DEFAULT '',
+                        ""PayrollContactEmail"" character varying(100) NOT NULL DEFAULT '',
+                        ""PayrollDay"" integer NOT NULL DEFAULT 25,
+                        ""MaxLoanPercentage"" numeric(5,2) NOT NULL DEFAULT 30,
+                        ""InterestRate"" numeric(5,2) NULL,
+                        ""AdminFee"" numeric(18,2) NULL,
+                        ""IsActive"" boolean NOT NULL DEFAULT true,
+                        ""Notes"" text NOT NULL DEFAULT '',
+                        ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT NOW(),
+                        ""UpdatedAt"" timestamp with time zone NOT NULL DEFAULT NOW()
+                    );
+
+                    CREATE INDEX IF NOT EXISTS ""IX_Businesses_Name"" ON ""Businesses"" (""Name"");
+                    CREATE INDEX IF NOT EXISTS ""IX_Businesses_IsActive"" ON ""Businesses"" (""IsActive"");
+
+                    -- Add BusinessId column to AspNetUsers
+                    ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""BusinessId"" uuid NULL;
+                    
+                    -- Add FK constraint (ignore if already exists)
+                    DO $$ BEGIN
+                        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'FK_AspNetUsers_Businesses_BusinessId') THEN
+                            ALTER TABLE ""AspNetUsers"" ADD CONSTRAINT ""FK_AspNetUsers_Businesses_BusinessId""
+                                FOREIGN KEY (""BusinessId"") REFERENCES ""Businesses"" (""Id"") ON DELETE SET NULL;
+                        END IF;
+                    END $$;
+
+                    CREATE INDEX IF NOT EXISTS ""IX_AspNetUsers_BusinessId"" ON ""AspNetUsers"" (""BusinessId"");
+                ");
+                logger.LogInformation("[STARTUP] Businesses table and AspNetUsers.BusinessId column created successfully");
+                
                 // Mark migrations as applied so EF doesn't try to reapply them
                 logger.LogInformation("[STARTUP] Marking migrations as applied...");
                 await context.Database.ExecuteSqlRawAsync(@"

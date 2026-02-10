@@ -38,6 +38,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<DeductionScheduleEntry> DeductionScheduleEntries { get; set; }
     public DbSet<BankTransaction> BankTransactions { get; set; }
 
+    // Business / Employer management
+    public DbSet<Business> Businesses { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -527,6 +530,35 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.IsValid);
             entity.HasIndex(e => e.SignedAt);
+        });
+
+        // Configure Business entity
+        builder.Entity<Business>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.RegistrationNumber).HasMaxLength(50);
+            entity.Property(e => e.ContactPerson).HasMaxLength(100);
+            entity.Property(e => e.ContactEmail).HasMaxLength(100);
+            entity.Property(e => e.ContactPhone).HasMaxLength(20);
+            entity.Property(e => e.Address).HasMaxLength(200);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Province).HasMaxLength(50);
+            entity.Property(e => e.PostalCode).HasMaxLength(10);
+            entity.Property(e => e.PayrollContactName).HasMaxLength(100);
+            entity.Property(e => e.PayrollContactEmail).HasMaxLength(100);
+            entity.Property(e => e.MaxLoanPercentage).HasColumnType("numeric(5,2)");
+            entity.Property(e => e.InterestRate).HasColumnType("numeric(5,2)");
+            entity.Property(e => e.AdminFee).HasColumnType("numeric(18,2)");
+
+            entity.HasMany(e => e.Employees)
+                .WithOne(u => u.Business)
+                .HasForeignKey(u => u.BusinessId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.Name);
+            entity.HasIndex(e => e.IsActive);
         });
     }
 }

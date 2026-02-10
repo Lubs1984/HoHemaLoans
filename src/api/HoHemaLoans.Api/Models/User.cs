@@ -81,6 +81,10 @@ public class ApplicationUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
+    // Business / Employer relationship
+    public Guid? BusinessId { get; set; }
+    public virtual Business? Business { get; set; }
+
     // Navigation properties
     public virtual ICollection<LoanApplication> LoanApplications { get; set; } = new List<LoanApplication>();
     

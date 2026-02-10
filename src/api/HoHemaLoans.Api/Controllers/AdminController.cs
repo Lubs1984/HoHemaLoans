@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
 using HoHemaLoans.Api.Services;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace HoHemaLoans.Api.Controllers;
@@ -723,6 +724,10 @@ public class AdminController : ControllerBase
                 u.PostalCode,
                 u.EmployerName,
                 u.EmploymentType,
+                u.BusinessId,
+                BusinessName = u.BusinessId.HasValue 
+                    ? _context.Businesses.Where(b => b.Id == u.BusinessId).Select(b => b.Name).FirstOrDefault() ?? ""
+                    : "",
                 u.CreatedAt,
                 Roles = roles
             });
@@ -821,6 +826,21 @@ public class AdminController : ControllerBase
             // Employment
             if (dto.EmployerName != null) user.EmployerName = dto.EmployerName;
             if (dto.EmploymentType != null) user.EmploymentType = dto.EmploymentType;
+
+            // Business assignment
+            if (dto.BusinessId.HasValue)
+            {
+                var business = await _context.Businesses.FindAsync(dto.BusinessId.Value);
+                if (business != null)
+                {
+                    user.BusinessId = dto.BusinessId.Value;
+                    user.EmployerName = business.Name; // Keep legacy field in sync
+                }
+            }
+            else if (dto.BusinessId == null && dto.ClearBusiness == true)
+            {
+                user.BusinessId = null;
+            }
 
             user.UpdatedAt = DateTime.UtcNow;
 
@@ -1573,6 +1593,263 @@ public class AdminController : ControllerBase
         fields.Add(field);
         return fields.ToArray();
     }
+
+    // ============= BUSINESS / EMPLOYER MANAGEMENT =============
+
+    /// <summary>
+    /// Get all businesses
+    /// </summary>
+    [HttpGet("businesses")]
+    public async Task<ActionResult> GetBusinesses(
+        [FromQuery] bool? activeOnly = null,
+        [FromQuery] string? search = null)
+    {
+        var query = _context.Businesses.AsQueryable();
+
+        if (activeOnly == true)
+            query = query.Where(b => b.IsActive);
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(b =>
+                b.Name.Contains(search) ||
+                b.RegistrationNumber.Contains(search) ||
+                b.ContactPerson.Contains(search));
+        }
+
+        var businesses = await query
+            .OrderBy(b => b.Name)
+            .Select(b => new
+            {
+                b.Id,
+                b.Name,
+                b.RegistrationNumber,
+                b.ContactPerson,
+                b.ContactEmail,
+                b.ContactPhone,
+                b.City,
+                b.Province,
+                b.PayrollDay,
+                b.MaxLoanPercentage,
+                b.InterestRate,
+                b.AdminFee,
+                b.IsActive,
+                b.CreatedAt,
+                EmployeeCount = b.Employees.Count()
+            })
+            .ToListAsync();
+
+        return Ok(businesses);
+    }
+
+    /// <summary>
+    /// Get a single business with its employees
+    /// </summary>
+    [HttpGet("businesses/{id}")]
+    public async Task<ActionResult> GetBusiness(Guid id)
+    {
+        var business = await _context.Businesses
+            .Include(b => b.Employees)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (business == null)
+            return NotFound("Business not found");
+
+        var employees = business.Employees.Select(e => new
+        {
+            e.Id,
+            e.FirstName,
+            e.LastName,
+            e.Email,
+            e.PhoneNumber,
+            e.IdNumber,
+            e.EmployeeNumber,
+            e.PayrollReference,
+            e.EmploymentType,
+            e.MonthlyIncome,
+            e.IsVerified,
+            e.CreatedAt
+        }).OrderBy(e => e.LastName).ThenBy(e => e.FirstName).ToList();
+
+        return Ok(new
+        {
+            business.Id,
+            business.Name,
+            business.RegistrationNumber,
+            business.ContactPerson,
+            business.ContactEmail,
+            business.ContactPhone,
+            business.Address,
+            business.City,
+            business.Province,
+            business.PostalCode,
+            business.PayrollContactName,
+            business.PayrollContactEmail,
+            business.PayrollDay,
+            business.MaxLoanPercentage,
+            business.InterestRate,
+            business.AdminFee,
+            business.IsActive,
+            business.Notes,
+            business.CreatedAt,
+            business.UpdatedAt,
+            Employees = employees,
+            EmployeeCount = employees.Count
+        });
+    }
+
+    /// <summary>
+    /// Create a new business
+    /// </summary>
+    [HttpPost("businesses")]
+    public async Task<ActionResult> CreateBusiness([FromBody] CreateBusinessDto dto)
+    {
+        var business = new Business
+        {
+            Name = dto.Name.Trim(),
+            RegistrationNumber = dto.RegistrationNumber?.Trim() ?? "",
+            ContactPerson = dto.ContactPerson?.Trim() ?? "",
+            ContactEmail = dto.ContactEmail?.Trim() ?? "",
+            ContactPhone = dto.ContactPhone?.Trim() ?? "",
+            Address = dto.Address?.Trim() ?? "",
+            City = dto.City?.Trim() ?? "",
+            Province = dto.Province?.Trim() ?? "",
+            PostalCode = dto.PostalCode?.Trim() ?? "",
+            PayrollContactName = dto.PayrollContactName?.Trim() ?? "",
+            PayrollContactEmail = dto.PayrollContactEmail?.Trim() ?? "",
+            PayrollDay = dto.PayrollDay ?? 25,
+            MaxLoanPercentage = dto.MaxLoanPercentage ?? 30,
+            InterestRate = dto.InterestRate,
+            AdminFee = dto.AdminFee,
+            IsActive = true,
+            Notes = dto.Notes?.Trim() ?? ""
+        };
+
+        _context.Businesses.Add(business);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("[ADMIN] Created business {BusinessName} ({BusinessId})", business.Name, business.Id);
+
+        return Ok(new { business.Id, business.Name, message = "Business created successfully" });
+    }
+
+    /// <summary>
+    /// Update a business
+    /// </summary>
+    [HttpPut("businesses/{id}")]
+    public async Task<ActionResult> UpdateBusiness(Guid id, [FromBody] UpdateBusinessDto dto)
+    {
+        var business = await _context.Businesses.FindAsync(id);
+        if (business == null)
+            return NotFound("Business not found");
+
+        if (dto.Name != null) business.Name = dto.Name.Trim();
+        if (dto.RegistrationNumber != null) business.RegistrationNumber = dto.RegistrationNumber.Trim();
+        if (dto.ContactPerson != null) business.ContactPerson = dto.ContactPerson.Trim();
+        if (dto.ContactEmail != null) business.ContactEmail = dto.ContactEmail.Trim();
+        if (dto.ContactPhone != null) business.ContactPhone = dto.ContactPhone.Trim();
+        if (dto.Address != null) business.Address = dto.Address.Trim();
+        if (dto.City != null) business.City = dto.City.Trim();
+        if (dto.Province != null) business.Province = dto.Province.Trim();
+        if (dto.PostalCode != null) business.PostalCode = dto.PostalCode.Trim();
+        if (dto.PayrollContactName != null) business.PayrollContactName = dto.PayrollContactName.Trim();
+        if (dto.PayrollContactEmail != null) business.PayrollContactEmail = dto.PayrollContactEmail.Trim();
+        if (dto.PayrollDay.HasValue) business.PayrollDay = dto.PayrollDay.Value;
+        if (dto.MaxLoanPercentage.HasValue) business.MaxLoanPercentage = dto.MaxLoanPercentage.Value;
+        if (dto.InterestRate.HasValue) business.InterestRate = dto.InterestRate.Value;
+        if (dto.AdminFee.HasValue) business.AdminFee = dto.AdminFee.Value;
+        if (dto.IsActive.HasValue) business.IsActive = dto.IsActive.Value;
+        if (dto.Notes != null) business.Notes = dto.Notes.Trim();
+
+        business.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("[ADMIN] Updated business {BusinessName} ({BusinessId})", business.Name, business.Id);
+
+        return Ok(new { business.Id, business.Name, message = "Business updated successfully" });
+    }
+
+    /// <summary>
+    /// Get employees of a specific business
+    /// </summary>
+    [HttpGet("businesses/{id}/employees")]
+    public async Task<ActionResult> GetBusinessEmployees(Guid id)
+    {
+        var business = await _context.Businesses.FindAsync(id);
+        if (business == null)
+            return NotFound("Business not found");
+
+        var employees = await _userManager.Users
+            .Where(u => u.BusinessId == id)
+            .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+            .Select(u => new
+            {
+                u.Id,
+                u.FirstName,
+                u.LastName,
+                u.Email,
+                u.PhoneNumber,
+                u.IdNumber,
+                u.EmployeeNumber,
+                u.PayrollReference,
+                u.EmploymentType,
+                u.MonthlyIncome,
+                u.IsVerified,
+                u.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(employees);
+    }
+
+    /// <summary>
+    /// Assign a user to a business
+    /// </summary>
+    [HttpPost("businesses/{id}/employees")]
+    public async Task<ActionResult> AssignUserToBusiness(Guid id, [FromBody] AssignUserToBusinessDto dto)
+    {
+        var business = await _context.Businesses.FindAsync(id);
+        if (business == null)
+            return NotFound("Business not found");
+
+        var user = await _userManager.FindByIdAsync(dto.UserId);
+        if (user == null)
+            return NotFound("User not found");
+
+        user.BusinessId = id;
+        user.EmployerName = business.Name; // Keep legacy field in sync
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _userManager.UpdateAsync(user);
+
+        _logger.LogInformation("[ADMIN] Assigned user {UserId} to business {BusinessName} ({BusinessId})", dto.UserId, business.Name, id);
+
+        return Ok(new { message = $"User assigned to {business.Name}" });
+    }
+
+    /// <summary>
+    /// Remove a user from a business
+    /// </summary>
+    [HttpDelete("businesses/{businessId}/employees/{userId}")]
+    public async Task<ActionResult> RemoveUserFromBusiness(Guid businessId, string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return NotFound("User not found");
+
+        if (user.BusinessId != businessId)
+            return BadRequest("User is not assigned to this business");
+
+        user.BusinessId = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _userManager.UpdateAsync(user);
+
+        _logger.LogInformation("[ADMIN] Removed user {UserId} from business {BusinessId}", userId, businessId);
+
+        return Ok(new { message = "User removed from business" });
+    }
 }
 
 // ============= DTOs =============
@@ -1621,6 +1898,8 @@ public class AdminUpdateUserDto
     public string? PostalCode { get; set; }
     public string? EmployerName { get; set; }
     public string? EmploymentType { get; set; }
+    public Guid? BusinessId { get; set; }
+    public bool? ClearBusiness { get; set; }
     public List<string>? Roles { get; set; }
     public string? NewPassword { get; set; }
 }
@@ -1643,4 +1922,52 @@ public class ManualMatchDto
 {
     public Guid TransactionId { get; set; }
     public Guid DeductionId { get; set; }
+}
+
+public class CreateBusinessDto
+{
+    [Required]
+    public string Name { get; set; } = string.Empty;
+    public string? RegistrationNumber { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? ContactPhone { get; set; }
+    public string? Address { get; set; }
+    public string? City { get; set; }
+    public string? Province { get; set; }
+    public string? PostalCode { get; set; }
+    public string? PayrollContactName { get; set; }
+    public string? PayrollContactEmail { get; set; }
+    public int? PayrollDay { get; set; }
+    public decimal? MaxLoanPercentage { get; set; }
+    public decimal? InterestRate { get; set; }
+    public decimal? AdminFee { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class UpdateBusinessDto
+{
+    public string? Name { get; set; }
+    public string? RegistrationNumber { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? ContactEmail { get; set; }
+    public string? ContactPhone { get; set; }
+    public string? Address { get; set; }
+    public string? City { get; set; }
+    public string? Province { get; set; }
+    public string? PostalCode { get; set; }
+    public string? PayrollContactName { get; set; }
+    public string? PayrollContactEmail { get; set; }
+    public int? PayrollDay { get; set; }
+    public decimal? MaxLoanPercentage { get; set; }
+    public decimal? InterestRate { get; set; }
+    public decimal? AdminFee { get; set; }
+    public bool? IsActive { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class AssignUserToBusinessDto
+{
+    [Required]
+    public string UserId { get; set; } = string.Empty;
 }

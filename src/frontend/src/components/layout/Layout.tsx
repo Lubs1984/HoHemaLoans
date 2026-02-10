@@ -15,7 +15,8 @@ import {
   CloudArrowUpIcon,
   ShieldCheckIcon,
   CalendarDaysIcon,
-  ArrowsRightLeftIcon
+  ArrowsRightLeftIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import HohemaLogo from '../../assets/hohema-logo.png';
@@ -41,6 +42,7 @@ const adminNavigation = [
   { name: 'Document Verification', href: '/admin/documents', icon: FolderIcon },
   { name: 'Deduction Schedule', href: '/admin/deductions', icon: CalendarDaysIcon },
   { name: 'Bank Reconciliation', href: '/admin/bank-recon', icon: ArrowsRightLeftIcon },
+  { name: 'Business Management', href: '/admin/businesses', icon: BuildingOfficeIcon },
 ];
 
 export const Layout: React.FC = () => {
