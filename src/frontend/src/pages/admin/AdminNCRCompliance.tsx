@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
 import { 
   ShieldCheckIcon, 
   ExclamationTriangleIcon, 
@@ -64,27 +65,41 @@ export default function AdminNCRCompliance() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [configResponse, complaintsResponse] = await Promise.all([
-        fetch('/api/ncr/configuration', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }),
-        fetch('/api/ncr/complaints', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-      ]);
+      setError(null);
 
-      if (configResponse.ok) {
-        const configData = await configResponse.json();
+      try {
+        const configData = await apiService.request<NCRConfiguration>('/ncr/configuration');
         setConfig(configData);
+      } catch (err) {
+        console.error('Error loading NCR configuration:', err);
+        // Set defaults if no config exists yet
+        setConfig({
+          id: 0,
+          maxInterestRatePerAnnum: 27.5,
+          defaultInterestRatePerAnnum: 24.0,
+          maxInitiationFee: 1140,
+          initiationFeePercentage: 15,
+          maxMonthlyServiceFee: 60,
+          defaultMonthlyServiceFee: 60,
+          maxDebtToIncomeRatio: 35,
+          minSafetyBuffer: 500,
+          minLoanAmount: 500,
+          maxLoanAmount: 50000,
+          minLoanTermMonths: 1,
+          maxLoanTermMonths: 72,
+          coolingOffPeriodDays: 5,
+          documentRetentionYears: 5,
+          enforceNCRCompliance: true,
+          allowCoolingOffCancellation: true,
+        });
       }
 
-      if (complaintsResponse.ok) {
-        const complaintsData = await complaintsResponse.json();
+      try {
+        const complaintsData = await apiService.request<ConsumerComplaint[]>('/ncr/complaints');
         setComplaints(complaintsData);
+      } catch (err) {
+        console.error('Error loading complaints:', err);
+        setComplaints([]);
       }
     } catch (err) {
       setError('Failed to load NCR data');
@@ -99,20 +114,11 @@ export default function AdminNCRCompliance() {
 
     try {
       setSaving(true);
-      const response = await fetch('/api/ncr/configuration', {
+      await apiService.request('/ncr/configuration', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
         body: JSON.stringify(config)
       });
-
-      if (response.ok) {
-        alert('NCR configuration saved successfully');
-      } else {
-        throw new Error('Failed to save configuration');
-      }
+      alert('NCR configuration saved successfully');
     } catch (err) {
       alert('Error saving configuration');
       console.error('Error saving config:', err);

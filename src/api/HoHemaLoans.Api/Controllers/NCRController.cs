@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Services;
 using HoHemaLoans.Api.Models;
 using System.Security.Claims;
@@ -13,15 +15,18 @@ public class NCRController : ControllerBase
 {
     private readonly INCRComplianceService _ncrComplianceService;
     private readonly IOmnichannelLoanService _loanService;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<NCRController> _logger;
 
     public NCRController(
         INCRComplianceService ncrComplianceService,
         IOmnichannelLoanService loanService,
+        ApplicationDbContext context,
         ILogger<NCRController> logger)
     {
         _ncrComplianceService = ncrComplianceService;
         _loanService = loanService;
+        _context = context;
         _logger = logger;
     }
 
@@ -40,6 +45,53 @@ public class NCRController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting NCR configuration");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Update NCR configuration settings
+    /// </summary>
+    [HttpPut("configuration")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<NCRConfiguration>> UpdateConfiguration([FromBody] NCRConfiguration updated)
+    {
+        try
+        {
+            var config = await _ncrComplianceService.GetNCRConfigurationAsync();
+
+            config.MaxInterestRatePerAnnum = updated.MaxInterestRatePerAnnum;
+            config.DefaultInterestRatePerAnnum = updated.DefaultInterestRatePerAnnum;
+            config.MaxInitiationFee = updated.MaxInitiationFee;
+            config.InitiationFeePercentage = updated.InitiationFeePercentage;
+            config.MaxMonthlyServiceFee = updated.MaxMonthlyServiceFee;
+            config.DefaultMonthlyServiceFee = updated.DefaultMonthlyServiceFee;
+            config.MaxDebtToIncomeRatio = updated.MaxDebtToIncomeRatio;
+            config.MinSafetyBuffer = updated.MinSafetyBuffer;
+            config.MinLoanAmount = updated.MinLoanAmount;
+            config.MaxLoanAmount = updated.MaxLoanAmount;
+            config.MinLoanTermMonths = updated.MinLoanTermMonths;
+            config.MaxLoanTermMonths = updated.MaxLoanTermMonths;
+            config.CoolingOffPeriodDays = updated.CoolingOffPeriodDays;
+            config.NCRCPRegistrationNumber = updated.NCRCPRegistrationNumber;
+            config.ComplianceOfficerName = updated.ComplianceOfficerName;
+            config.ComplianceOfficerEmail = updated.ComplianceOfficerEmail;
+            config.DocumentRetentionYears = updated.DocumentRetentionYears;
+            config.EnforceNCRCompliance = updated.EnforceNCRCompliance;
+            config.AllowCoolingOffCancellation = updated.AllowCoolingOffCancellation;
+            config.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+            await _ncrComplianceService.LogNCRActionAsync("NCRConfiguration", config.Id.ToString(),
+                NCRAuditAction.ConfigurationChanged, userId, "NCR configuration updated by admin");
+
+            return Ok(config);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating NCR configuration");
             return StatusCode(500, "Internal server error");
         }
     }
