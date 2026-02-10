@@ -73,7 +73,7 @@ public class FormsController : ControllerBase
     /// Generate Pre-Agreement Statement HTML
     /// </summary>
     [HttpPost("pre-agreement-statement")]
-    public async Task<IActionResult> GeneratePreAgreementStatementHtml([FromBody] HoHemaLoans.Api.Controllers.PreAgreementRequest request)
+    public async Task<IActionResult> GeneratePreAgreementStatementHtml([FromBody] PreAgreementRequest request)
     {
         try
         {
