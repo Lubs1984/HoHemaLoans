@@ -73,17 +73,21 @@ const Dashboard: React.FC = () => {
   };
 
   const loadPrerequisiteStatus = async () => {
+    let profileComplete = false;
+    let documentsUploaded = false;
+    let affordabilityComplete = false;
+
+    // Check profile completion - each check is independent so one failure doesn't block others
     try {
-      // Check profile completion - includes NCR-required fields
       const profile = await apiService.getProfile();
-      const profileComplete = !!(
+      profileComplete = !!(
         // Basic info
         profile.firstName &&
         profile.lastName &&
         profile.idNumber &&
         profile.phoneNumber &&
         profile.dateOfBirth &&
-        // Address (NCR required) - API returns PascalCase
+        // Address (NCR required)
         profile.streetAddress &&
         profile.city &&
         profile.province &&
@@ -101,24 +105,32 @@ const Dashboard: React.FC = () => {
         profile.nextOfKinRelationship &&
         profile.nextOfKinPhone
       );
+    } catch (err) {
+      console.error('Failed to load profile status:', err);
+    }
 
-      // Check document status
+    // Check document status
+    try {
       const verificationStatus = await apiService.getVerificationStatus();
       setDocumentStatus(verificationStatus);
-      const documentsUploaded = verificationStatus.missingDocuments?.length === 0 || false;
-
-      // Check affordability assessment
-      const affordability = await apiService.getAffordability();
-      const affordabilityComplete = affordability && (affordability.grossMonthlyIncome > 0 || affordability.netMonthlyIncome > 0);
-
-      setPrerequisiteStatus({
-        profileComplete,
-        documentsUploaded,
-        affordabilityComplete,
-      });
+      documentsUploaded = verificationStatus.missingDocuments?.length === 0 || false;
     } catch (err) {
-      console.error('Failed to load prerequisite status:', err);
+      console.error('Failed to load document status:', err);
     }
+
+    // Check affordability assessment
+    try {
+      const affordability = await apiService.getAffordability();
+      affordabilityComplete = !!(affordability && (affordability.grossMonthlyIncome > 0 || affordability.netMonthlyIncome > 0));
+    } catch (err) {
+      console.error('Failed to load affordability status:', err);
+    }
+
+    setPrerequisiteStatus({
+      profileComplete,
+      documentsUploaded,
+      affordabilityComplete,
+    });
   };
 
   const loadDashboardStats = async () => {
