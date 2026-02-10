@@ -667,13 +667,16 @@ git push origin main
 
 1. **NCR Compliance** ⚠️ **LEGAL REQUIREMENT**
    - [ ] Obtain NCRCP registration number
-   - [ ] Implement Form 39 generation
-   - [ ] Enforce interest rate caps
-   - [ ] Enforce fee caps
-   - [ ] Implement 5-day cooling-off period
-   - [ ] Create complaint management system
-   - [ ] Implement document retention policy
+   - [x] ~~Implement Form 39 generation~~ ✅ Done (HTML rendering; PDF pending)
+   - [x] ~~Enforce interest rate caps~~ ✅ Done (NCRComplianceService, 27.5% cap)
+   - [x] ~~Enforce fee caps~~ ✅ Done (NCRComplianceService, initiation + service fees)
+   - [x] ~~Implement 5-day cooling-off period~~ ✅ Done (check + cancellation endpoints)
+   - [x] ~~Create complaint management system~~ ✅ Done (full CRUD + admin UI)
+   - [ ] Implement document retention policy (field exists, auto-deletion not built)
    - [ ] Set up credit bureau reporting
+   - [ ] Implement PDF generation for Form 39 (currently HTML only)
+   - [ ] Build admin complaint edit modal (currently read-only)
+   - [ ] Implement NCR mandatory reporting (monthly/quarterly/annual)
 
 2. **Payment Integration** 💰 **CORE FUNCTIONALITY**
    - [ ] Integrate with South African banking API
@@ -683,28 +686,30 @@ git push origin main
    - [ ] Handle failed payments
 
 3. **Contract & Digital Signature** 📝 **LEGAL REQUIREMENT**
-   - [ ] Generate legal credit agreement (Form 39)
-   - [ ] Implement OTP-based digital signature
-   - [ ] Store signed contracts securely
-   - [ ] Generate Pre-Agreement Statement
+   - [x] ~~Generate legal credit agreement (Form 39)~~ ✅ Done (HTML)
+   - [x] ~~Implement OTP-based digital signature~~ ✅ Done (PIN via WhatsApp)
+   - [x] ~~Store signed contracts securely~~ ✅ Done (DigitalSignature model)
+   - [x] ~~Generate Pre-Agreement Statement~~ ✅ Done (HTML)
+   - [ ] Implement PDF generation for contracts
+   - [ ] Azure Blob / S3 document storage
 
 4. **WhatsApp Interactive Flows** 📱 **USER EXPERIENCE**
-   - [ ] Complete loan application flow
-   - [ ] Implement balance inquiry
-   - [ ] Implement payment reminders
-   - [ ] Add customer support handoff
+   - [x] ~~Complete loan application flow~~ ✅ Done (6-step conversational wizard)
+   - [x] ~~Implement balance inquiry~~ ✅ Done (BALANCE command)
+   - [ ] Implement automated payment reminders (scheduled)
+   - [ ] Add customer support handoff / agent escalation
 
 5. **System Settings Management** ⚙️ **OPERATIONAL**
-   - [ ] Admin UI for interest rate configuration
-   - [ ] Admin UI for fee configuration
-   - [ ] Dynamic rate/fee application in loan calculations
+   - [x] ~~Admin UI for interest rate configuration~~ ✅ Done (NCR Compliance page)
+   - [x] ~~Admin UI for fee configuration~~ ✅ Done (NCR Compliance page)
+   - [ ] Dynamic rate/fee application in loan calculations (SystemSettings table exists but not wired to calculations)
 
 ### Medium Priority (Important for Operations)
 
 6. **Admin Dashboard Enhancements**
    - [ ] Executive KPI dashboard
    - [ ] Loan processing queue
-   - [ ] User management UI
+   - [x] ~~User management UI~~ ✅ Done (view, edit, role management)
    - [ ] Reporting interface
 
 7. **Testing & QA**
@@ -738,28 +743,27 @@ git push origin main
 
 ### Immediate (Next 2 Weeks)
 
-1. **Form 39 Credit Agreement Generation** ⚠️ HIGH PRIORITY
-   - Create PDF template for Form 39
-   - Populate with loan application data
-   - Include all NCR-required fields
-   - Integrate with ContractService
-   - Auto-generate on loan approval
+1. **PDF Generation for Forms & Contracts** ⚠️ HIGH PRIORITY
+   - Integrate PDF library (e.g., QuestPDF, iTextSharp)
+   - Convert Form 39 HTML rendering to PDF output
+   - Convert Pre-Agreement Statement to PDF output
+   - Auto-generate PDF on loan approval
+   - Link generated PDFs to ContractService
 
-2. **Contract Template Engine**
-   - Design contract templates
-   - Implement variable substitution
-   - Add NCR-required clauses
-   - Generate Pre-Agreement Statement
+2. **Wire SystemSettings to Loan Calculations**
+   - Update loan calculation to read rates/fees from SystemSettings table
+   - Fall back to NCR configuration caps
+   - Add validation warnings when limits exceeded
 
-3. **Complete System Settings Management**
-   - Create admin UI for configuring interest rates and fees
-   - Update loan calculation to use SystemSettings table
-   - Add validation for NCR compliance limits
+3. **Admin Complaint Management UI**
+   - Build edit modal for complaint status updates
+   - Add assign/resolve/escalate actions
+   - Add complaint notes from admin
 
-4. **Implement NCR Interest and Fee Caps**
-   - Add validation in loan application endpoint
-   - Enforce caps based on loan amount
-   - Add warnings/errors when limits exceeded
+4. **NCR Mandatory Reporting Foundation**
+   - Design monthly returns data structure
+   - Implement data aggregation queries
+   - Create export endpoints for NCR submissions
 
 ### Short-Term (Next 1-2 Months)
 
@@ -769,19 +773,13 @@ git push origin main
    - Implement repayment collection
    - Test in sandbox environment
 
-6. **Digital Signature Implementation**
-   - Design OTP-based signature flow
-   - Implement signature storage
-   - Link to contract documents
-   - Add verification process
-
-7. **Credit Bureau Integration**
+6. **Credit Bureau Integration**
    - Register with credit bureaus
    - Implement credit check API calls
    - Add credit score to affordability assessment
    - Implement payment reporting
 
-8. **Comprehensive Testing**
+7. **Comprehensive Testing**
    - Write unit tests for critical services
    - Create integration test suite
    - Develop end-to-end test scenarios
@@ -896,15 +894,15 @@ git push origin main
 
 ### Before Beta Launch (Minimum Viable Product)
 
-- [ ] System settings management UI
-- [ ] NCR interest/fee caps enforced
-- [ ] Form 39 credit agreement generation
+- [x] System settings management UI ✅ NCR Compliance admin page
+- [x] NCR interest/fee caps enforced ✅ NCRComplianceService
+- [x] Form 39 credit agreement generation ✅ HTML (PDF pending)
 - [x] Digital signature (PIN-based) ✅ Completed
 - [x] Contract management system ✅ Completed
 - [ ] Banking integration (disbursement only)
 - [ ] Basic payment tracking
-- [ ] WhatsApp loan application flow
-- [ ] Admin approval workflow
+- [x] WhatsApp loan application flow ✅ 6-step wizard
+- [x] Admin approval workflow ✅ Approve/Reject/Disburse
 - [ ] Basic reporting
 - [ ] Security audit
 - [ ] Load testing
