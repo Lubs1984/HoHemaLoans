@@ -73,14 +73,15 @@ public class ProfileVerificationService : IProfileVerificationService
         var pendingDocuments = documents.Count(d => d.Status == DocumentStatus.Pending);
         var rejectedDocuments = documents.Count(d => d.Status == DocumentStatus.Rejected);
 
-        // Check which required documents are missing or not approved
-        var approvedDocumentTypes = documents
-            .Where(d => d.Status == DocumentStatus.Approved)
+        // Check which required documents are missing (not uploaded at all, or all rejected)
+        // Pending and Approved documents count as "uploaded" - the user has done their part
+        var uploadedDocumentTypes = documents
+            .Where(d => d.Status == DocumentStatus.Approved || d.Status == DocumentStatus.Pending)
             .Select(d => d.DocumentType)
             .ToHashSet();
 
         var missingDocuments = _requiredDocuments
-            .Where(reqDoc => !approvedDocumentTypes.Contains(reqDoc))
+            .Where(reqDoc => !uploadedDocumentTypes.Contains(reqDoc))
             .Select(d => d.ToString())
             .ToList();
 
