@@ -13,12 +13,12 @@ namespace HoHemaLoans.Api.Services;
 public class ContractService
 {
     private readonly ApplicationDbContext _context;
-    private readonly WhatsAppService _whatsAppService;
+    private readonly IWhatsAppService _whatsAppService;
     private readonly ILogger<ContractService> _logger;
 
     public ContractService(
         ApplicationDbContext context,
-        WhatsAppService whatsAppService,
+        IWhatsAppService whatsAppService,
         ILogger<ContractService> logger)
     {
         _context = context;
