@@ -701,18 +701,32 @@ public class AdminController : ControllerBase
             .OrderBy(u => u.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(u => new
+            .ToListAsync();
+
+        var userData = new List<object>();
+        foreach (var u in users)
+        {
+            var roles = await _userManager.GetRolesAsync(u);
+            userData.Add(new
             {
                 u.Id,
                 u.FirstName,
                 u.LastName,
                 u.Email,
                 u.PhoneNumber,
+                u.IdNumber,
                 u.MonthlyIncome,
                 u.IsVerified,
-                u.CreatedAt
-            })
-            .ToListAsync();
+                u.StreetAddress,
+                u.City,
+                u.Province,
+                u.PostalCode,
+                u.EmployerName,
+                u.EmploymentType,
+                u.CreatedAt,
+                Roles = roles
+            });
+        }
 
         var pageCount = (int)Math.Ceiling((double)totalCount / pageSize);
 
@@ -722,7 +736,7 @@ public class AdminController : ControllerBase
             pageCount,
             currentPage = page,
             pageSize,
-            data = users
+            data = userData
         });
     }
 
@@ -765,6 +779,103 @@ public class AdminController : ControllerBase
         };
 
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Update a user's details and roles
+    /// </summary>
+    [HttpPut("users/{id}")]
+    public async Task<ActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserDto dto)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound("User not found");
+
+            // Update basic fields
+            if (!string.IsNullOrWhiteSpace(dto.FirstName))
+                user.FirstName = dto.FirstName.Trim();
+            if (!string.IsNullOrWhiteSpace(dto.LastName))
+                user.LastName = dto.LastName.Trim();
+            if (dto.PhoneNumber != null)
+                user.PhoneNumber = dto.PhoneNumber.Trim();
+            if (dto.Email != null)
+            {
+                user.Email = dto.Email.Trim();
+                user.UserName = dto.Email.Trim();
+                user.NormalizedEmail = dto.Email.Trim().ToUpperInvariant();
+                user.NormalizedUserName = dto.Email.Trim().ToUpperInvariant();
+            }
+            if (dto.IdNumber != null)
+                user.IdNumber = dto.IdNumber.Trim();
+            if (dto.IsVerified.HasValue)
+                user.IsVerified = dto.IsVerified.Value;
+
+            // Address
+            if (dto.StreetAddress != null) user.StreetAddress = dto.StreetAddress;
+            if (dto.City != null) user.City = dto.City;
+            if (dto.Province != null) user.Province = dto.Province;
+            if (dto.PostalCode != null) user.PostalCode = dto.PostalCode;
+
+            // Employment
+            if (dto.EmployerName != null) user.EmployerName = dto.EmployerName;
+            if (dto.EmploymentType != null) user.EmploymentType = dto.EmploymentType;
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToArray();
+                return BadRequest(new { message = "Failed to update user", errors });
+            }
+
+            // Update roles if provided
+            if (dto.Roles != null)
+            {
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                var rolesToRemove = currentRoles.Except(dto.Roles).ToList();
+                var rolesToAdd = dto.Roles.Except(currentRoles).ToList();
+
+                if (rolesToRemove.Any())
+                    await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                if (rolesToAdd.Any())
+                    await _userManager.AddToRolesAsync(user, rolesToAdd);
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var loans = await _context.LoanApplications
+                .Where(l => l.UserId == id)
+                .Select(l => new { l.Id, l.Amount, l.Status, l.ApplicationDate })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                user.Id,
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                user.PhoneNumber,
+                user.IdNumber,
+                user.MonthlyIncome,
+                user.IsVerified,
+                user.StreetAddress,
+                user.City,
+                user.Province,
+                user.PostalCode,
+                user.EmployerName,
+                user.EmploymentType,
+                user.CreatedAt,
+                Roles = roles,
+                LoanApplications = loans
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user {UserId}", id);
+            return StatusCode(500, new { message = "Error updating user" });
+        }
     }
 
     // ============= BULK USER IMPORT =============
@@ -874,4 +985,21 @@ public class VerifyDocumentAdminDto
     public DocumentStatus Status { get; set; }
     public string? RejectionReason { get; set; }
     public string? Notes { get; set; }
+}
+
+public class AdminUpdateUserDto
+{
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? Email { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? IdNumber { get; set; }
+    public bool? IsVerified { get; set; }
+    public string? StreetAddress { get; set; }
+    public string? City { get; set; }
+    public string? Province { get; set; }
+    public string? PostalCode { get; set; }
+    public string? EmployerName { get; set; }
+    public string? EmploymentType { get; set; }
+    public List<string>? Roles { get; set; }
 }
