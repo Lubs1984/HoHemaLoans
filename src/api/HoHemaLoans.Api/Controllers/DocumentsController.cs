@@ -54,20 +54,12 @@ public class DocumentsController : ControllerBase
             if (!Enum.TryParse<DocumentType>(documentType, out var docType))
                 return BadRequest("Invalid document type");
 
-            // For ID documents and Passports, store as BASE64 in database
+            // Store all documents as BASE64 in database for easy retrieval and preview
             string? base64Content = null;
             string filePath = string.Empty;
             
-            if (docType == DocumentType.IdDocument)
-            {
-                base64Content = await _storageService.ConvertToBase64Async(file);
-                filePath = $"base64_{userId}_{docType}"; // Placeholder path
-            }
-            else
-            {
-                // For other documents, store in file system
-                filePath = await _storageService.UploadDocumentAsync(file, userId, docType.ToString());
-            }
+            base64Content = await _storageService.ConvertToBase64Async(file);
+            filePath = $"base64_{userId}_{docType}"; // Placeholder path
 
             // Save document record to database
             var document = new UserDocument

@@ -63,6 +63,17 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleDeleteDocument = async (documentId: string) => {
+    if (!confirm('Are you sure you want to delete this document?')) return;
+    try {
+      await apiService.delete(`/documents/${documentId}`);
+      success('Document deleted successfully');
+      loadDocuments();
+    } catch (error: any) {
+      showError(error.message || 'Failed to delete document');
+    }
+  };
+
   const handleEdit = () => {
     setFormData({
       firstName: user?.firstName || '',
@@ -398,6 +409,7 @@ const Profile: React.FC = () => {
             ) : (
               <DocumentList 
                 documents={documents}
+                onDelete={handleDeleteDocument}
               />
             )}
           </div>
