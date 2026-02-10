@@ -560,5 +560,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.IsActive);
         });
+
+        // Configure DeductionScheduleEntry <-> BankTransaction relationship
+        // Both sides have FK + nav properties, so we must configure them as separate relationships
+        builder.Entity<DeductionScheduleEntry>(entity =>
+        {
+            entity.HasOne(e => e.BankTransaction)
+                .WithMany()
+                .HasForeignKey(e => e.BankTransactionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<BankTransaction>(entity =>
+        {
+            entity.HasOne(e => e.MatchedDeduction)
+                .WithMany()
+                .HasForeignKey(e => e.MatchedDeductionId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
     }
 }
