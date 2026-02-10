@@ -474,8 +474,25 @@ public class WhatsAppWebhookController : ControllerBase
     {
         try
         {
-            // Clean the phone number for matching (remove spaces, dashes, etc.)
-            var cleanPhoneNumber = phoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "");
+            // ============================================================
+            // DEVELOPMENT MODE: Send a simple "in development" message
+            // Remove this block when ready to go live with full loan flows
+            // ============================================================
+            _logger.LogInformation("📱 Development mode: Sending auto-reply to {PhoneNumber}. Message received: \"{MessageText}\"", 
+                phoneNumber, messageText);
+
+            await _whatsAppService.SendMessageAsync(
+                phoneNumber,
+                "Hi, we are currently in development. 🚧\n\n" +
+                "Thank you for your interest in Ho Hema Loans! We're working hard to bring you a seamless lending experience.\n\n" +
+                "We'll notify you when our services are live. Stay tuned! 🙏"
+            );
+
+            _logger.LogInformation("✅ Development auto-reply sent to {PhoneNumber}", phoneNumber);
+            return;
+            // ============================================================
+            // END DEVELOPMENT MODE
+            // ============================================================
             
             _logger.LogInformation("Checking for registered user with phone number: {PhoneNumber}", phoneNumber);
 
