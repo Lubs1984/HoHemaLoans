@@ -457,6 +457,10 @@ _ = Task.Run(async () =>
                     ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AppliedInterestRate"" numeric(5,2);
                     ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""AppliedAdminFee"" numeric(18,2);
                     ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""RepaymentDay"" integer;
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""ExpectedRepaymentDate"" timestamp with time zone;
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""HasIncomeExpenseChanged"" boolean NOT NULL DEFAULT false;
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""IsAffordabilityIncluded"" boolean NOT NULL DEFAULT false;
+                    ALTER TABLE ""LoanApplications"" ADD COLUMN IF NOT EXISTS ""TermMonths"" integer NOT NULL DEFAULT 1;
                 ");
                 logger.LogInformation("[STARTUP] LoanApplications columns added successfully");
                 
