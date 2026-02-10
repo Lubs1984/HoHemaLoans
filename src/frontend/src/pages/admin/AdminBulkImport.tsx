@@ -1,6 +1,23 @@
 import { useState, useRef } from 'react';
 import { Upload, Download, Check, X, AlertCircle, Users, FileText } from 'lucide-react';
-import api from '../../services/api';
+import { apiService } from '../../services/api';
+
+// Helper function to get API base URL (same logic as in api.ts)
+function getApiBaseUrl(): string {
+  if ((window as any).__API_URL__) {
+    return (window as any).__API_URL__;
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname.includes('hohemaweb-development.up.railway.app')) {
+      return 'https://hohemaapi-development.up.railway.app';
+    }
+  }
+  return 'http://localhost:5050';
+}
 
 interface BulkUserImportDto {
   rowNumber: number;
@@ -83,14 +100,27 @@ export default function AdminBulkImport() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await api.post('/admin/users/bulk-import/validate', formData, {
+      // Get token from auth store for manual fetch
+      const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
+      const token = authStore.state?.token;
+
+      const response = await fetch(`${getApiBaseUrl()}/api/admin/users/bulk-import/validate`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
+        credentials: 'include',
+        mode: 'cors',
+        body: formData,
       });
 
-      if (response.data) {
-        setValidationResult(response.data);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result) {
+        setValidationResult(result);
         setStep('validate');
       }
     } catch (error: any) {
@@ -106,7 +136,7 @@ export default function AdminBulkImport() {
 
     setLoading(true);
     try {
-      const response = await api.post('/admin/users/bulk-import/import', validationResult.validUsers);
+      const response = await apiService.post<ImportResult>('/admin/users/bulk-import/import', validationResult.validUsers);
       
       if (response.data) {
         setImportResult(response.data);
@@ -122,17 +152,32 @@ export default function AdminBulkImport() {
 
   const downloadTemplate = async () => {
     try {
-      const response = await api.get('/admin/users/bulk-import/template', {
-        responseType: 'blob',
+      // Get token from auth store for manual fetch
+      const authStore = JSON.parse(localStorage.getItem('auth-store') || '{}');
+      const token = authStore.state?.token;
+
+      const response = await fetch(`${getApiBaseUrl()}/api/admin/users/bulk-import/template`, {
+        method: 'GET',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        credentials: 'include',
+        mode: 'cors',
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'bulk_import_template.csv');
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
     }

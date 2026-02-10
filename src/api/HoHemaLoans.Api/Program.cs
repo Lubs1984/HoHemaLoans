@@ -260,8 +260,8 @@ builder.Services.AddScoped<IOmnichannelLoanService, OmnichannelLoanService>();
 builder.Services.AddScoped<IDocumentStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<IProfileVerificationService, ProfileVerificationService>();
 
-// Add Contract Service - Temporarily commented out due to compilation errors
-// builder.Services.AddScoped<ContractService>();
+// Add Contract Service
+builder.Services.AddScoped<ContractService>();
 
 // Add Bulk User Import Service
 builder.Services.AddScoped<IBulkUserImportService, BulkUserImportService>();
