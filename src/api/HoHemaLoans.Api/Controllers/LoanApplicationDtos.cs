@@ -21,6 +21,34 @@ public class CreateLoanApplicationDto
     
     [JsonPropertyName("currentStep")]
     public int CurrentStep { get; set; } = 0;
+    
+    // Worker earnings fields
+    [JsonPropertyName("hoursWorked")]
+    public decimal? HoursWorked { get; set; }
+    
+    [JsonPropertyName("hourlyRate")]
+    public decimal? HourlyRate { get; set; }
+    
+    [JsonPropertyName("monthlyEarnings")]
+    public decimal? MonthlyEarnings { get; set; }
+    
+    [JsonPropertyName("maxLoanAmount")]
+    public decimal? MaxLoanAmount { get; set; }
+    
+    [JsonPropertyName("appliedInterestRate")]
+    public decimal? AppliedInterestRate { get; set; }
+    
+    [JsonPropertyName("appliedAdminFee")]
+    public decimal? AppliedAdminFee { get; set; }
+    
+    [JsonPropertyName("totalAmount")]
+    public decimal? TotalAmount { get; set; }
+    
+    [JsonPropertyName("repaymentDay")]
+    public int? RepaymentDay { get; set; }
+    
+    [JsonPropertyName("hasIncomeExpenseChanged")]
+    public bool HasIncomeExpenseChanged { get; set; } = false;
 }
 
 /// <summary>

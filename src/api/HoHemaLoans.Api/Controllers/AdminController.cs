@@ -19,19 +19,22 @@ public class AdminController : ControllerBase
     private readonly ILogger<AdminController> _logger;
     private readonly IProfileVerificationService _verificationService;
     private readonly ContractService _contractService;
+    private readonly IBulkUserImportService _bulkUserImportService;
 
     public AdminController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
         ILogger<AdminController> logger,
         IProfileVerificationService verificationService,
-        ContractService contractService)
+        ContractService contractService,
+        IBulkUserImportService bulkUserImportService)
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
         _verificationService = verificationService;
         _contractService = contractService;
+        _bulkUserImportService = bulkUserImportService;
     }
 
     // ============= DASHBOARD STATS =============
@@ -762,6 +765,82 @@ public class AdminController : ControllerBase
         };
 
         return Ok(response);
+    }
+
+    // ============= BULK USER IMPORT =============
+
+    /// <summary>
+    /// Validate bulk user import file
+    /// </summary>
+    [HttpPost("users/bulk-import/validate")]
+    [RequestSizeLimit(10485760)] // 10MB limit
+    public async Task<ActionResult<BulkImportValidationResult>> ValidateBulkUserImport(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded");
+        }
+
+        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest("Only CSV files are supported");
+        }
+
+        if (file.Length > 10485760) // 10MB
+        {
+            return BadRequest("File size exceeds 10MB limit");
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            var result = await _bulkUserImportService.ValidateImportDataAsync(stream, file.FileName);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating bulk import file {FileName}", file.FileName);
+            return StatusCode(500, "Error processing file");
+        }
+    }
+
+    /// <summary>
+    /// Import validated users
+    /// </summary>
+    [HttpPost("users/bulk-import/import")]
+    public async Task<ActionResult<BulkImportResult>> ImportBulkUsers([FromBody] List<BulkUserImportDto> users)
+    {
+        if (users == null || !users.Any())
+        {
+            return BadRequest("No users provided for import");
+        }
+
+        try
+        {
+            var adminUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "unknown";
+            var result = await _bulkUserImportService.ImportUsersAsync(users, adminUserId);
+            
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error importing bulk users");
+            return StatusCode(500, "Error importing users");
+        }
+    }
+
+    /// <summary>
+    /// Get bulk import CSV template
+    /// </summary>
+    [HttpGet("users/bulk-import/template")]
+    public ActionResult GetBulkImportTemplate()
+    {
+        var csvContent = "Email,FirstName,LastName,IdNumber,DateOfBirth,Address,PhoneNumber,MonthlyIncome\n" +
+                        "john.doe@example.com,John,Doe,8001015009087,1980-01-01,\"123 Main St, Johannesburg\",+27821234567,15000\n" +
+                        "jane.smith@example.com,Jane,Smith,8505205009088,1985-05-20,\"456 Oak Ave, Cape Town\",+27829876543,18000";
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
+        return File(bytes, "text/csv", "bulk_import_template.csv");
     }
 }
 

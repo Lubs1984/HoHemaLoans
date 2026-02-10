@@ -263,6 +263,9 @@ builder.Services.AddScoped<IProfileVerificationService, ProfileVerificationServi
 // Add Contract Service - Temporarily commented out due to compilation errors
 // builder.Services.AddScoped<ContractService>();
 
+// Add Bulk User Import Service
+builder.Services.AddScoped<IBulkUserImportService, BulkUserImportService>();
+
 // Add Test Data Seeder (for development)
 builder.Services.AddScoped<TestDataSeeder>();
 

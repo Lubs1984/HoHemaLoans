@@ -275,10 +275,10 @@ public class LoanApplicationsController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        // Calculate loan terms
-        var interestRate = CalculateInterestRate(dto.Amount, dto.TermMonths);
+        // Calculate loan terms - use provided values if available
+        var interestRate = dto.AppliedInterestRate ?? CalculateInterestRate(dto.Amount, dto.TermMonths);
         var monthlyPayment = CalculateMonthlyPayment(dto.Amount, interestRate, dto.TermMonths);
-        var totalAmount = monthlyPayment * dto.TermMonths;
+        var totalAmount = dto.TotalAmount ?? (monthlyPayment * dto.TermMonths);
 
         var application = new LoanApplication
         {
@@ -296,7 +296,22 @@ public class LoanApplicationsController : ControllerBase
                 ? channel 
                 : LoanApplicationChannel.Web,
             CurrentStep = dto.CurrentStep,
-            WebInitiatedDate = DateTime.UtcNow
+            WebInitiatedDate = DateTime.UtcNow,
+            
+            // Worker earnings fields
+            HoursWorked = dto.HoursWorked,
+            HourlyRate = dto.HourlyRate,
+            MonthlyEarnings = dto.MonthlyEarnings,
+            MaxLoanAmount = dto.MaxLoanAmount,
+            AppliedInterestRate = dto.AppliedInterestRate,
+            AppliedAdminFee = dto.AppliedAdminFee,
+            RepaymentDay = dto.RepaymentDay,
+            HasIncomeExpenseChanged = dto.HasIncomeExpenseChanged,
+            
+            // Calculate expected repayment date if repayment day provided
+            ExpectedRepaymentDate = dto.RepaymentDay.HasValue 
+                ? CalculateExpectedRepaymentDate(dto.RepaymentDay.Value, dto.TermMonths)
+                : null
         };
 
         _context.LoanApplications.Add(application);
@@ -325,6 +340,14 @@ public class LoanApplicationsController : ControllerBase
                      ((decimal)Math.Pow((double)(1 + monthlyRate), months) - 1);
         
         return Math.Round(payment, 2);
+    }
+    
+    private DateTime CalculateExpectedRepaymentDate(int repaymentDay, int termMonths)
+    {
+        var futureMonth = DateTime.UtcNow.AddMonths(termMonths);
+        var daysInMonth = DateTime.DaysInMonth(futureMonth.Year, futureMonth.Month);
+        var day = Math.Min(repaymentDay, daysInMonth);
+        return new DateTime(futureMonth.Year, futureMonth.Month, day);
     }
 }
 
