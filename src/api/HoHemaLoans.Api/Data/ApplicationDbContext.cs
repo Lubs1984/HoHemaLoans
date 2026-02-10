@@ -23,6 +23,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<UserDocument> UserDocuments { get; set; }
     public DbSet<Contract> Contracts { get; set; }
     public DbSet<DigitalSignature> DigitalSignatures { get; set; }
+    
+    // NCR Compliance entities
+    public DbSet<NCRConfiguration> NCRConfigurations { get; set; }
+    public DbSet<LoanCancellation> LoanCancellations { get; set; }
+    public DbSet<ConsumerComplaint> ConsumerComplaints { get; set; }
+    public DbSet<ComplaintNote> ComplaintNotes { get; set; }
+    public DbSet<NCRAuditLog> NCRAuditLogs { get; set; }
+    public DbSet<LoanCalculation> LoanCalculations { get; set; }
+    public DbSet<PersonalInformation> PersonalInformation { get; set; }
+    public DbSet<FinancialInformation> FinancialInformation { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

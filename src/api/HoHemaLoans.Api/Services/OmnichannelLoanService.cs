@@ -18,21 +18,25 @@ public interface IOmnichannelLoanService
     Task<LoanApplication> SubmitApplicationAsync(Guid applicationId, string userId, string? otp = null);
     Task<LoanApplication?> ResumeFromChannelAsync(string userId, LoanApplicationChannel targetChannel, string? phoneNumber = null);
     Task SyncAffordabilityAsync(string userId);
+    Task<LoanApplication> ValidateNCRComplianceAsync(Guid applicationId);
 }
 
 public class OmnichannelLoanService : IOmnichannelLoanService
 {
     private readonly ApplicationDbContext _context;
     private readonly IAffordabilityService _affordabilityService;
+    private readonly INCRComplianceService _ncrComplianceService;
     private readonly ILogger<OmnichannelLoanService> _logger;
 
     public OmnichannelLoanService(
         ApplicationDbContext context,
         IAffordabilityService affordabilityService,
+        INCRComplianceService ncrComplianceService,
         ILogger<OmnichannelLoanService> logger)
     {
         _context = context;
         _affordabilityService = affordabilityService;
+        _ncrComplianceService = ncrComplianceService;
         _logger = logger;
     }
 
@@ -446,5 +450,93 @@ public class OmnichannelLoanService : IOmnichannelLoanService
         {
             throw new InvalidOperationException("Bank details are required");
         }
+    }
+
+    /// <summary>
+    /// Validate NCR compliance for a loan application
+    /// </summary>
+    public async Task<LoanApplication> ValidateNCRComplianceAsync(Guid applicationId)
+    {
+        var application = await _context.LoanApplications
+            .Include(la => la.User)
+            .Include(la => la.PersonalInformation)
+            .Include(la => la.FinancialInformation)
+            .Include(la => la.LoanCalculation)
+            .FirstOrDefaultAsync(la => la.Id == applicationId);
+
+        if (application == null)
+        {
+            throw new InvalidOperationException("Loan application not found");
+        }
+
+        // Get or calculate loan parameters
+        var loanAmount = application.LoanCalculation?.LoanAmount ?? application.Amount;
+        var interestRate = application.LoanCalculation?.InterestRate ?? application.InterestRate;
+        var termMonths = application.LoanCalculation?.TermInMonths ?? application.TermMonths;
+        var monthlyInstallment = application.LoanCalculation?.MonthlyInstallment ?? application.MonthlyPayment;
+        var initiationFee = application.LoanCalculation?.InitiationFee ?? 0;
+        var monthlyServiceFee = application.LoanCalculation?.MonthlyServiceFee ?? 0;
+
+        // Create a loan calculation if it doesn't exist
+        if (application.LoanCalculation == null)
+        {
+            var calculation = new LoanCalculation
+            {
+                LoanAmount = loanAmount,
+                InterestRate = interestRate,
+                TermInMonths = termMonths,
+                MonthlyInstallment = monthlyInstallment,
+                InitiationFee = initiationFee,
+                MonthlyServiceFee = monthlyServiceFee,
+                TotalAmountPayable = monthlyInstallment * termMonths + initiationFee
+            };
+
+            application.LoanCalculation = calculation;
+        }
+
+        // Get financial information
+        var monthlyIncome = application.FinancialInformation?.MonthlyIncome ?? 0;
+        var monthlyExpenses = application.FinancialInformation?.MonthlyExpenses ?? 0;
+
+        // Perform full NCR compliance validation
+        var complianceResult = await _ncrComplianceService.ValidateFullComplianceAsync(
+            application.LoanCalculation,
+            monthlyIncome,
+            monthlyExpenses
+        );
+
+        // Update application with compliance status
+        if (!complianceResult.IsCompliant)
+        {
+            application.Status = LoanStatus.ComplianceReview;
+            application.Notes = $"NCR Compliance Issues: {complianceResult.ErrorMessage}";
+            
+            // Log compliance violation
+            await _ncrComplianceService.LogNCRActionAsync(
+                "LoanApplication",
+                applicationId.ToString(),
+                NCRAuditAction.ComplianceViolation,
+                application.UserId,
+                complianceResult.ErrorMessage
+            );
+
+            _logger.LogWarning("NCR Compliance violation for application {ApplicationId}: {Error}", 
+                applicationId, complianceResult.ErrorMessage);
+        }
+        else
+        {
+            // Log successful compliance check
+            await _ncrComplianceService.LogNCRActionAsync(
+                "LoanApplication",
+                applicationId.ToString(),
+                NCRAuditAction.LoanApplicationCreated,
+                application.UserId,
+                "Passed NCR compliance validation"
+            );
+        }
+
+        await _context.SaveChangesAsync();
+
+        return application;
     }
 }

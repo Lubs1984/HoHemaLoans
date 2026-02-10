@@ -83,7 +83,7 @@ const Dashboard: React.FC = () => {
         profile.idNumber &&
         profile.phoneNumber &&
         profile.dateOfBirth &&
-        // Address (NCR required)
+        // Address (NCR required) - API returns PascalCase
         profile.streetAddress &&
         profile.city &&
         profile.province &&
@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
 
       // Check affordability assessment
       const affordability = await apiService.getAffordability();
-      const affordabilityComplete = affordability && affordability.totalIncome > 0;
+      const affordabilityComplete = affordability && (affordability.grossMonthlyIncome > 0 || affordability.netMonthlyIncome > 0);
 
       setPrerequisiteStatus({
         profileComplete,
@@ -153,7 +153,7 @@ const Dashboard: React.FC = () => {
       });
 
       setDashboardStats({
-        availableAdvance: maxLoan?.maxLoanAmount || affordability?.maxLoanAmount || 0,
+        availableAdvance: maxLoan?.maxRecommendedLoanAmount || affordability?.maxRecommendedLoanAmount || 0,
         currentBalance,
         hoursThisMonth: totalHours,
         earningsThisMonth: totalEarnings,

@@ -266,6 +266,9 @@ builder.Services.AddScoped<ContractService>();
 // Add Bulk User Import Service
 builder.Services.AddScoped<IBulkUserImportService, BulkUserImportService>();
 
+// Add NCR Compliance Service
+builder.Services.AddScoped<INCRComplianceService, NCRComplianceService>();
+
 // Add Test Data Seeder (for development)
 builder.Services.AddScoped<TestDataSeeder>();
 

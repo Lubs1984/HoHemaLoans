@@ -105,6 +105,17 @@ public class LoanApplication
     // Navigation properties
     [ForeignKey("UserId")]
     public virtual ApplicationUser User { get; set; } = null!;
+    
+    // NCR Compliance related
+    public virtual PersonalInformation? PersonalInformation { get; set; }
+    public virtual FinancialInformation? FinancialInformation { get; set; }
+    public virtual LoanCalculation? LoanCalculation { get; set; }
+    public virtual LoanCancellation? LoanCancellation { get; set; }
+    public virtual List<ConsumerComplaint> Complaints { get; set; } = new List<ConsumerComplaint>();
+    
+    // Signing date for cooling-off period calculation
+    public DateTime? SignedAt { get; set; }
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public enum LoanStatus
@@ -112,10 +123,12 @@ public enum LoanStatus
     Draft,
     Pending,
     UnderReview,
+    ComplianceReview,
     Approved,
     Rejected,
     Disbursed,
-    Closed
+    Closed,
+    Cancelled
 }
 
 public enum LoanApplicationChannel

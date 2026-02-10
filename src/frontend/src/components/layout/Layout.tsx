@@ -12,7 +12,8 @@ import {
   BanknotesIcon,
   FolderIcon,
   DocumentDuplicateIcon,
-  CloudArrowUpIcon
+  CloudArrowUpIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import HohemaLogo from '../../assets/hohema-logo.png';
@@ -34,6 +35,7 @@ const adminNavigation = [
   { name: 'WhatsApp Messages', href: '/admin/whatsapp', icon: HomeIcon },
   { name: 'User Management', href: '/admin/users', icon: UserCircleIcon },
   { name: 'Bulk User Import', href: '/admin/bulk-import', icon: CloudArrowUpIcon },
+  { name: 'NCR Compliance', href: '/admin/ncr-compliance', icon: ShieldCheckIcon },
 ];
 
 export const Layout: React.FC = () => {
