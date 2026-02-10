@@ -358,7 +358,7 @@ class ApiService {
   async post<T>(endpoint: string, body: any): Promise<{ data: T }> {
     const data = await this.request<T>(endpoint, {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: body instanceof FormData ? body : JSON.stringify(body),
     });
     return { data };
   }
@@ -366,7 +366,7 @@ class ApiService {
   async put<T>(endpoint: string, body: any): Promise<{ data: T }> {
     const data = await this.request<T>(endpoint, {
       method: 'PUT',
-      body: JSON.stringify(body),
+      body: body instanceof FormData ? body : JSON.stringify(body),
     });
     return { data };
   }
