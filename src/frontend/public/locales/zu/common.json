@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "HoHema Imali Mboleko",
+    "tagline": "Umlingani wakho wezezimali othembekile"
+  },
+  "navigation": {
+    "home": "Ikhaya",
+    "apply": "Faka isicelo",
+    "loans": "Imali Mboleko Yami",
+    "profile": "Iphrofayela",
+    "help": "Usizo",
+    "logout": "Phuma",
+    "login": "Ngena",
+    "register": "Bhalisa",
+    "dashboard": "Ibhodi",
+    "admin": "Umphathi"
+  },
+  "actions": {
+    "apply": "Faka isicelo manje",
+    "submit": "Thumela",
+    "cancel": "Khansela",
+    "save": "Gcina",
+    "edit": "Hlela",
+    "delete": "Susa",
+    "confirm": "Qinisekisa",
+    "back": "Emuva",
+    "next": "Okulandelayo",
+    "previous": "Okwangaphambili",
+    "close": "Vala",
+    "loading": "Iyalayisha...",
+    "processing": "Iyacubungula...",
+    "view": "Buka",
+    "download": "Dawuniloda",
+    "upload": "Layisha"
+  },
+  "status": {
+    "pending": "Salindile",
+    "approved": "Yamukelwe",
+    "rejected": "Yenqatshelwe",
+    "active": "Iyasebenza",
+    "completed": "Iqediwe",
+    "cancelled": "Ikhanseliwe",
+    "disbursed": "Ikhokhiwe",
+    "repaid": "Ibuyiselwe"
+  },
+  "currency": {
+    "symbol": "R",
+    "format": "R {{amount}}"
+  },
+  "date": {
+    "today": "Namuhla",
+    "yesterday": "Izolo",
+    "tomorrow": "Kusasa"
+  }
+}

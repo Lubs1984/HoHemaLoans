@@ -1,0 +1,33 @@
+{
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "overview": "Overview",
+    "statistics": "Statistics",
+    "totalLoans": "Total Loans",
+    "activeLoans": "Active Loans",
+    "totalDisbursed": "Total Disbursed",
+    "pendingApplications": "Pending Applications"
+  },
+  "users": {
+    "title": "Users",
+    "allUsers": "All Users",
+    "activeUsers": "Active Users",
+    "viewDetails": "View Details",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User"
+  },
+  "loans": {
+    "title": "Loan Management",
+    "pendingApprovals": "Pending Approvals",
+    "approve": "Approve",
+    "reject": "Reject",
+    "disburse": "Disburse",
+    "viewApplication": "View Application"
+  },
+  "payouts": {
+    "title": "Payouts",
+    "readyForPayout": "Ready for Payout",
+    "processPayout": "Process Payout",
+    "payoutHistory": "Payout History"
+  }
+}

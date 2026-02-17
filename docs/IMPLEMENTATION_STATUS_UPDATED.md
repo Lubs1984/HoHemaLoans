@@ -15,7 +15,7 @@
 - ✅ Phase 2: Core Infrastructure (85%)
 - ✅ Phase 3: User Authentication & Management (95%)
 - ⏳ Phase 4: Loan Application System (80%)
-- ⏳ Phase 5: Contract & Agreement System (90%)
+- ⏳ Phase 5: Contract & Agreement System (90%) (Language Policy)
 - ⏳ Phase 6: Payment Processing (5%)
 - ✅ Phase 7: WhatsApp Flows & Communication (95%)
 - ✅ Phase 8: Admin Dashboard & Reporting (75%)
@@ -462,7 +462,7 @@
 
 ---
 
-### Phase 10: NCR Compliance Implementation (70% Complete)
+### Phase 10: NCR Compliance Implementation (70% Complete) (Fee Structure per Employer)
 
 #### NCR Registration
 - [ ] **NCRCP Registration Number** - Not obtained (field exists in NCRConfiguration)

@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "HoHema Lenings",
+    "tagline": "Jou betroubare finansiële vennoot"
+  },
+  "navigation": {
+    "home": "Tuis",
+    "apply": "Aansoek",
+    "loans": "My Lenings",
+    "profile": "Profiel",
+    "help": "Hulp",
+    "logout": "Teken uit",
+    "login": "Teken in",
+    "register": "Registreer",
+    "dashboard": "Beheerpaneel",
+    "admin": "Admin"
+  },
+  "actions": {
+    "apply": "Aansoek nou",
+    "submit": "Dien in",
+    "cancel": "Kanselleer",
+    "save": "Stoor",
+    "edit": "Wysig",
+    "delete": "Verwyder",
+    "confirm": "Bevestig",
+    "back": "Terug",
+    "next": "Volgende",
+    "previous": "Vorige",
+    "close": "Sluit",
+    "loading": "Laai...",
+    "processing": "Verwerk...",
+    "view": "Bekyk",
+    "download": "Aflaai",
+    "upload": "Oplaai"
+  },
+  "status": {
+    "pending": "Hangend",
+    "approved": "Goedgekeur",
+    "rejected": "Afgekeur",
+    "active": "Aktief",
+    "completed": "Voltooi",
+    "cancelled": "Gekanselleer",
+    "disbursed": "Uitbetaal",
+    "repaid": "Terugbetaal"
+  },
+  "currency": {
+    "symbol": "R",
+    "format": "R {{amount}}"
+  },
+  "date": {
+    "today": "Vandag",
+    "yesterday": "Gister",
+    "tomorrow": "Môre"
+  }
+}

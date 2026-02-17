@@ -1,0 +1,54 @@
+{
+  "application": {
+    "title": "Loan Application",
+    "subtitle": "Complete the form below to apply for a loan",
+    "amount": "Loan Amount",
+    "duration": "Repayment Period",
+    "months": "{{count}} month",
+    "months_plural": "{{count}} months",
+    "purpose": "Loan Purpose",
+    "purposes": {
+      "personal": "Personal",
+      "business": "Business",
+      "education": "Education",
+      "medical": "Medical",
+      "home": "Home Improvement",
+      "other": "Other"
+    }
+  },
+  "details": {
+    "personalInfo": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "idNumber": "ID Number",
+    "phoneNumber": "Phone Number",
+    "email": "Email Address",
+    "address": "Address",
+    "city": "City",
+    "province": "Province",
+    "postalCode": "Postal Code"
+  },
+  "financial": {
+    "title": "Financial Information",
+    "monthlyIncome": "Monthly Income",
+    "employer": "Employer",
+    "employmentDuration": "Employment Duration",
+    "bankName": "Bank Name",
+    "accountNumber": "Account Number",
+    "accountType": "Account Type"
+  },
+  "summary": {
+    "title": "Loan Summary",
+    "loanAmount": "Loan Amount",
+    "interestRate": "Interest Rate",
+    "duration": "Duration",
+    "monthlyPayment": "Monthly Payment",
+    "totalRepayment": "Total Repayment",
+    "confirm": "I confirm all information is correct"
+  },
+  "status": {
+    "submitted": "Your application has been submitted successfully",
+    "underReview": "Your application is under review",
+    "moreInfoNeeded": "Additional information required"
+  }
+}

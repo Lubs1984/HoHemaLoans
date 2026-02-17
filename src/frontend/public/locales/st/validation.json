@@ -1,0 +1,15 @@
+{
+  "required": "This field is required",
+  "invalidEmail": "Please enter a valid email address",
+  "invalidPhone": "Please enter a valid phone number",
+  "invalidId": "Please enter a valid ID number",
+  "minAmount": "Minimum loan amount is R {{amount}}",
+  "maxAmount": "Maximum loan amount is R {{amount}}",
+  "mustAgree": "You must agree to the terms and conditions",
+  "passwordMismatch": "Passwords do not match",
+  "minLength": "Minimum length is {{length}} characters",
+  "maxLength": "Maximum length is {{length}} characters",
+  "invalidFormat": "Invalid format",
+  "futureDate": "Date must be in the future",
+  "pastDate": "Date must be in the past"
+}

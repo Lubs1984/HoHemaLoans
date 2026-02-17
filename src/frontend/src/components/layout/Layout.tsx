@@ -19,6 +19,7 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 import HohemaLogo from '../../assets/hohema-logo.png';
 
 const navigation = [
@@ -140,6 +141,10 @@ export const Layout: React.FC = () => {
                   Admin Dashboard
                 </Link>
               )}
+              {/* Language Switcher - Mobile */}
+              <div className="px-6 py-3 border-t border-gray-200">
+                <LanguageSwitcher variant="dropdown" showLabel={true} className="w-full" />
+              </div>
               <button
                 onClick={() => {
                   handleLogout();
@@ -239,7 +244,11 @@ export const Layout: React.FC = () => {
                   </Link>
                 </li>
               )}
-              <li className="mt-auto">
+              <li className="mt-auto space-y-2">
+                {/* Language Switcher */}
+                <div className="px-2">
+                  <LanguageSwitcher variant="dropdown" showLabel={false} className="w-full" />
+                </div>
                 <button
                   onClick={handleLogout}
                   className="group -mx-2 flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -269,10 +278,10 @@ export const Layout: React.FC = () => {
           <div className="h-6 w-px bg-gray-200 lg:hidden" />
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
+            <div className="flex flex-1 items-center justify-between gap-x-4 lg:gap-x-6">
               {/* User info */}
-              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
               <div className="flex items-center gap-x-3">
+                <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
                 <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
                   <span className="text-sm font-medium text-primary-700">
                     {user?.firstName?.charAt(0) || user?.phoneNumber?.charAt(-2) || 'U'}
@@ -287,6 +296,11 @@ export const Layout: React.FC = () => {
                   </p>
                   <p className="text-xs text-gray-500">{user?.role}</p>
                 </div>
+              </div>
+              
+              {/* Language Switcher in top bar */}
+              <div className="hidden sm:block">
+                <LanguageSwitcher variant="dropdown" showLabel={false} />
               </div>
             </div>
           </div>

@@ -1,0 +1,55 @@
+{
+  "app": {
+    "name": "HoHema Loans",
+    "tagline": "Your trusted financial partner"
+  },
+  "navigation": {
+    "home": "Home",
+    "apply": "Apply",
+    "loans": "My Loans",
+    "profile": "Profile",
+    "help": "Help",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "admin": "Admin"
+  },
+  "actions": {
+    "apply": "Apply Now",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "view": "View",
+    "download": "Download",
+    "upload": "Upload"
+  },
+  "status": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "active": "Active",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "disbursed": "Disbursed",
+    "repaid": "Repaid"
+  },
+  "currency": {
+    "symbol": "R",
+    "format": "R {{amount}}"
+  },
+  "date": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow"
+  }
+}

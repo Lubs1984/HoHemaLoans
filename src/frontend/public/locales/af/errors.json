@@ -1,0 +1,21 @@
+{
+  "general": {
+    "somethingWrong": "Something went wrong",
+    "tryAgain": "Please try again",
+    "contactSupport": "If the problem persists, please contact support"
+  },
+  "network": {
+    "offline": "You are currently offline",
+    "timeout": "Request timed out",
+    "serverError": "Server error occurred"
+  },
+  "auth": {
+    "unauthorized": "You are not authorized to perform this action",
+    "sessionExpired": "Your session has expired. Please login again"
+  },
+  "loan": {
+    "applicationFailed": "Failed to submit application",
+    "notFound": "Loan application not found",
+    "alreadyExists": "You already have an active loan application"
+  }
+}
