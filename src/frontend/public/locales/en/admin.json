@@ -10,13 +10,41 @@
     "backToUser": "Back to User Menu"
   },
   "dashboard": {
-    "title": "Admin Dashboard",
-    "overview": "Overview",
-    "statistics": "Statistics",
-    "totalLoans": "Total Loans",
-    "activeLoans": "Active Loans",
-    "totalDisbursed": "Total Disbursed",
-    "pendingApplications": "Pending Applications"
+    "title": "Dashboard",
+    "subtitle": "System overview and key metrics",
+    "stats": {
+      "totalApplications": "Total Applications",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "users": {
+      "title": "Users",
+      "totalUsers": "Total Users",
+      "verified": "Verified",
+      "verificationRate": "Verification Rate"
+    },
+    "whatsapp": {
+      "title": "WhatsApp",
+      "contacts": "Contacts",
+      "openConversations": "Open Conversations"
+    },
+    "applicationStatus": {
+      "title": "Application Status"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "reviewPending": "Review Pending Applications",
+      "pendingCount": "{{count}} pending",
+      "whatsappMessages": "WhatsApp Messages",
+      "openConversationsCount": "{{count}} open conversations",
+      "manageUsers": "Manage Users",
+      "totalUsersCount": "{{count}} total users"
+    },
+    "errors": {
+      "loadFailed": "Failed to load dashboard stats",
+      "noData": "No data available"
+    }
   },
   "users": {
     "title": "Users",

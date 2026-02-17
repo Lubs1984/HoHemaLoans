@@ -10,13 +10,41 @@
     "backToUser": "Terug na Gebruikerskieslys"
   },
   "dashboard": {
-    "title": "Admin Dashboard",
-    "overview": "Overview",
-    "statistics": "Statistics",
-    "totalLoans": "Total Loans",
-    "activeLoans": "Active Loans",
-    "totalDisbursed": "Total Disbursed",
-    "pendingApplications": "Pending Applications"
+    "title": "Paneelbord",
+    "subtitle": "Stelseloorsig en sleutelmaatstawwe",
+    "stats": {
+      "totalApplications": "Totale Aansoeke",
+      "pending": "Hangend",
+      "approved": "Goedgekeur",
+      "rejected": "Verwerp"
+    },
+    "users": {
+      "title": "Gebruikers",
+      "totalUsers": "Totale Gebruikers",
+      "verified": "Geverifieer",
+      "verificationRate": "Verifikasiekoers"
+    },
+    "whatsapp": {
+      "title": "WhatsApp",
+      "contacts": "Kontakte",
+      "openConversations": "Oop Gesprekke"
+    },
+    "applicationStatus": {
+      "title": "Aansoekstatus"
+    },
+    "quickActions": {
+      "title": "Vinnige Aksies",
+      "reviewPending": "Hersien Hangende Aansoeke",
+      "pendingCount": "{{count}} hangend",
+      "whatsappMessages": "WhatsApp Boodskappe",
+      "openConversationsCount": "{{count}} oop gesprekke",
+      "manageUsers": "Bestuur Gebruikers",
+      "totalUsersCount": "{{count}} totale gebruikers"
+    },
+    "errors": {
+      "loadFailed": "Kon nie paneelbordstatistieke laai nie",
+      "noData": "Geen data beskikbaar nie"
+    }
   },
   "users": {
     "title": "Users",

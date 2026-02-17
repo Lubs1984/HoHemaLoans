@@ -10,13 +10,41 @@
     "backToUser": "Buyela kwi-Menu Yomsebenzisi"
   },
   "dashboard": {
-    "title": "Admin Dashboard",
-    "overview": "Overview",
-    "statistics": "Statistics",
-    "totalLoans": "Total Loans",
-    "activeLoans": "Active Loans",
-    "totalDisbursed": "Total Disbursed",
-    "pendingApplications": "Pending Applications"
+    "title": "Ideshibhodi",
+    "subtitle": "Ukubuka konke kwesistimu nezinkomba ezibalulekile",
+    "stats": {
+      "totalApplications": "Izicelo Eziphelele",
+      "pending": "Kulindelwe",
+      "approved": "Yamukelwe",
+      "rejected": "Yenqatshelwe"
+    },
+    "users": {
+      "title": "Abasebenzisi",
+      "totalUsers": "Abasebenzisi Bonke",
+      "verified": "Kuqinisekisiwe",
+      "verificationRate": "Isilinganiso Sokuqinisekisa"
+    },
+    "whatsapp": {
+      "title": "WhatsApp",
+      "contacts": "Oxhumana Nabo",
+      "openConversations": "Izingxoxo Ezivulekile"
+    },
+    "applicationStatus": {
+      "title": "Isimo Sesicelo"
+    },
+    "quickActions": {
+      "title": "Izenzo Ezisheshayo",
+      "reviewPending": "Buyekeza Izicelo Ezilindile",
+      "pendingCount": "{{count}} kulindelwe",
+      "whatsappMessages": "Imilayezo ye-WhatsApp",
+      "openConversationsCount": "{{count}} izingxoxo ezivulekile",
+      "manageUsers": "Phatha Abasebenzisi",
+      "totalUsersCount": "{{count}} abasebenzisi bonke"
+    },
+    "errors": {
+      "loadFailed": "Kwehlulekile ukulayisha izibalo zedeshibhodi",
+      "noData": "Ayikho idatha etholakalayo"
+    }
   },
   "users": {
     "title": "Users",
