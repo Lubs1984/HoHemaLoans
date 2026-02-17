@@ -47,25 +47,25 @@
     }
   },
   "users": {
-    "title": "Users",
-    "allUsers": "All Users",
-    "activeUsers": "Active Users",
-    "viewDetails": "View Details",
-    "editUser": "Edit User",
-    "deleteUser": "Delete User"
+    "title": "Gebruikers",
+    "allUsers": "Alle Gebruikers",
+    "activeUsers": "Aktiewe Gebruikers",
+    "viewDetails": "Bekyk Besonderhede",
+    "editUser": "Wysig Gebruiker",
+    "deleteUser": "Verwyder Gebruiker"
   },
   "loans": {
-    "title": "Loan Management",
-    "pendingApprovals": "Pending Approvals",
-    "approve": "Approve",
-    "reject": "Reject",
-    "disburse": "Disburse",
-    "viewApplication": "View Application"
+    "title": "Leningsbestuur",
+    "pendingApprovals": "Hangende Goedkeurings",
+    "approve": "Goedkeur",
+    "reject": "Verwerp",
+    "disburse": "Uitbetaal",
+    "viewApplication": "Bekyk Aansoek"
   },
   "payouts": {
-    "title": "Payouts",
-    "readyForPayout": "Ready for Payout",
-    "processPayout": "Process Payout",
-    "payoutHistory": "Payout History"
+    "title": "Uitbetalings",
+    "readyForPayout": "Gereed vir Uitbetaling",
+    "processPayout": "Verwerk Uitbetaling",
+    "payoutHistory": "Uitbetalingsgeskiedenis"
   }
 }

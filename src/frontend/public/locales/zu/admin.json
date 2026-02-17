@@ -47,25 +47,25 @@
     }
   },
   "users": {
-    "title": "Users",
-    "allUsers": "All Users",
-    "activeUsers": "Active Users",
-    "viewDetails": "View Details",
-    "editUser": "Edit User",
-    "deleteUser": "Delete User"
+    "title": "Abasebenzisi",
+    "allUsers": "Bonke Abasebenzisi",
+    "activeUsers": "Abasebenzisi Abasebenzayo",
+    "viewDetails": "Buka Imininingwane",
+    "editUser": "Hlela Umsebenzisi",
+    "deleteUser": "Susa Umsebenzisi"
   },
   "loans": {
-    "title": "Loan Management",
-    "pendingApprovals": "Pending Approvals",
-    "approve": "Approve",
-    "reject": "Reject",
-    "disburse": "Disburse",
-    "viewApplication": "View Application"
+    "title": "Ukuphatha Izimali Mboleko",
+    "pendingApprovals": "Ukugunyazwa Okulindelwe",
+    "approve": "Gunyaza",
+    "reject": "Nqaba",
+    "disburse": "Khipha Imali",
+    "viewApplication": "Buka Isicelo"
   },
   "payouts": {
-    "title": "Payouts",
-    "readyForPayout": "Ready for Payout",
-    "processPayout": "Process Payout",
-    "payoutHistory": "Payout History"
+    "title": "Izinkokhelo",
+    "readyForPayout": "Kulungele Ukukhokhwa",
+    "processPayout": "Sebenzisa Inkokhelo",
+    "payoutHistory": "Umlando Wezinkokhelo"
   }
 }
