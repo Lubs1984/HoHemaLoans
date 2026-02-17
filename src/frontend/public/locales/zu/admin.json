@@ -7,7 +7,16 @@
     "payouts": "Ukukhokha",
     "ncrSettings": "Izilungiselelo ze-NCR",
     "systemSettings": "Izilungiselelo Zohlelo",
-    "backToUser": "Buyela kwi-Menu Yomsebenzisi"
+    "backToUser": "Buyela kwi-Menu Yomsebenzisi",
+    "settings": "Izilungiselelo",
+    "loanManagement": "Ukuphatha Izimali Mboleko",
+    "whatsapp": "WhatsApp",
+    "bulkImport": "Ukungenisa Okuningi",
+    "ncrCompliance": "Ukuthobela i-NCR",
+    "documentVerification": "Ukuqinisekisa Amadokhumenti",
+    "deductionSchedule": "Uhlelo Lokukhiphayo",
+    "bankReconciliation": "Ukuvumelanisa Ngebhange",
+    "businessManagement": "Ukuphatha Ibhizinisi"
   },
   "dashboard": {
     "title": "Ideshibhodi",

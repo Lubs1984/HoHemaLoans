@@ -36,7 +36,7 @@ export const Layout: React.FC = () => {
     { name: t('common:navigation.profile'), href: '/profile', icon: UserCircleIcon },
     { name: t('common:navigation.documents'), href: '/documents', icon: FolderIcon },
     { name: t('common:navigation.affordability'), href: '/affordability', icon: ChartBarIcon },
-    { name: t('common:navigation.loanApplications'), href: '/loans', icon: DocumentTextIcon },
+    { name: t('common:navigation.applications'), href: '/loans', icon: DocumentTextIcon },
     { name: t('common:navigation.contracts'), href: '/contracts', icon: DocumentDuplicateIcon },
   ];
 

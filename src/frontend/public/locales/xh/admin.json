@@ -7,7 +7,16 @@
     "payouts": "Payouts",
     "ncrSettings": "NCR Settings",
     "systemSettings": "System Settings",
-    "backToUser": "Back to User Menu"
+    "backToUser": "Back to User Menu",
+    "settings": "Settings",
+    "loanManagement": "Loan Management",
+    "whatsapp": "WhatsApp",
+    "bulkImport": "Bulk Import",
+    "ncrCompliance": "NCR Compliance",
+    "documentVerification": "Document Verification",
+    "deductionSchedule": "Deduction Schedule",
+    "bankReconciliation": "Bank Reconciliation",
+    "businessManagement": "Business Management"
   },
   "dashboard": {
     "title": "Dashboard",

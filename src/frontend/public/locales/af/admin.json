@@ -7,7 +7,16 @@
     "payouts": "Uitbetalings",
     "ncrSettings": "NKR Instellings",
     "systemSettings": "Stelselbinstellings",
-    "backToUser": "Terug na Gebruikerskieslys"
+    "backToUser": "Terug na Gebruikerskieslys",
+    "settings": "Instellings",
+    "loanManagement": "Leningsbestuur",
+    "whatsapp": "WhatsApp",
+    "bulkImport": "Grootmaat Invoer",
+    "ncrCompliance": "NKR Nakoming",
+    "documentVerification": "Dokumentverifikasie",
+    "deductionSchedule": "Aftrekkingskedule",
+    "bankReconciliation": "Bankversoening",
+    "businessManagement": "Besigheidsbestuur"
   },
   "dashboard": {
     "title": "Paneelbord",
