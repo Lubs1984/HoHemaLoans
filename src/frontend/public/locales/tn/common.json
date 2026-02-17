@@ -13,7 +13,11 @@
     "login": "Login",
     "register": "Register",
     "dashboard": "Dashboard",
-    "admin": "Admin"
+    "admin": "Admin",
+    "documents": "Documents",
+    "affordability": "Affordability",
+    "applications": "Loan Applications",
+    "contracts": "Contracts"
   },
   "actions": {
     "apply": "Apply Now",
@@ -51,5 +55,10 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "tomorrow": "Tomorrow"
+  },
+  "footer": {
+    "copyright": "© {{year}} Ho Hema Loans (Pty) Ltd. All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   }
 }

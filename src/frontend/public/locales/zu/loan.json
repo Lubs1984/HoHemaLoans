@@ -50,5 +50,36 @@
     "submitted": "Your application has been submitted successfully",
     "underReview": "Your application is under review",
     "moreInfoNeeded": "Additional information required"
+  },
+  "dashboard": {
+    "title": "Ideshibhodi",
+    "subtitle": "Siyakwamukela kwideshibhodi yakho ye-Ho Hema Loans",
+    "stats": {
+      "availableAdvance": "Ukuqhubela Phambili Okutholakalayo",
+      "currentBalance": "Ibhalansi Yamanje",
+      "hoursThisMonth": "Amahora Kule Nyanga",
+      "earningsThisMonth": "Imali Engenayo Kule Nyanga",
+      "loading": "..."
+    },
+    "prerequisites": {
+      "title": "Ngaphambi Kokufaka Isicelo",
+      "subtitle": "Qedela lezi zinyathelo ukuze ufake isicelo semali mboleko:",
+      "profileTitle": "Qedela Iphrofayela Yakho",
+      "profileDetails": "Imininingwane yomuntu siqu & ulwazi lwempilo",
+      "documentsTitle": "Layisha Amadokhumenti",
+      "documentsDetails": "Idokhumenti ye-ID & ubufakazi bekheli",
+      "documentsMissing": "Okushoda: {{documents}}",
+      "affordabilityTitle": "Qedela Ukuhlolwa Kokukwazi Ukukhokhela",
+      "affordabilityDetails": "Ukuqinisekiswa kwemali engenayo nezindleko"
+    },
+    "quickActions": {
+      "title": "Izenzo Ezisheshayo",
+      "resumeApplication": "Qhubeka Nesicelo",
+      "newApplication": "Isicelo Semali Mboleko Esisha"
+    },
+    "recentActivity": {
+      "title": "Imisebenzi Yakamuva",
+      "noActivity": "Awukho ukunyakaza kwakamuva"
+    }
   }
 }

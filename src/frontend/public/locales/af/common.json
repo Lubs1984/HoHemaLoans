@@ -13,7 +13,11 @@
     "login": "Teken in",
     "register": "Registreer",
     "dashboard": "Beheerpaneel",
-    "admin": "Admin"
+    "admin": "Admin",
+    "documents": "Dokumente",
+    "affordability": "Bekostigbaarheid",
+    "applications": "Leningsaansoeke",
+    "contracts": "Kontrakte"
   },
   "actions": {
     "apply": "Aansoek nou",
@@ -51,5 +55,10 @@
     "today": "Vandag",
     "yesterday": "Gister",
     "tomorrow": "Môre"
+  },
+  "footer": {
+    "copyright": "© {{year}} Ho Hema Loans (Edms) Bpk. Alle regte voorbehou.",
+    "privacyPolicy": "Privaatheidsbeleid",
+    "termsOfService": "Diensbepalings"
   }
 }

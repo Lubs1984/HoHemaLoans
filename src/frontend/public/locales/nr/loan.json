@@ -50,5 +50,36 @@
     "submitted": "Your application has been submitted successfully",
     "underReview": "Your application is under review",
     "moreInfoNeeded": "Additional information required"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Welcome to your Ho Hema Loans dashboard",
+    "stats": {
+      "availableAdvance": "Available Advance",
+      "currentBalance": "Current Balance",
+      "hoursThisMonth": "Hours This Month",
+      "earningsThisMonth": "Earnings This Month",
+      "loading": "..."
+    },
+    "prerequisites": {
+      "title": "Before You Apply",
+      "subtitle": "Complete these steps to apply for a loan:",
+      "profileTitle": "Complete Your Profile",
+      "profileDetails": "Personal details & biographical information",
+      "documentsTitle": "Upload Documents",
+      "documentsDetails": "ID document & proof of address",
+      "documentsMissing": "Missing: {{documents}}",
+      "affordabilityTitle": "Complete Affordability Assessment",
+      "affordabilityDetails": "Income & expenses verification"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "resumeApplication": "Resume Application",
+      "newApplication": "New Loan Application"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "noActivity": "No recent activity"
+    }
   }
 }

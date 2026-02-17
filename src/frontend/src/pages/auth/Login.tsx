@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon, DevicePhoneMobileIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../contexts/ToastContext';
 import { apiService } from '../../services/api';
@@ -9,6 +10,7 @@ import HohemaLogo from '../../assets/hohema-logo.png';
 type LoginMethod = 'email' | 'mobile';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation(['auth']);
   const navigate = useNavigate();
   const { login, setLoading, setError, error, isLoading } = useAuthStore();
   const { success, error: showError } = useToast();
@@ -38,27 +40,27 @@ const Login: React.FC = () => {
     
     if (loginMethod === 'email') {
       if (!formData.email) {
-        errors.email = 'Email is required';
+        errors.email = t('auth:login.validation.emailRequired');
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        errors.email = 'Please enter a valid email address';
+        errors.email = t('auth:login.validation.emailInvalid');
       }
       
       if (!formData.password) {
-        errors.password = 'Password is required';
+        errors.password = t('auth:login.validation.passwordRequired');
       } else if (formData.password.length < 6) {
-        errors.password = 'Password must be at least 6 characters';
+        errors.password = t('auth:login.validation.passwordMin');
       }
     } else {
       if (!formData.phoneNumber) {
-        errors.phoneNumber = 'Phone number is required';
+        errors.phoneNumber = t('auth:login.validation.phoneRequired');
       } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.replace(/\s/g, ''))) {
-        errors.phoneNumber = 'Please enter a valid phone number (e.g., +27812345678)';
+        errors.phoneNumber = t('auth:login.validation.phoneInvalid');
       }
 
       if (pinSent && !formData.pin) {
-        errors.pin = 'PIN is required';
+        errors.pin = t('auth:login.validation.pinRequired');
       } else if (pinSent && formData.pin.length !== 6) {
-        errors.pin = 'PIN must be 6 digits';
+        errors.pin = t('auth:login.validation.pinLength');
       }
     }
     
@@ -85,19 +87,19 @@ const Login: React.FC = () => {
     
     if (name === 'email' && value && loginMethod === 'email') {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        errors.email = 'Please enter a valid email address';
+        errors.email = t('auth:login.validation.emailInvalid');
       }
     }
     
     if (name === 'password' && value && loginMethod === 'email') {
       if (value.length < 6) {
-        errors.password = 'Password must be at least 6 characters';
+        errors.password = t('auth:login.validation.passwordMin');
       }
     }
 
     if (name === 'phoneNumber' && value && loginMethod === 'mobile') {
       if (!/^\+?[1-9]\d{1,14}$/.test(value.replace(/\s/g, ''))) {
-        errors.phoneNumber = 'Please enter a valid phone number';
+        errors.phoneNumber = t('auth:login.validation.phoneInvalid');
       }
     }
 
@@ -217,10 +219,10 @@ const Login: React.FC = () => {
               <img src={HohemaLogo} alt="Ho Hema Loans" className="h-24 w-auto" />
             </div>
             <h2 className="mt-4 text-3xl font-bold text-gray-900">
-              Login
+              {t('auth:login.title')}
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              Access your loan application account
+              {t('auth:login.subtitle')}
             </p>
           </div>
 
@@ -243,7 +245,7 @@ const Login: React.FC = () => {
               }`}
             >
               <EnvelopeIcon className="h-5 w-5" />
-              Email
+              {t('auth:login.methodEmail')}
             </button>
             <button
               type="button"
@@ -256,7 +258,7 @@ const Login: React.FC = () => {
               }`}
             >
               <DevicePhoneMobileIcon className="h-5 w-5" />
-              Mobile
+              {t('auth:login.methodMobile')}
             </button>
           </div>
 
@@ -266,7 +268,7 @@ const Login: React.FC = () => {
                 {/* Email Login Fields */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
+                    {t('auth:login.emailLabel')}
                   </label>
                   <input
                     id="email"
@@ -277,7 +279,7 @@ const Login: React.FC = () => {
                     className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
                       validationErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
                     }`}
-                    placeholder="your.email@example.com"
+                    placeholder={t('auth:login.emailPlaceholder')}
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -289,7 +291,7 @@ const Login: React.FC = () => {
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                    Password
+                    {t('auth:login.passwordLabel')}
                   </label>
                   <div className="relative">
                     <input
@@ -301,7 +303,7 @@ const Login: React.FC = () => {
                       className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-10 ${
                         validationErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'
                       }`}
-                      placeholder="Enter your password"
+                      placeholder={t('auth:login.passwordPlaceholder')}
                       value={formData.password}
                       onChange={handleChange}
                       onBlur={handleBlur}
@@ -326,7 +328,7 @@ const Login: React.FC = () => {
 
                 <div className="flex items-center justify-between text-sm">
                   <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                    Forgot password?
+                    {t('auth:login.forgotPassword')}
                   </Link>
                 </div>
               </>
@@ -335,7 +337,7 @@ const Login: React.FC = () => {
                 {/* Mobile Login Fields */}
                 <div>
                   <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                    Mobile Number
+                    {t('auth:login.mobileLabel')}
                   </label>
                   <input
                     id="phoneNumber"
@@ -346,7 +348,7 @@ const Login: React.FC = () => {
                     className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition ${
                       validationErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'
                     }`}
-                    placeholder="+27812345678"
+                    placeholder={t('auth:login.mobilePlaceholder')}
                     value={formData.phoneNumber}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -356,7 +358,7 @@ const Login: React.FC = () => {
                   )}
                   {!pinSent && (
                     <p className="mt-1 text-xs text-gray-500">
-                      Enter your mobile number to receive a WhatsApp PIN
+                      {t('auth:login.mobileHint')}
                     </p>
                   )}
                 </div>
@@ -375,7 +377,7 @@ const Login: React.FC = () => {
                       </svg>
                     )}
                     <DevicePhoneMobileIcon className="h-5 w-5" />
-                    {countdown > 0 ? `Resend in ${countdown}s` : 'Send PIN via WhatsApp'}
+                    {countdown > 0 ? t('auth:login.resendIn', { seconds: countdown }) : t('auth:login.sendPin')}
                   </button>
                 ) : (
                   <>
@@ -384,13 +386,13 @@ const Login: React.FC = () => {
                         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
-                        PIN sent to your WhatsApp! Check your messages.
+                        {t('auth:login.pinSent')}
                       </p>
                     </div>
 
                     <div>
                       <label htmlFor="pin" className="block text-sm font-medium text-gray-700 mb-1">
-                        Enter 6-Digit PIN
+                        {t('auth:login.pinLabel')}
                       </label>
                       <input
                         id="pin"
@@ -403,7 +405,7 @@ const Login: React.FC = () => {
                         className={`w-full px-3 py-2 border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-center text-2xl tracking-widest ${
                           validationErrors.pin ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
-                        placeholder="000000"
+                        placeholder={t('auth:login.pinPlaceholder')}
                         value={formData.pin}
                         onChange={handleChange}
                         onBlur={handleBlur}
@@ -413,7 +415,7 @@ const Login: React.FC = () => {
                       )}
                       {countdown > 0 && (
                         <p className="mt-1 text-xs text-gray-500">
-                          PIN expires in {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
+                          {t('auth:login.pinExpires', { minutes: Math.floor(countdown / 60), seconds: (countdown % 60).toString().padStart(2, '0') })}
                         </p>
                       )}
                     </div>
@@ -427,7 +429,7 @@ const Login: React.FC = () => {
                       disabled={isLoading}
                       className="w-full text-sm text-gray-600 hover:text-gray-900 py-2"
                     >
-                      Change mobile number
+                      {t('auth:login.changeMobile')}
                     </button>
                   </>
                 )}
@@ -451,27 +453,27 @@ const Login: React.FC = () => {
                   </svg>
                 )}
                 {isLoading 
-                  ? (loginMethod === 'email' ? 'Signing in...' : 'Verifying...') 
-                  : (loginMethod === 'email' ? 'Sign in' : 'Verify & Sign in')}
+                  ? (loginMethod === 'email' ? t('auth:login.signingIn') : t('auth:login.verifying')) 
+                  : (loginMethod === 'email' ? t('auth:login.signIn') : t('auth:login.verifyAndSignIn'))}
               </button>
             )}
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              {t('auth:login.noAccount')}{' '}
               <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                Register here
+                {t('auth:login.registerHere')}
               </Link>
             </p>
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              By signing in, you agree to our{' '}
-              <Link to="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
-              {' '}and{' '}
-              <Link to="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+              {t('auth:login.agreeTerms')}{' '}
+              <Link to="/terms" className="text-blue-600 hover:underline">{t('auth:login.termsOfService')}</Link>
+              {' '}{t('auth:login.and')}{' '}
+              <Link to="/privacy" className="text-blue-600 hover:underline">{t('auth:login.privacyPolicy')}</Link>
             </p>
           </div>
         </div>

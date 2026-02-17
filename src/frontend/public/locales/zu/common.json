@@ -13,7 +13,11 @@
     "login": "Ngena",
     "register": "Bhalisa",
     "dashboard": "Ibhodi",
-    "admin": "Umphathi"
+    "admin": "Umphathi",
+    "documents": "Amadokhumenti",
+    "affordability": "Ukwazi ukukhokhela",
+    "applications": "Izicelo zokubolekwa",
+    "contracts": "Izinkontileka"
   },
   "actions": {
     "apply": "Faka isicelo manje",
@@ -51,5 +55,10 @@
     "today": "Namuhla",
     "yesterday": "Izolo",
     "tomorrow": "Kusasa"
+  },
+  "footer": {
+    "copyright": "© {{year}} Ho Hema Loans (Pty) Ltd. Wonke amalungelo agodliwe.",
+    "privacyPolicy": "Inqubomgomo Yobumfihlo",
+    "termsOfService": "Imigomo Yesevisi"
   }
 }

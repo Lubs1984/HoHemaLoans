@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
@@ -20,6 +21,7 @@ interface RegisterFormData {
 }
 
 const Register = () => {
+  const { t } = useTranslation(['auth']);
   const navigate = useNavigate();
   const { login, setLoading, setError, error, isLoading } = useAuthStore();
   const { success, error: showError } = useToast();
@@ -42,55 +44,55 @@ const Register = () => {
     const errors: Record<string, string> = {};
 
     if (!formData.email) {
-      errors.email = 'Email is required';
+      errors.email = t('auth:register.validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = t('auth:register.validation.emailInvalid');
     }
 
     if (!formData.password) {
-      errors.password = 'Password is required';
+      errors.password = t('auth:register.validation.passwordRequired');
     } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
+      errors.password = t('auth:register.validation.passwordMin');
     }
 
     if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+      errors.confirmPassword = t('auth:register.validation.passwordsNoMatch');
     }
 
     if (!formData.firstName) {
-      errors.firstName = 'First name is required';
+      errors.firstName = t('auth:register.validation.firstNameRequired');
     }
 
     if (!formData.lastName) {
-      errors.lastName = 'Last name is required';
+      errors.lastName = t('auth:register.validation.lastNameRequired');
     }
 
     if (!formData.phoneNumber) {
-      errors.phoneNumber = 'Phone number is required';
+      errors.phoneNumber = t('auth:register.validation.phoneRequired');
     } else if (!/^\+?[0-9]{10,}$/.test(formData.phoneNumber.replace(/\D/g, ''))) {
-      errors.phoneNumber = 'Please enter a valid phone number';
+      errors.phoneNumber = t('auth:register.validation.phoneInvalid');
     }
 
     if (!formData.idNumber) {
-      errors.idNumber = 'ID number is required';
+      errors.idNumber = t('auth:register.validation.idRequired');
     }
 
     if (!formData.dateOfBirth) {
-      errors.dateOfBirth = 'Date of birth is required';
+      errors.dateOfBirth = t('auth:register.validation.dobRequired');
     }
 
     if (!formData.address) {
-      errors.address = 'Address is required';
+      errors.address = t('auth:register.validation.addressRequired');
     }
 
     if (!formData.monthlyIncome) {
-      errors.monthlyIncome = 'Monthly income is required';
+      errors.monthlyIncome = t('auth:register.validation.incomeRequired');
     } else if (isNaN(parseFloat(formData.monthlyIncome))) {
-      errors.monthlyIncome = 'Please enter a valid amount';
+      errors.monthlyIncome = t('auth:register.validation.incomeInvalid');
     }
 
     if (!formData.agreeToTerms) {
-      errors.agreeToTerms = 'You must agree to the terms and conditions';
+      errors.agreeToTerms = t('auth:register.validation.termsRequired');
     }
 
     setValidationErrors(errors);
@@ -161,8 +163,8 @@ const Register = () => {
           <div className="mx-auto h-16 w-16 flex items-center justify-center mb-4">
             <img src={HohemaLogo} alt="Ho Hema Loans" className="h-16 w-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
-          <p className="text-gray-600">Join Ho Hema Loans to access quick loans</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('auth:register.title')}</h1>
+          <p className="text-gray-600">{t('auth:register.subtitle')}</p>
         </div>
 
         {/* Card */}
@@ -180,7 +182,7 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name
+                  {t('auth:register.firstNameLabel')}
                 </label>
                 <input
                   id="firstName"
@@ -194,7 +196,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="John"
+                  placeholder={t('auth:register.firstNamePlaceholder')}
                 />
                 {validationErrors.firstName && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.firstName}</p>
@@ -202,7 +204,7 @@ const Register = () => {
               </div>
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
+                  {t('auth:register.lastNameLabel')}
                 </label>
                 <input
                   id="lastName"
@@ -216,7 +218,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="Doe"
+                  placeholder={t('auth:register.lastNamePlaceholder')}
                 />
                 {validationErrors.lastName && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.lastName}</p>
@@ -227,7 +229,7 @@ const Register = () => {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+                {t('auth:register.emailLabel')}
               </label>
               <input
                 id="email"
@@ -242,7 +244,7 @@ const Register = () => {
                     ? 'border-red-500 bg-red-50'
                     : 'border-gray-300 bg-white'
                 } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                placeholder="you@example.com"
+                placeholder={t('auth:register.emailPlaceholder')}
               />
               {validationErrors.email && (
                 <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
@@ -253,7 +255,7 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                  {t('auth:register.phoneLabel')}
                 </label>
                 <input
                   id="phoneNumber"
@@ -268,7 +270,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="+27 81 234 5678"
+                  placeholder={t('auth:register.phonePlaceholder')}
                 />
                 {validationErrors.phoneNumber && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.phoneNumber}</p>
@@ -276,7 +278,7 @@ const Register = () => {
               </div>
               <div>
                 <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                  ID Number
+                  {t('auth:register.idLabel')}
                 </label>
                 <input
                   id="idNumber"
@@ -290,7 +292,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="123456789012"
+                  placeholder={t('auth:register.idPlaceholder')}
                 />
                 {validationErrors.idNumber && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.idNumber}</p>
@@ -302,7 +304,7 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth
+                  {t('auth:register.dobLabel')}
                 </label>
                 <input
                   id="dateOfBirth"
@@ -323,7 +325,7 @@ const Register = () => {
               </div>
               <div>
                 <label htmlFor="monthlyIncome" className="block text-sm font-medium text-gray-700 mb-1">
-                  Monthly Income (R)
+                  {t('auth:register.incomeLabel')}
                 </label>
                 <input
                   id="monthlyIncome"
@@ -338,7 +340,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="15000"
+                  placeholder={t('auth:register.incomePlaceholder')}
                 />
                 {validationErrors.monthlyIncome && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.monthlyIncome}</p>
@@ -349,7 +351,7 @@ const Register = () => {
             {/* Address Field */}
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                Address
+                {t('auth:register.addressLabel')}
               </label>
               <input
                 id="address"
@@ -363,7 +365,7 @@ const Register = () => {
                     ? 'border-red-500 bg-red-50'
                     : 'border-gray-300 bg-white'
                 } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                placeholder="123 Main Street, Cape Town"
+                placeholder={t('auth:register.addressPlaceholder')}
               />
               {validationErrors.address && (
                 <p className="mt-1 text-sm text-red-600">{validationErrors.address}</p>
@@ -374,7 +376,7 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
+                  {t('auth:register.passwordLabel')}
                 </label>
                 <input
                   id="password"
@@ -389,7 +391,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="••••••••"
+                  placeholder={t('auth:register.passwordPlaceholder')}
                 />
                 {validationErrors.password && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
@@ -397,7 +399,7 @@ const Register = () => {
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
+                  {t('auth:register.confirmPasswordLabel')}
                 </label>
                 <input
                   id="confirmPassword"
@@ -412,7 +414,7 @@ const Register = () => {
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-300 bg-white'
                   } ${isLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  placeholder="••••••••"
+                  placeholder={t('auth:register.confirmPasswordPlaceholder')}
                 />
                 {validationErrors.confirmPassword && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.confirmPassword}</p>
@@ -432,13 +434,13 @@ const Register = () => {
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer mt-1"
               />
               <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-700">
-                I agree to the{' '}
+                {t('auth:register.agreeToTermsStart')}{' '}
                 <Link to="/terms" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                  Terms of Service
+                  {t('auth:register.termsOfService')}
                 </Link>{' '}
-                and{' '}
+                {t('auth:register.and')}{' '}
                 <Link to="/privacy" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                  Privacy Policy
+                  {t('auth:register.privacyPolicy')}
                 </Link>
               </label>
             </div>
@@ -452,16 +454,16 @@ const Register = () => {
               disabled={isLoading}
               className="w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-6"
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? t('auth:register.creatingAccount') : t('auth:register.createAccount')}
             </button>
           </form>
 
           {/* Login Link */}
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Already have an account?{' '}
+              {t('auth:register.hasAccount')}{' '}
               <Link to="/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                Sign in here
+                {t('auth:register.signInHere')}
               </Link>
             </p>
           </div>

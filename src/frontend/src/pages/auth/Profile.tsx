@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
@@ -7,6 +8,7 @@ import { DocumentUpload } from '../../components/documents/DocumentUpload';
 import { DocumentList, type Document } from '../../components/documents/DocumentList';
 
 const Profile: React.FC = () => {
+  const { t } = useTranslation(['auth']);
   const { user, setUser } = useAuthStore();
   const { success, error: showError } = useToast();
   const location = useLocation();
@@ -57,20 +59,20 @@ const Profile: React.FC = () => {
       const response = await apiService.get('/documents');
       setDocuments(response.data as Document[]);
     } catch (error) {
-      showError('Failed to load documents. Please try again.');
+      showError(t('auth:profile.messages.loadFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteDocument = async (documentId: string) => {
-    if (!confirm('Are you sure you want to delete this document?')) return;
+    if (!confirm(t('auth:profile.messages.confirmDelete'))) return;
     try {
       await apiService.delete(`/documents/${documentId}`);
-      success('Document deleted successfully');
+      success(t('auth:profile.messages.deleteSuccess'));
       loadDocuments();
     } catch (error: any) {
-      showError(error.message || 'Failed to delete document');
+      showError(error.message || t('auth:profile.messages.deleteFailed'));
     }
   };
 
@@ -109,9 +111,9 @@ const Profile: React.FC = () => {
       const response = await apiService.updateProfile(formData);
       setUser(response as any);
       setIsEditing(false);
-      success('Profile updated successfully!');
+      success(t('auth:profile.messages.updateSuccess'));
     } catch (error: any) {
-      const errorMessage = error.message || 'Failed to update profile';
+      const errorMessage = error.message || t('auth:profile.messages.updateFailed');
       showError(errorMessage);
     } finally {
       setSaving(false);
@@ -126,15 +128,15 @@ const Profile: React.FC = () => {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-          <p className="text-gray-600">Manage your profile information and documents</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('auth:profile.title')}</h1>
+          <p className="text-gray-600">{t('auth:profile.subtitle')}</p>
         </div>
         {activeTab === 'personal' && !isEditing && (
           <button
             onClick={handleEdit}
             className="btn btn-primary"
           >
-            Edit Profile
+            {t('auth:profile.editProfile')}
           </button>
         )}
         {activeTab === 'personal' && isEditing && (
@@ -144,14 +146,14 @@ const Profile: React.FC = () => {
               className="btn btn-secondary"
               disabled={saving}
             >
-              Cancel
+              {t('auth:profile.cancel')}
             </button>
             <button
               onClick={handleSave}
               className="btn btn-primary"
               disabled={saving}
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('auth:profile.saving') : t('auth:profile.saveChanges')}
             </button>
           </div>
         )}
@@ -170,7 +172,7 @@ const Profile: React.FC = () => {
                   : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {t(`auth:profile.tabs.${tab}`)}
             </button>
           ))}
         </div>
@@ -181,10 +183,10 @@ const Profile: React.FC = () => {
         <div className="space-y-6">
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Personal Details</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.personalDetails')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.firstName')}</label>
                 <input 
                   type="text" 
                   value={isEditing ? formData.firstName : (user?.firstName || '')} 
@@ -194,7 +196,7 @@ const Profile: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.lastName')}</label>
                 <input 
                   type="text" 
                   value={isEditing ? formData.lastName : (user?.lastName || '')} 
@@ -204,29 +206,29 @@ const Profile: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">ID Number</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.idNumber')}</label>
                 <input type="text" value={user?.idNumber || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
-                <p className="text-xs text-gray-500 mt-1">ID number cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">{t('auth:profile.helperText.idNoChange')}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.dateOfBirth')}</label>
                 <input type="text" value={user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
-                <p className="text-xs text-gray-500 mt-1">Date of birth cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">{t('auth:profile.helperText.dobNoChange')}</p>
               </div>
             </div>
           </div>
 
           {/* Contact Information */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.contactInfo')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.email')}</label>
                 <input type="email" value={user?.email || ''} disabled className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">{t('auth:profile.helperText.emailNoChange')}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.phone')}</label>
                 <input 
                   type="tel" 
                   value={isEditing ? formData.phoneNumber : (user?.phoneNumber || '')} 
@@ -240,30 +242,30 @@ const Profile: React.FC = () => {
 
           {/* Residential Address */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Residential Address</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.address')}</h2>
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Street Address</label>
-                <input type="text" value={isEditing ? formData.streetAddress : (user?.streetAddress || '')} onChange={(e) => handleInputChange('streetAddress', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., 123 Main Street" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.streetAddress')}</label>
+                <input type="text" value={isEditing ? formData.streetAddress : (user?.streetAddress || '')} onChange={(e) => handleInputChange('streetAddress', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.streetExample')} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Suburb</label>
-                  <input type="text" value={isEditing ? formData.suburb : (user?.suburb || '')} onChange={(e) => handleInputChange('suburb', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Sandton" />
+                  <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.suburb')}</label>
+                  <input type="text" value={isEditing ? formData.suburb : (user?.suburb || '')} onChange={(e) => handleInputChange('suburb', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.suburbExample')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">City</label>
-                  <input type="text" value={isEditing ? formData.city : (user?.city || '')} onChange={(e) => handleInputChange('city', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Johannesburg" />
+                  <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.city')}</label>
+                  <input type="text" value={isEditing ? formData.city : (user?.city || '')} onChange={(e) => handleInputChange('city', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.cityExample')} />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Province</label>
-                  <input type="text" value={isEditing ? formData.province : (user?.province || '')} onChange={(e) => handleInputChange('province', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Gauteng" />
+                  <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.province')}</label>
+                  <input type="text" value={isEditing ? formData.province : (user?.province || '')} onChange={(e) => handleInputChange('province', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.provinceExample')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Postal Code</label>
-                  <input type="text" value={isEditing ? formData.postalCode : (user?.postalCode || '')} onChange={(e) => handleInputChange('postalCode', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., 2196" />
+                  <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.postalCode')}</label>
+                  <input type="text" value={isEditing ? formData.postalCode : (user?.postalCode || '')} onChange={(e) => handleInputChange('postalCode', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.postalExample')} />
                 </div>
               </div>
             </div>
@@ -271,64 +273,64 @@ const Profile: React.FC = () => {
 
           {/* Employment Information */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Employment Details</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.employment')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Company/Employer Name</label>
-                <input type="text" value={isEditing ? formData.employerName : (user?.employerName || '')} onChange={(e) => handleInputChange('employerName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., ABC Company (Pty) Ltd" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.employerName')}</label>
+                <input type="text" value={isEditing ? formData.employerName : (user?.employerName || '')} onChange={(e) => handleInputChange('employerName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.employerExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Employment Type</label>
-                <input type="text" value={isEditing ? formData.employmentType : (user?.employmentType || '')} onChange={(e) => handleInputChange('employmentType', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Permanent/Contract/Self-Employed" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.employmentType')}</label>
+                <input type="text" value={isEditing ? formData.employmentType : (user?.employmentType || '')} onChange={(e) => handleInputChange('employmentType', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.employmentTypeExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Employee Number</label>
-                <input type="text" value={isEditing ? formData.employeeNumber : (user?.employeeNumber || '')} onChange={(e) => handleInputChange('employeeNumber', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Your employee ID" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.employeeNumber')}</label>
+                <input type="text" value={isEditing ? formData.employeeNumber : (user?.employeeNumber || '')} onChange={(e) => handleInputChange('employeeNumber', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.employeeIdExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Payroll Reference</label>
-                <input type="text" value={isEditing ? formData.payrollReference : (user?.payrollReference || '')} onChange={(e) => handleInputChange('payrollReference', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Payroll reference number" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.payrollReference')}</label>
+                <input type="text" value={isEditing ? formData.payrollReference : (user?.payrollReference || '')} onChange={(e) => handleInputChange('payrollReference', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.payrollExample')} />
               </div>
             </div>
           </div>
 
           {/* Banking Information */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Banking Details</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.banking')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-                <input type="text" value={isEditing ? formData.bankName : (user?.bankName || '')} onChange={(e) => handleInputChange('bankName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Standard Bank" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.bankName')}</label>
+                <input type="text" value={isEditing ? formData.bankName : (user?.bankName || '')} onChange={(e) => handleInputChange('bankName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.bankExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Account Type</label>
-                <input type="text" value={isEditing ? formData.accountType : (user?.accountType || '')} onChange={(e) => handleInputChange('accountType', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Cheque/Savings" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.accountType')}</label>
+                <input type="text" value={isEditing ? formData.accountType : (user?.accountType || '')} onChange={(e) => handleInputChange('accountType', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.accountTypeExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Account Number</label>
-                <input type="text" value={isEditing ? formData.accountNumber : (user?.accountNumber ? '****' + user.accountNumber.slice(-4) : '')} onChange={(e) => handleInputChange('accountNumber', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="Full account number" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.accountNumber')}</label>
+                <input type="text" value={isEditing ? formData.accountNumber : (user?.accountNumber ? '****' + user.accountNumber.slice(-4) : '')} onChange={(e) => handleInputChange('accountNumber', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.accountNumberExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Branch Code</label>
-                <input type="text" value={isEditing ? formData.branchCode : (user?.branchCode || '')} onChange={(e) => handleInputChange('branchCode', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., 051001" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.branchCode')}</label>
+                <input type="text" value={isEditing ? formData.branchCode : (user?.branchCode || '')} onChange={(e) => handleInputChange('branchCode', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.branchCodeExample')} />
               </div>
             </div>
           </div>
 
   
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Next of Kin / Emergency Contact</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.nextOfKin')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.nextOfKinName')}</label>
                 <input type="text" value={isEditing ? formData.nextOfKinName : (user?.nextOfKinName || '')} onChange={(e) => handleInputChange('nextOfKinName', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Relationship</label>
-                <input type="text" value={isEditing ? formData.nextOfKinRelationship : (user?.nextOfKinRelationship || '')} onChange={(e) => handleInputChange('nextOfKinRelationship', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder="e.g., Spouse, Parent, Sibling" />
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.nextOfKinRelationship')}</label>
+                <input type="text" value={isEditing ? formData.nextOfKinRelationship : (user?.nextOfKinRelationship || '')} onChange={(e) => handleInputChange('nextOfKinRelationship', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" placeholder={t('auth:profile.helperText.relationshipExample')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                <label className="block text-sm font-medium text-gray-700">{t('auth:profile.fields.nextOfKinPhone')}</label>
                 <input type="tel" value={isEditing ? formData.nextOfKinPhone : (user?.nextOfKinPhone || '')} onChange={(e) => handleInputChange('nextOfKinPhone', e.target.value)} disabled={!isEditing} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 disabled:bg-gray-50 enabled:bg-white" />
               </div>
             </div>
@@ -341,57 +343,57 @@ const Profile: React.FC = () => {
         <div className="space-y-6">
           {/* Document Upload */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Upload Documents</h2>
-            <p className="text-sm text-gray-500 mb-4">Upload your ID document and proof of residence to verify your account. You can also upload payslips and bank statements for affordability assessment.</p>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.uploadDocs')}</h2>
+            <p className="text-sm text-gray-500 mb-4">{t('auth:profile.documents.instruction')}</p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <DocumentUpload
                 documentType="IdDocument"
-                label="ID Document (Required)"
+                label={t('auth:profile.documents.idDocument')}
                 onUploadSuccess={(_document) => {
-                  success('ID Document uploaded successfully');
+                  success(t('auth:profile.messages.idUploaded'));
                   loadDocuments();
                 }}
                 onUploadError={(error) => {
-                  showError(`Failed to upload ID document: ${error}`);
+                  showError(t('auth:profile.messages.idUploadFailed', { error }));
                 }}
                 acceptedTypes=".jpg,.jpeg,.png,.pdf"
                 maxSizeMB={5}
               />
               <DocumentUpload
                 documentType="ProofOfAddress"
-                label="Proof of Residence (Required)"
+                label={t('auth:profile.documents.proofOfAddress')}
                 onUploadSuccess={(_document) => {
-                  success('Proof of Residence uploaded successfully');
+                  success(t('auth:profile.messages.proofUploaded'));
                   loadDocuments();
                 }}
                 onUploadError={(error) => {
-                  showError(`Failed to upload proof of residence: ${error}`);
+                  showError(t('auth:profile.messages.proofUploadFailed', { error }));
                 }}
                 acceptedTypes=".jpg,.jpeg,.png,.pdf"
                 maxSizeMB={5}
               />
               <DocumentUpload
                 documentType="Payslip"
-                label="Latest Payslip"
+                label={t('auth:profile.documents.payslip')}
                 onUploadSuccess={(_document) => {
-                  success('Payslip uploaded successfully');
+                  success(t('auth:profile.messages.payslipUploaded'));
                   loadDocuments();
                 }}
                 onUploadError={(error) => {
-                  showError(`Failed to upload payslip: ${error}`);
+                  showError(t('auth:profile.messages.payslipUploadFailed', { error }));
                 }}
                 acceptedTypes=".jpg,.jpeg,.png,.pdf"
                 maxSizeMB={5}
               />
               <DocumentUpload
                 documentType="BankStatement"
-                label="Bank Statement (3 months)"
+                label={t('auth:profile.documents.bankStatement')}
                 onUploadSuccess={(_document) => {
-                  success('Bank statement uploaded successfully');
+                  success(t('auth:profile.messages.bankStatementUploaded'));
                   loadDocuments();
                 }}
                 onUploadError={(error) => {
-                  showError(`Failed to upload bank statement: ${error}`);
+                  showError(t('auth:profile.messages.bankStatementUploadFailed', { error }));
                 }}
                 acceptedTypes=".jpg,.jpeg,.png,.pdf"
                 maxSizeMB={5}
@@ -401,10 +403,10 @@ const Profile: React.FC = () => {
 
           {/* Document List */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Your Documents</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('auth:profile.sections.yourDocs')}</h2>
             {loading ? (
               <div className="text-center py-4">
-                <p className="text-gray-500">Loading documents...</p>
+                <p className="text-gray-500">{t('auth:profile.documents.loading')}</p>
               </div>
             ) : (
               <DocumentList 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { apiService } from '../../services/api';
 
 interface LoanApplication {
@@ -28,6 +29,7 @@ interface DashboardStats {
 }
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation(['loan']);
   const [draftApplication, setDraftApplication] = useState<LoanApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [prerequisiteStatus, setPrerequisiteStatus] = useState<PrerequisiteStatus>({
@@ -178,8 +180,8 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome to your Ho Hema Loans dashboard</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('loan:dashboard.title')}</h1>
+        <p className="text-gray-600">{t('loan:dashboard.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -191,9 +193,9 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-500">Available Advance</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('loan:dashboard.stats.availableAdvance')}</h3>
               <p className="text-2xl font-bold text-gray-900">
-                {isLoading ? '...' : `R ${dashboardStats.availableAdvance.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                {isLoading ? t('loan:dashboard.stats.loading') : `R ${dashboardStats.availableAdvance.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
               </p>
             </div>
           </div>
@@ -207,9 +209,9 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-500">Current Balance</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('loan:dashboard.stats.currentBalance')}</h3>
               <p className="text-2xl font-bold text-gray-900">
-                {isLoading ? '...' : `R ${dashboardStats.currentBalance.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                {isLoading ? t('loan:dashboard.stats.loading') : `R ${dashboardStats.currentBalance.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
               </p>
             </div>
           </div>
@@ -223,9 +225,9 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-500">Hours This Month</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('loan:dashboard.stats.hoursThisMonth')}</h3>
               <p className="text-2xl font-bold text-gray-900">
-                {isLoading ? '...' : dashboardStats.hoursThisMonth}
+                {isLoading ? t('loan:dashboard.stats.loading') : dashboardStats.hoursThisMonth}
               </p>
             </div>
           </div>
@@ -239,9 +241,9 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-500">Earnings This Month</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('loan:dashboard.stats.earningsThisMonth')}</h3>
               <p className="text-2xl font-bold text-gray-900">
-                {isLoading ? '...' : `R ${dashboardStats.earningsThisMonth.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                {isLoading ? t('loan:dashboard.stats.loading') : `R ${dashboardStats.earningsThisMonth.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
               </p>
             </div>
           </div>
@@ -251,8 +253,8 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Loan Application Prerequisites */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Before You Apply</h2>
-          <p className="text-sm text-gray-600 mb-4">Complete these steps to apply for a loan:</p>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('loan:dashboard.prerequisites.title')}</h2>
+          <p className="text-sm text-gray-600 mb-4">{t('loan:dashboard.prerequisites.subtitle')}</p>
           
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
@@ -286,8 +288,8 @@ const Dashboard: React.FC = () => {
                     )}
                   </div>
                   <div className="ml-4">
-                    <h3 className="text-sm font-semibold text-gray-900">Complete Your Profile</h3>
-                    <p className="text-xs text-gray-600">Personal details & biographical information</p>
+                    <h3 className="text-sm font-semibold text-gray-900">{t('loan:dashboard.prerequisites.profileTitle')}</h3>
+                    <p className="text-xs text-gray-600">{t('loan:dashboard.prerequisites.profileDetails')}</p>
                   </div>
                 </div>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,11 +323,11 @@ const Dashboard: React.FC = () => {
                     )}
                   </div>
                   <div className="ml-4">
-                    <h3 className="text-sm font-semibold text-gray-900">Upload Documents</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">{t('loan:dashboard.prerequisites.documentsTitle')}</h3>
                     <p className="text-xs text-gray-600">
                       {documentStatus?.missingDocuments && documentStatus.missingDocuments.length > 0
-                        ? `Missing: ${documentStatus.missingDocuments.join(', ')}`
-                        : 'ID document & proof of address'}
+                        ? t('loan:dashboard.prerequisites.documentsMissing', { documents: documentStatus.missingDocuments.join(', ') })
+                        : t('loan:dashboard.prerequisites.documentsDetails')}
                     </p>
                   </div>
                 </div>
@@ -360,8 +362,8 @@ const Dashboard: React.FC = () => {
                     )}
                   </div>
                   <div className="ml-4">
-                    <h3 className="text-sm font-semibold text-gray-900">Complete Affordability Assessment</h3>
-                    <p className="text-xs text-gray-600">Income & expenses verification</p>
+                    <h3 className="text-sm font-semibold text-gray-900">{t('loan:dashboard.prerequisites.affordabilityTitle')}</h3>
+                    <p className="text-xs text-gray-600">{t('loan:dashboard.prerequisites.affordabilityDetails')}</p>
                   </div>
                 </div>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,7 +375,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('loan:dashboard.quickActions.title')}</h2>
           <div className="space-y-3">
             {isLoading ? (
               <div className="flex items-center justify-center py-4">
@@ -384,24 +386,24 @@ const Dashboard: React.FC = () => {
                 to={`/loans/new?id=${draftApplication.id}`}
                 className="w-full btn-primary block text-center"
               >
-                Resume Application
+                {t('loan:dashboard.quickActions.resumeApplication')}
               </Link>
             ) : (
               <Link
                 to="/loans/new"
                 className="w-full btn-primary block text-center"
               >
-                New Loan Application
+                {t('loan:dashboard.quickActions.newApplication')}
               </Link>
             )}
           </div>
         </div>
 
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('loan:dashboard.recentActivity.title')}</h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-gray-200">
-              <span className="text-sm text-gray-600">No recent activity</span>
+              <span className="text-sm text-gray-600">{t('loan:dashboard.recentActivity.noActivity')}</span>
             </div>
           </div>
         </div>

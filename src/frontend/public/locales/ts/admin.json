@@ -1,4 +1,14 @@
 {
+  "navigation": {
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "loans": "Loans",
+    "users": "Users",
+    "payouts": "Payouts",
+    "ncrSettings": "NCR Settings",
+    "systemSettings": "System Settings",
+    "backToUser": "Back to User Menu"
+  },
   "dashboard": {
     "title": "Admin Dashboard",
     "overview": "Overview",

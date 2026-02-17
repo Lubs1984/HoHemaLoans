@@ -50,5 +50,36 @@
     "submitted": "Your application has been submitted successfully",
     "underReview": "Your application is under review",
     "moreInfoNeeded": "Additional information required"
+  },
+  "dashboard": {
+    "title": "Paneelbord",
+    "subtitle": "Welkom by jou Ho Hema Lenings paneelbord",
+    "stats": {
+      "availableAdvance": "Beskikbare Voorskot",
+      "currentBalance": "Huidige Balans",
+      "hoursThisMonth": "Ure Hierdie Maand",
+      "earningsThisMonth": "Verdienste Hierdie Maand",
+      "loading": "..."
+    },
+    "prerequisites": {
+      "title": "Voordat Jy Aansoek Doen",
+      "subtitle": "Voltooi hierdie stappe om vir 'n lening aansoek te doen:",
+      "profileTitle": "Voltooi Jou Profiel",
+      "profileDetails": "Persoonlike besonderhede & biografiese inligting",
+      "documentsTitle": "Laai Dokumente Op",
+      "documentsDetails": "ID dokument & bewys van adres",
+      "documentsMissing": "Ontbreek: {{documents}}",
+      "affordabilityTitle": "Voltooi Bekostigbaarheidsassessering",
+      "affordabilityDetails": "Inkomste & uitgawes verifikasie"
+    },
+    "quickActions": {
+      "title": "Vinnige Aksies",
+      "resumeApplication": "Hervat Aansoek",
+      "newApplication": "Nuwe Lening Aansoek"
+    },
+    "recentActivity": {
+      "title": "Onlangse Aktiwiteit",
+      "noActivity": "Geen onlangse aktiwiteit"
+    }
   }
 }

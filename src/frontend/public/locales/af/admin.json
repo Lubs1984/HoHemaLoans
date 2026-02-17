@@ -1,4 +1,14 @@
 {
+  "navigation": {
+    "dashboard": "Beheerpaneel",
+    "overview": "Oorsig",
+    "loans": "Lenings",
+    "users": "Gebruikers",
+    "payouts": "Uitbetalings",
+    "ncrSettings": "NKR Instellings",
+    "systemSettings": "Stelselbinstellings",
+    "backToUser": "Terug na Gebruikerskieslys"
+  },
   "dashboard": {
     "title": "Admin Dashboard",
     "overview": "Overview",

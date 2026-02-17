@@ -18,39 +18,42 @@ import {
   ArrowsRightLeftIcon,
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import HohemaLogo from '../../assets/hohema-logo.png';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Profile', href: '/profile', icon: UserCircleIcon },
-  { name: 'Documents', href: '/documents', icon: FolderIcon },
-  { name: 'Affordability', href: '/affordability', icon: ChartBarIcon },
-  { name: 'Loan Applications', href: '/loans', icon: DocumentTextIcon },
-  { name: 'Contracts', href: '/contracts', icon: DocumentDuplicateIcon },
-];
-
-const adminNavigation = [
-  { name: 'Admin Dashboard', href: '/admin', icon: Cog6ToothIcon },
-  { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
-  { name: 'Loan Management', href: '/admin/loans', icon: DocumentTextIcon },
-  { name: 'Loan Payouts', href: '/admin/payouts', icon: BanknotesIcon },
-  { name: 'WhatsApp Messages', href: '/admin/whatsapp', icon: HomeIcon },
-  { name: 'User Management', href: '/admin/users', icon: UserCircleIcon },
-  { name: 'Bulk User Import', href: '/admin/bulk-import', icon: CloudArrowUpIcon },
-  { name: 'NCR Compliance', href: '/admin/ncr-compliance', icon: ShieldCheckIcon },
-  { name: 'Document Verification', href: '/admin/documents', icon: FolderIcon },
-  { name: 'Deduction Schedule', href: '/admin/deductions', icon: CalendarDaysIcon },
-  { name: 'Bank Reconciliation', href: '/admin/bank-recon', icon: ArrowsRightLeftIcon },
-  { name: 'Business Management', href: '/admin/businesses', icon: BuildingOfficeIcon },
-];
-
 export const Layout: React.FC = () => {
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { t } = useTranslation(['common', 'admin']);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [isAdminMode, setIsAdminMode] = React.useState(location.pathname.startsWith('/admin'));
+
+  // Navigation items with translations
+  const navigation = [
+    { name: t('common:navigation.dashboard'), href: '/', icon: HomeIcon },
+    { name: t('common:navigation.profile'), href: '/profile', icon: UserCircleIcon },
+    { name: t('common:navigation.documents'), href: '/documents', icon: FolderIcon },
+    { name: t('common:navigation.affordability'), href: '/affordability', icon: ChartBarIcon },
+    { name: t('common:navigation.loanApplications'), href: '/loans', icon: DocumentTextIcon },
+    { name: t('common:navigation.contracts'), href: '/contracts', icon: DocumentDuplicateIcon },
+  ];
+
+  const adminNavigation = [
+    { name: t('admin:navigation.dashboard'), href: '/admin', icon: Cog6ToothIcon },
+    { name: t('admin:navigation.settings'), href: '/admin/settings', icon: Cog6ToothIcon },
+    { name: t('admin:navigation.loanManagement'), href: '/admin/loans', icon: DocumentTextIcon },
+    { name: t('admin:navigation.payouts'), href: '/admin/payouts', icon: BanknotesIcon },
+    { name: t('admin:navigation.whatsapp'), href: '/admin/whatsapp', icon: HomeIcon },
+    { name: t('admin:navigation.users'), href: '/admin/users', icon: UserCircleIcon },
+    { name: t('admin:navigation.bulkImport'), href: '/admin/bulk-import', icon: CloudArrowUpIcon },
+    { name: t('admin:navigation.ncrCompliance'), href: '/admin/ncr-compliance', icon: ShieldCheckIcon },
+    { name: t('admin:navigation.documentVerification'), href: '/admin/documents', icon: FolderIcon },
+    { name: t('admin:navigation.deductionSchedule'), href: '/admin/deductions', icon: CalendarDaysIcon },
+    { name: t('admin:navigation.bankReconciliation'), href: '/admin/bank-recon', icon: ArrowsRightLeftIcon },
+    { name: t('admin:navigation.businessManagement'), href: '/admin/businesses', icon: BuildingOfficeIcon },
+  ];
 
   React.useEffect(() => {
     setIsAdminMode(location.pathname.startsWith('/admin'));
@@ -138,7 +141,7 @@ export const Layout: React.FC = () => {
                   onClick={() => setSidebarOpen(false)}
                 >
                   <Cog6ToothIcon className="mr-3 h-5 w-5" />
-                  Admin Dashboard
+                  {t('admin:dashboard.title')}
                 </Link>
               )}
               {/* Language Switcher - Mobile */}
@@ -153,7 +156,7 @@ export const Layout: React.FC = () => {
                 className="flex items-center px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-t border-gray-200 w-full"
               >
                 <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
-                Sign out
+                {t('common:navigation.logout')}
               </button>
             </nav>
           </div>
@@ -224,7 +227,7 @@ export const Layout: React.FC = () => {
                       className="group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                     >
                       <ArrowRightOnRectangleIcon className="h-5 w-5 shrink-0" />
-                      Back to User Menu
+                      {t('admin:navigation.backToUser')}
                     </Link>
                   </li>
                 </>
@@ -240,7 +243,7 @@ export const Layout: React.FC = () => {
                     }`}
                   >
                     <Cog6ToothIcon className="h-5 w-5 shrink-0" />
-                    Admin Dashboard
+                    {t('admin:dashboard.title')}
                   </Link>
                 </li>
               )}
@@ -254,7 +257,7 @@ export const Layout: React.FC = () => {
                   className="group -mx-2 flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 >
                   <ArrowRightOnRectangleIcon className="h-5 w-5 shrink-0" />
-                  Sign out
+                  {t('common:navigation.logout')}
                 </button>
               </li>
             </ul>
@@ -317,10 +320,10 @@ export const Layout: React.FC = () => {
         <footer className="border-t border-gray-200 bg-white mt-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500">
-              <p>&copy; {new Date().getFullYear()} Ho Hema Loans (Pty) Ltd. All rights reserved.</p>
+              <p>{t('common:footer.copyright', { year: new Date().getFullYear() })}</p>
               <div className="flex items-center gap-4">
-                <Link to="/privacy" className="hover:text-primary-600 transition-colors">Privacy Policy</Link>
-                <Link to="/terms" className="hover:text-primary-600 transition-colors">Terms of Service</Link>
+                <Link to="/privacy" className="hover:text-primary-600 transition-colors">{t('common:footer.privacyPolicy')}</Link>
+                <Link to="/terms" className="hover:text-primary-600 transition-colors">{t('common:footer.termsOfService')}</Link>
               </div>
             </div>
           </div>

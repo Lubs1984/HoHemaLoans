@@ -1,4 +1,14 @@
 {
+  "navigation": {
+    "dashboard": "Ibhodi",
+    "overview": "Ukubuka konke",
+    "loans": "Imalimboleko",
+    "users": "Abasebenzisi",
+    "payouts": "Ukukhokha",
+    "ncrSettings": "Izilungiselelo ze-NCR",
+    "systemSettings": "Izilungiselelo Zohlelo",
+    "backToUser": "Buyela kwi-Menu Yomsebenzisi"
+  },
   "dashboard": {
     "title": "Admin Dashboard",
     "overview": "Overview",
