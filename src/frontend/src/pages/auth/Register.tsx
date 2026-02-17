@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import HohemaLogo from '../../assets/hohema-logo.png';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 interface RegisterFormData {
   email: string;
@@ -157,7 +158,12 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-2xl relative">
+        {/* Language Switcher */}
+        <div className="absolute -top-12 right-0">
+          <LanguageSwitcher variant="dropdown" showLabel={false} className="" />
+        </div>
+        
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mx-auto h-16 w-16 flex items-center justify-center mb-4">

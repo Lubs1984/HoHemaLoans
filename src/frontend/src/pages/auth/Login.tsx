@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../contexts/ToastContext';
 import { apiService } from '../../services/api';
 import HohemaLogo from '../../assets/hohema-logo.png';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 type LoginMethod = 'email' | 'mobile';
 
@@ -212,7 +213,12 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
+      <div className="max-w-md w-full relative">
+        {/* Language Switcher */}
+        <div className="absolute -top-12 right-0">
+          <LanguageSwitcher variant="dropdown" showLabel={false} className="" />
+        </div>
+        
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
             <div className="mx-auto flex items-center justify-center">
