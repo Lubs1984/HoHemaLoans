@@ -116,7 +116,13 @@ else
 }
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Serialize enums as strings so frontend gets "Inbound"/"Outbound" not 0/1
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Get connection string - Railway uses DATABASE_URL env var
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");

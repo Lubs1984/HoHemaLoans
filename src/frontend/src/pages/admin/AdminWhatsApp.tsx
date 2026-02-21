@@ -218,6 +218,15 @@ const AdminWhatsApp: React.FC = () => {
   const [showNewMessage, setShowNewMessage] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Use a ref to track selected conversation ID — avoids stale closure in polling
+  const selectedConvIdRef = useRef<number | null>(null);
+
+  const loadConversationMessages = async (id: number) => {
+    try {
+      const detail = await apiService.request<WhatsAppConversation>(`/WhatsApp/conversations/${id}`);
+      setSelectedConversation(detail);
+    } catch {/* ignore */}
+  };
 
   const fetchConversations = async (silent = false) => {
     try {
@@ -230,13 +239,11 @@ const AdminWhatsApp: React.FC = () => {
       setConversations(list);
       setLastRefresh(new Date());
 
-      // If selected conversation is in the list, refresh its messages
-      if (selectedConversation) {
-        const found = list.find(c => c.id === selectedConversation.id);
-        if (found) {
-          // Load full messages for the selected conversation
-          loadConversationMessages(selectedConversation.id);
-        }
+      // Use the ref (not state) to get current selected ID — avoids stale closure
+      const currentId = selectedConvIdRef.current;
+      if (currentId !== null) {
+        const found = list.find(c => c.id === currentId);
+        if (found) loadConversationMessages(currentId);
       }
     } catch (err) {
       if (!silent) setError(err instanceof Error ? err.message : 'Failed to load conversations');
@@ -245,19 +252,18 @@ const AdminWhatsApp: React.FC = () => {
     }
   };
 
-  const loadConversationMessages = async (id: number) => {
-    try {
-      const detail = await apiService.request<WhatsAppConversation>(`/WhatsApp/conversations/${id}`);
-      setSelectedConversation(detail);
-    } catch {/* ignore */}
-  };
-
   const selectConversation = async (conv: WhatsAppConversation) => {
+    selectedConvIdRef.current = conv.id;
     setSelectedConversation(conv);
     await loadConversationMessages(conv.id);
   };
 
-  // Start polling every 5 seconds
+  // Keep ref in sync when selectedConversation changes (e.g. from New Message modal)
+  useEffect(() => {
+    selectedConvIdRef.current = selectedConversation?.id ?? null;
+  }, [selectedConversation?.id]);
+
+  // Start polling every 5 seconds — interval uses ref so it always has current ID
   useEffect(() => {
     fetchConversations();
     pollingRef.current = setInterval(() => fetchConversations(true), 5000);
