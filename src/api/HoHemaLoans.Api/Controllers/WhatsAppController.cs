@@ -14,11 +14,13 @@ public class WhatsAppController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<WhatsAppController> _logger;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public WhatsAppController(ApplicationDbContext context, ILogger<WhatsAppController> logger)
+    public WhatsAppController(ApplicationDbContext context, ILogger<WhatsAppController> logger, IWhatsAppService whatsAppService)
     {
         _context = context;
         _logger = logger;
+        _whatsAppService = whatsAppService;
     }
 
     // GET: api/WhatsApp/contacts
@@ -285,11 +287,100 @@ public class WhatsAppController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Sent WhatsApp message in conversation {ConversationId} to {PhoneNumber}", 
+        // Actually send via WhatsApp API
+        var sent = await _whatsAppService.SendMessageAsync(conversation.Contact.PhoneNumber, request.MessageText);
+        if (sent)
+        {
+            message.Status = MessageStatus.Sent;
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("WhatsApp message delivered to {PhoneNumber}", conversation.Contact.PhoneNumber);
+        }
+        else
+        {
+            message.Status = MessageStatus.Failed;
+            await _context.SaveChangesAsync();
+            _logger.LogWarning("Failed to deliver WhatsApp message to {PhoneNumber}", conversation.Contact.PhoneNumber);
+        }
+
+        _logger.LogInformation("Processed outbound WhatsApp message in conversation {ConversationId} to {PhoneNumber}", 
             request.ConversationId, conversation.Contact.PhoneNumber);
 
         return CreatedAtAction(nameof(GetConversation), 
-            new { conversationId = conversation.Id }, message);
+            new { conversationId = conversation.Id }, new { message.Id, message.MessageText, message.Status, message.Direction, message.CreatedAt });
+    }
+
+    // POST: api/WhatsApp/send-direct
+    /// <summary>
+    /// Send a message directly to a phone number — creates contact and conversation if they don't exist.
+    /// </summary>
+    [HttpPost("send-direct")]
+    public async Task<ActionResult<object>> SendDirect(SendDirectMessageRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.PhoneNumber) || string.IsNullOrWhiteSpace(request.MessageText))
+            return BadRequest("PhoneNumber and MessageText are required");
+
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // Get or create contact
+        var contact = await _context.WhatsAppContacts
+            .FirstOrDefaultAsync(c => c.PhoneNumber == request.PhoneNumber);
+
+        if (contact == null)
+        {
+            contact = new WhatsAppContact
+            {
+                PhoneNumber = request.PhoneNumber,
+                DisplayName = request.DisplayName ?? request.PhoneNumber,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.WhatsAppContacts.Add(contact);
+            await _context.SaveChangesAsync();
+        }
+
+        // Get or create open conversation
+        var conversation = await _context.WhatsAppConversations
+            .FirstOrDefaultAsync(c => c.ContactId == contact.Id && c.Status == ConversationStatus.Open);
+
+        if (conversation == null)
+        {
+            conversation = new WhatsAppConversation
+            {
+                ContactId = contact.Id,
+                Subject = request.Subject ?? "Admin initiated conversation",
+                Type = ConversationType.General,
+                Status = ConversationStatus.Open,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.WhatsAppConversations.Add(conversation);
+            await _context.SaveChangesAsync();
+        }
+
+        // Create message record
+        var message = new WhatsAppMessage
+        {
+            ConversationId = conversation.Id,
+            ContactId = contact.Id,
+            MessageText = request.MessageText,
+            Type = MessageType.Text,
+            Direction = MessageDirection.Outbound,
+            Status = MessageStatus.Sent,
+            CreatedAt = DateTime.UtcNow,
+            HandledByUserId = userId
+        };
+
+        _context.WhatsAppMessages.Add(message);
+        conversation.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        // Send via WhatsApp API
+        var sent = await _whatsAppService.SendMessageAsync(contact.PhoneNumber, request.MessageText);
+        message.Status = sent ? MessageStatus.Sent : MessageStatus.Failed;
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("SendDirect: {Status} to {PhoneNumber}", message.Status, contact.PhoneNumber);
+
+        return Ok(new { conversationId = conversation.Id, messageId = message.Id, status = message.Status.ToString(), sent });
     }
 
     // PUT: api/WhatsApp/conversations/{conversationId}/status
@@ -343,6 +434,14 @@ public class SendWhatsAppMessageRequest
     public int ConversationId { get; set; }
     public string MessageText { get; set; } = string.Empty;
     public MessageType? Type { get; set; }
+}
+
+public class SendDirectMessageRequest
+{
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string MessageText { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
+    public string? Subject { get; set; }
 }
 
 public class UpdateConversationStatusRequest
