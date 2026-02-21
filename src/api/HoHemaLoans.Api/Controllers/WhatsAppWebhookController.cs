@@ -93,6 +93,10 @@ public class WhatsAppWebhookController : ControllerBase
             _logger.LogInformation("Request ContentType: {ContentType}", Request.ContentType);
             _logger.LogInformation("Request Headers: {Headers}", string.Join(", ", Request.Headers.Keys));
 
+            // Enable buffering so the body can be read multiple times
+            // (once for signature verification, once for payload parsing)
+            Request.EnableBuffering();
+
             // Read and verify signature (optional but recommended)
             var signature = Request.Headers["X-Hub-Signature-256"].ToString();
             if (!string.IsNullOrEmpty(signature))
@@ -103,6 +107,9 @@ public class WhatsAppWebhookController : ControllerBase
                     return Unauthorized("Invalid signature");
                 }
             }
+
+            // Reset body position so ParseWebhookAsync can read it from the start
+            Request.Body.Position = 0;
 
             // Parse the webhook payload
             _logger.LogInformation("Parsing webhook payload...");
