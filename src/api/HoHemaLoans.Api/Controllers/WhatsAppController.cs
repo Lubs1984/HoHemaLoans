@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HoHemaLoans.Api.Data;
 using HoHemaLoans.Api.Models;
+using HoHemaLoans.Api.Services;
 using System.Security.Claims;
 
 namespace HoHemaLoans.Api.Controllers;
